@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+    id "com.diffplug.spotless"
+    id "com.alwallet.gradle.BasePluginDependency"
+    id "com.alwallet.gradle.WebPluginDependency"
+    id "com.alwallet.gradle.Web3PluginDependency"
+    id "com.alwallet.gradle.DBPluginDependency"
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+dependencies {
+    implementation project(path: ':core')
+
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'com.google.cloud:spring-cloud-gcp-starter:4.8.3'
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
+    implementation 'org.liquibase:liquibase-core'
+}

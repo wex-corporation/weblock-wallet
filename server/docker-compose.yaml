@@ -1,0 +1,41 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:16.0
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "alwallet"
+      POSTGRES_PASSWORD: "alwallet"
+      POSTGRES_DB: "alwallet"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 10s
+  server:
+    build:
+      context: ./wallet
+      dockerfile: Dockerfile-local
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=local,docker-compose
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:8881/actuator/health" ]
+      interval: 10s
+      timeout: 20s
+      retries: 500
+      start_period: 10s

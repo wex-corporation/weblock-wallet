@@ -1,0 +1,55 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-nft-metadata-table
+      author: lukek4159
+      changes:
+        - createTable:
+            tableName: nft_metadata
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                  defaultValueComputed: uuid_generate_v4()
+              - column:
+                  name: nft_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+              - column:
+                  name: token_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: image_url
+                  type: TEXT
+              - column:
+                  name: metadata
+                  type: TEXT
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: deleted_at
+                  type: TIMESTAMP WITH TIME ZONE
+        - addForeignKeyConstraint:
+            constraintName: fk_nft_metadata_nfts
+            referencedTableName: nfts
+            referencedColumnNames: id
+            baseTableName: nft_metadata
+            baseColumnNames: nft_id
+        - addUniqueConstraint:
+            tableName: nft_metadata
+            columnNames: nft_id, token_id
+            constraintName: uq_nft_metadata_nft_id_token_id

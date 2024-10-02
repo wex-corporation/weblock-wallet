@@ -1,0 +1,24 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-extensions
+      author: lukek4159
+      changes:
+        - sql: CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+  - include:
+      file: classpath:db/organization/organizationChangeLog.yaml
+  - include:
+      file: classpath:db/user/userChangeLog.yaml
+  - include:
+      file: classpath:db/wallet/walletChangeLog.yaml
+  - include:
+      file: classpath:db/blockchain/blockchainChangeLog.yaml
+  - include:
+      file: classpath:db/userBlockchains/userBlockchainsChangeLog.yaml
+  - include:
+      file: classpath:db/coin/coinChangeLog.yaml
+  - include:
+      file: classpath:db/userCoins/userCoinsChangeLog.yaml
+  - include:
+      file: classpath:db/nft/nftChangeLog.yaml
+  - include:
+      file: classpath:db/nftMetadata/nftMetadataChangeLog.yaml

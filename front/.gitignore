@@ -1,0 +1,7 @@
+node_modules/
+.idea/
+.vscode
+packages/*/dist
+packages/*/build
+.DS_Store
+html-report/

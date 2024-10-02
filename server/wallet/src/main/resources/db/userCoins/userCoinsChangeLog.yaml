@@ -1,0 +1,44 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-user-coins-table
+      author: lukek4159
+      changes:
+        - createTable:
+            tableName: user_coins
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                  defaultValueComputed: uuid_generate_v4()
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: coin_ids
+                  type: TEXT
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: deleted_at
+                  type: TIMESTAMP WITH TIME ZONE
+        - addForeignKeyConstraint:
+            constraintName: fk_user_coins_users
+            referencedTableName: users
+            referencedColumnNames: id
+            baseTableName: user_coins
+            baseColumnNames: user_id
+        - addUniqueConstraint:
+            tableName: user_coins
+            columnNames: user_id
+            constraintName: uq_user_coins_user_id

@@ -1,0 +1,94 @@
+.main-page {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+}
+
+.main-page h2 {
+    color: #333;
+}
+
+.main-page p {
+    color: #666;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.button-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.function-button {
+    padding: 10px 20px;
+    background-color: cadetblue;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: auto;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.function-button:disabled {
+    background-color: cadetblue;
+    color: gray;
+    cursor: not-allowed;
+}
+
+.input-group {
+    width: 100%;
+    min-width: 400px;
+    max-width: 500px;
+    margin-bottom: 10px;
+}
+
+.text-group {
+    width: 100%;
+    min-width: 400px;
+    max-width: 500px;
+    margin-bottom: 10px;
+}
+
+.input-group input {
+    width: 100%;
+    margin-right: 10px;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.text-group input {
+    width: 100%;
+    margin-right: 10px;
+    padding: 5px;
+    box-sizing: border-box;
+    user-input: disabled;
+}
+
+.dropdown-group {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.dropdown-group select {
+    width: 100%;
+    margin-right: 10px;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.container {
+    margin-bottom: 20px;
+}

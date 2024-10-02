@@ -1,0 +1,24 @@
+plugins {
+    id "java-gradle-plugin"
+}
+
+gradlePlugin {
+    plugins {
+        BasePluginDependency {
+            id = "com.alwallet.gradle.BasePluginDependency"
+            implementationClass = "com.alwallet.gradle.BasePluginDependency"
+        }
+        WebPluginDependency {
+            id = "com.alwallet.gradle.WebPluginDependency"
+            implementationClass = "com.alwallet.gradle.WebPluginDependency"
+        }
+        Web3PluginDependency {
+            id = "com.alwallet.gradle.Web3PluginDependency"
+            implementationClass = "com.alwallet.gradle.Web3PluginDependency"
+        }
+        DBPluginDependency {
+            id = "com.alwallet.gradle.DBPluginDependency"
+            implementationClass = "com.alwallet.gradle.DBPluginDependency"
+        }
+    }
+}

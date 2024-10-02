@@ -1,0 +1,17 @@
+{
+  "name": "@alwallet/sdk",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@alwallet/core": "workspace:^",
+    "typescript": "^5.2.2",
+    "@tsconfig/node18": "^18.2.2"
+  }
+}

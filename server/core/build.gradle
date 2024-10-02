@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+    id "com.diffplug.spotless"
+    id "com.alwallet.gradle.BasePluginDependency"
+    id "com.alwallet.gradle.WebPluginDependency"
+    id "com.alwallet.gradle.Web3PluginDependency"
+    id "com.alwallet.gradle.DBPluginDependency"
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+bootJar {
+    enabled = false
+}
+
+dependencies {
+}

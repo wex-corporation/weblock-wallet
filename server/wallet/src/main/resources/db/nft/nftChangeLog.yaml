@@ -1,0 +1,61 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-nfts-table
+      author: lukek4159
+      changes:
+        - createTable:
+            tableName: nfts
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                  defaultValueComputed: uuid_generate_v4()
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: symbol
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: blockchain_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: contract_address
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: deleted_at
+                  type: TIMESTAMP WITH TIME ZONE
+        - addForeignKeyConstraint:
+            constraintName: fk_nfts_blockchains
+            referencedTableName: blockchains
+            referencedColumnNames: id
+            baseTableName: nfts
+            baseColumnNames: blockchain_id
+        - addUniqueConstraint:
+            tableName: nfts
+            columnNames: blockchain_id, contract_address
+            constraintName: uq_nfts_blockchain_id_contract_address

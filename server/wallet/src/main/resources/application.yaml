@@ -1,0 +1,118 @@
+server:
+  port: 8080
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: 400
+app:
+  filters:
+    user-validation-exclude-apis:
+      - path: /actuator/health
+        method: GET
+      - path: /v1/users/sign-in
+        method: POST
+  cors:
+    allowed-origins: http://localhost:3000,http://localhost:3001
+
+  name: al-wallet
+  auth:
+    # EdDSA-ed25519 PrivateKey base64url encoded
+    secret-key: ${AUTH_SECRET_KEY}
+    public-key: ${AUTH_PUBLIC_KEY}
+  encryptor:
+    # AES Key: openssl rand -hex 32 | xxd -r -p | base64
+    secret-key: ${DB_SECRET_KEY}
+
+spring:
+  main:
+    web-application-type: reactive
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST}/alwallet
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    pool:
+      initial-size: 15
+      max-size: 60
+  liquibase:
+    url: jdbc:postgresql://${DB_HOST}/alwallet
+    user: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    change-log: classpath:db/masterChangeLog.yaml
+  datasource:
+    driver-class-name: org.postgresql.Driver
+  cloud:
+    gcp:
+      project-id: al-tech-704e2
+      credentials:
+        encoded-key: ${GCP_CREDENTIALS}
+      logging:
+        enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+---
+
+app:
+  auth:
+    # EdDSA-ed25519 PrivateKey base64url encoded
+    # publicKey: MCowBQYDK2VwAyEAa-TJ-rXBwz5JW5pXMrqPSUHOTzUKC7HVafU5dR_XJdw=
+    secret-key: MC4CAQAwBQYDK2VwBCIEIA2F9RfGhEkaf6-zD19jC0IPKWKPV_95OpLTN8hdHzHy
+    public-key: MCowBQYDK2VwAyEAa-TJ-rXBwz5JW5pXMrqPSUHOTzUKC7HVafU5dR_XJdw=
+  encryptor:
+    # AES Key: openssl rand -hex 32 | xxd -r -p | base64
+    secret-key: sYP932c7ry4OPY4rybZoC62DZaUuVQwhNQHKP1QXGyI=
+
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/alwallet
+    username: alwallet
+    password: wdpdldpfwlrkqw13
+  liquibase:
+    url: jdbc:postgresql://localhost:5432/alwallet
+    user: alwallet
+    password: alwallet
+    change-log: classpath:db/masterChangeLog.yaml
+  config:
+    activate:
+      on-profile: local
+  main:
+    web-application-type: reactive
+  cloud:
+    gcp:
+      project-id: al-tech-704e2
+      credentials:
+        encoded-key: ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiAiYWwtdGVjaC03MDRlMiIsCiAgInByaXZhdGVfa2V5X2lkIjogIjk3MDQ2ZjMzMmE1NTZjMzZhMjYyNjZjNDJjNDZlNzVlMTAyMWYyNmQiLAogICJwcml2YXRlX2tleSI6ICItLS0tLUJFR0lOIFBSSVZBVEUgS0VZLS0tLS0KTUlJRXZnSUJBREFOQmdrcWhraUc5dzBCQVFFRkFBU0NCS2d3Z2dTa0FnRUFBb0lCQVFDWlBXbnBEKy9QUjFIcwpjNFRNSjFaMjFZdnZ5MER6V2ZnNjZSS2ZndUVLRzRHS3pOOXZrQld5YU9VNkV0aWtOL3hQRmRmTnUrTkdVZ1lYCklNVlk1bkZ0bnFGaXM5N0ZnSjZmenl0ZTlxcDVGem5xczZNeVF3THQ1N00rRHA0STRXK2drWXpTeXB2SU5WNU0KaWRrMVVVZmV2OSszTEpEYWdCbWJ2T3ltYVBadlRFK0VmK1lXRlI3VEJ5a1NkUldEZkVqa0ZlNC9VbFErdDE5Wgp0a1NMSzJzMzdkb1NDRWZVNFRvVnBCRlhtemxCVzQ5bk8rVzc2UlhyT0hVODNDV1Y5TnV0MmR2cDJuMHhjRHJICjJ3MC83US9wdlk4SXpoQ3o2SzVVQ1BKNEg3RmI1K3k3U0hqaFJueGt6RUx1b3ZrejlGa1hkcUhRVEFLL0VGN2kKSVYzc0ZObWRBZ01CQUFFQ2dnRUFJUk80MGdJcTR5elRvZXlnZ0ZuSVo5KzU5RUdGREZKQ0N1Tkc3Zy8zNS9EZQpnam10VEIxSGxhcGZPbTBaZnI4SDh3RTF3eGFZblJQMDlSYVJpcG81Wnk1THl5eWt2RENDYk4vd3ptK0RoaDVOCmxkdi9NTWoycjZncEVFN2k3V3RONTFTcmwwOTlGMWJ2dXlreExibFZBRitkMkdIaUJZd0xtd3FKY1hVc0pvTTIKaW1FS2x1UGszekpNR2xHVlZFTjRZSW9SNEVtSG80d242ZjNuakYxNFpZeTZ4MS9yekwxM1l3RE0rdlVBNUxOdwpSbDdDSDVCblVLTUtXRUlDQ09OVWF4MXBZNFNwUkZtOXlNcVFEdGhHUlVuTkZuMmRJSHlwYmVmUDNvZWRua3BpCnQzL1hLQ2I4UGwrM0lHQ2VtZ0hnZVR2ZDRjNW5Fc1kza3ViQVN1V3ZXUUtCZ1FES3RYb1g2ejJKdmx3ZllQZTYKK3hhck5ONmFuZWJYSW55MWxHQWViUGV6eFpBVWkwWVdtMDhBL0puVW9pNTB0ZHZ1RWdIRzZmUVA4dHBabHB6egp1a0xkeUxkRUVTTmpEZ1hnSExyOThlaFgrKytibFI1aHZSYXY5aWFRWFNFY3NhSzkwdDdxMVVMa01DZnNKT1dxCjBNTElWNTVNNlNGWTVEWU1kSUN3WWNScFdRS0JnUURCaHA3MmFUc09FL1JyUVVBeGVvK201NDU1QkMzNzV6YlMKcGdjdHlCUmk4dEdWbGlESThjYmh6ZmVUUTlHZE9NQURtZTR4QUYvbE9CRGp6VjJQYVNuMmJtSWlrRFNjWkxlVgpjMHVWd3BtbTUwRzQzaUc1L2dOVXlCa3N5bjhJWUgxMFpySEIvQWc0V3NwY01DOU9lY1VFZGthalJzc1kzKy92CnlrcFFBNWJsNVFLQmdRQzhPSmdlMzVKcmRUTnErNG5ydDd2THl6S3JWTlVFakFSS1FuU2hxOEt3elZCRWt6SEkKU2Z1b3llUTR1VUx6b2UyTitIQm45OUprZ0xaWW0yNHZMWk5yQmpXTllYQi9TSVVTSFB0UVV5L1BpcUpvejZTLwpVbWxmaCtzMC94U0E1VHhja0JIbThaREQreWNHc1JnRWJRV0FLME5VM04vVy8waGtka1VNQWl2ek9RS0JnUUNoCllWeVFDV0tvczdVLzk1TExiL1A0NytIY1FzTUI3R2JJTkpHSitPNGZNWFBhdE8yMEJBS2diRHlIUHFlKzN3TW8KUGFYbWtQUm0xbUVuUmlzK0d5bFdDZWlsLy9FUGRlR3RyQTZjM1VGNmNDQmJSRW1GcXpBbDlCTWlTZDZ6SXB1YgpoTU81Q3kzanFMcFZOQTFPK0xaMXFSZndzbWxNM2ZsYzBpazBIam9valFLQmdGaStJMmYxZWtqYTVXTjdyZGlKCnI0UzRhZnVKbHU3OUUvcklETDVPZElzQXpZWWV4bFJRQjM5TDFmcWhDWitEd2tneU5ldGhtOWZZRXpRTzNCTkUKWWxaQnk5OVIyTGM2N2U4cXFYZ3h5c2crWGx4cTZRY0h5dmJqTHljd2R4aFdsYWtmaEtkYjBNdk9PblY1aDYzNwpQd3NNOUJoUmNjbWVnTFBPLzVqRVJDL1kKLS0tLS1FTkQgUFJJVkFURSBLRVktLS0tLQoiLAogICJjbGllbnRfZW1haWwiOiAiZmlyZWJhc2UtYWRtaW5zZGstNmhucWlAYWwtdGVjaC03MDRlMi5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsCiAgImNsaWVudF9pZCI6ICIxMTc1NDIzNTc5NzM2MTk3NzA4OTciLAogICJhdXRoX3VyaSI6ICJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20vby9vYXV0aDIvYXV0aCIsCiAgInRva2VuX3VyaSI6ICJodHRwczovL29hdXRoMi5nb29nbGVhcGlzLmNvbS90b2tlbiIsCiAgImF1dGhfcHJvdmlkZXJfeDUwOV9jZXJ0X3VybCI6ICJodHRwczovL3d3dy5nb29nbGVhcGlzLmNvbS9vYXV0aDIvdjEvY2VydHMiLAogICJjbGllbnRfeDUwOV9jZXJ0X3VybCI6ICJodHRwczovL3d3dy5nb29nbGVhcGlzLmNvbS9yb2JvdC92MS9tZXRhZGF0YS94NTA5L2ZpcmViYXNlLWFkbWluc2RrLTZobnFpJTQwYWwtdGVjaC03MDRlMi5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsCiAgInVuaXZlcnNlX2RvbWFpbiI6ICJnb29nbGVhcGlzLmNvbSIKfQo=
+      logging:
+        enabled: true
+
+logging:
+  level:
+    root: info
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+---
+
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://postgres:5432/alwallet
+    username: alwallet
+    password: alwallet
+  liquibase:
+    url: jdbc:postgresql://postgres:5432/alwallet
+    user: alwallet
+    password: alwallet
+    change-log: classpath:db/masterChangeLog.yaml
+  config:
+    activate:
+      on-profile: docker-compose
+

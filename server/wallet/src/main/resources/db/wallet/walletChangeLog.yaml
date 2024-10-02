@@ -1,0 +1,58 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-wallets-table
+      author: lukek4159
+      changes:
+        - createTable:
+            tableName: wallets
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                  defaultValueComputed: uuid_generate_v4()
+              - column:
+                  name: address
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: public_key
+                  type: TEXT
+              - column:
+                  name: share_1
+                  type: TEXT
+              - column:
+                  name: encrypted_share_3
+                  type: TEXT
+              - column:
+                  name: user_id
+                  type: UUID
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: deleted_at
+                  type: TIMESTAMP WITH TIME ZONE
+        - addForeignKeyConstraint:
+            constraintName: fk_wallets_users
+            referencedTableName: users
+            referencedColumnNames: id
+            baseTableName: wallets
+            baseColumnNames: user_id
+        - createIndex:
+            tableName: wallets
+            columns:
+              - column:
+                  name: id
+              - column:
+                  name: user_id
+            indexName: idx_wallets_id_user_id
