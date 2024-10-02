@@ -1,2 +1,2 @@
-# ALWallet
-AL Wallet
+# Wallet
+Wallet
