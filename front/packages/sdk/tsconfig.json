@@ -1,7 +1,7 @@
 {
   "extends": "@tsconfig/node18/tsconfig.json",
   "compilerOptions": {
-    "module": "commonjs",  // 더 넓은 호환성을 위해 commonjs로 설정
+    "module": "esnext",  // 더 넓은 호환성을 위해 commonjs로 설정
     "target": "es6",  // 최신 문법 지원
     "outDir": "./dist",  // 빌드 결과물 경로
     "rootDir": "./src",  // 소스 코드 루트 경로
