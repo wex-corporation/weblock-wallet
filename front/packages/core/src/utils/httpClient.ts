@@ -41,7 +41,7 @@ export interface Client {
   getOrgHost(): string
 }
 
-export class HttpClient {
+export class HttpClient implements Client {
   baseUrl: string
   customHeaders: HeadersInit
 
@@ -132,6 +132,10 @@ export class HttpClient {
   ): Promise<T | null> {
     return this.request('OPTIONS', path, null, config)
   }
+
+  getOrgHost(): string {
+    return this.baseUrl
+  }
 }
 
 export class WalletServerHttpClient extends HttpClient {
@@ -151,7 +155,7 @@ export class WalletServerHttpClient extends HttpClient {
     data: any = null,
     config: RequestConfig = {}
   ): Promise<T | null> {
-    const headers = new Headers(super.customHeaders)
+    const headers = new Headers(this.customHeaders)
     headers.set('X-Al-Api-Key', this.apiKey)
     headers.set('X-Al-Org-Host', this.orgHost)
 

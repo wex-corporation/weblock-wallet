@@ -1,18 +1,18 @@
 {
   "extends": "@tsconfig/node18/tsconfig.json",
   "compilerOptions": {
-    "module": "esnext",
-    "target": "es2017",
+    "module": "Node16",
+    "target": "es6",
     "outDir": "./dist",
-    "rootDir": "./",
+    "rootDir": "./src",
     "allowJs": true,
     "resolveJsonModule": true,
     "declaration": true,
     "skipLibCheck": true,
-    "typeRoots": ["typings", "node_modules/@types"],
+    "typeRoots": ["node_modules/@types"],
     "lib": ["es6", "dom"],
     "declarationMap": true
   },
   "include": ["./src"],
-  "exclude": ["node_modules", "./__tests__"]
+  "exclude": ["node_modules"]
 }

@@ -434,8 +434,8 @@ export class Wallets {
       decrypted += decipher.final('utf8')
       return decrypted
     } catch (e) {
-      console.error('Error during decrypting share:', e)
-      if (e.message == 'unable to decrypt data') {
+      const error = e as Error
+      if (error.message === 'unable to decrypt data') {
         throw new Error('Wrong password')
       }
       throw e
