@@ -1,18 +1,20 @@
 {
   "extends": "@tsconfig/node18/tsconfig.json",
   "compilerOptions": {
-    "module": "Node16",
-    "target": "es6",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "allowJs": true,
-    "resolveJsonModule": true,
-    "declaration": true,
-    "skipLibCheck": true,
-    "typeRoots": ["node_modules/@types"],
-    "lib": ["es6", "dom"],
-    "declarationMap": true
+    "module": "commonjs",  // 더 넓은 호환성을 위해 commonjs로 설정
+    "target": "es6",  // 최신 문법 지원
+    "outDir": "./dist",  // 빌드 결과물 경로
+    "rootDir": "./src",  // 소스 코드 루트 경로
+    "allowJs": true,  // JS 파일 허용 (유연한 개발 환경)
+    "resolveJsonModule": true,  // JSON import 지원
+    "declaration": true,  // 타입 선언 파일 생성 (*.d.ts)
+    "declarationMap": true,  // 타입 선언 맵 파일 생성 (디버깅 편리)
+    "skipLibCheck": true,  // 외부 라이브러리 타입 검사 생략
+    "esModuleInterop": true,  // ES 모듈과 CommonJS 모듈 간 호환성 확보
+    "moduleResolution": "node",  // 모듈 해석 방식을 Node.js 방식으로
+    "lib": ["es6", "dom"],  // 사용할 라이브러리 (DOM 및 ES6 지원)
+    "strict": true  // 엄격한 타입 검사 (강력 추천)
   },
-  "include": ["./src"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*"],  // src 디렉터리 내 모든 파일 포함
+  "exclude": ["node_modules", "dist"]  // 불필요한 경로 제외
 }
