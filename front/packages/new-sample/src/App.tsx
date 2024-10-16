@@ -1,52 +1,109 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AlWalletSDK } from '@alwallet/sdk'; // SDK 임포트
 
-const sdk = new AlWalletSDK({
-  baseUrl: 'local',
-  apiKey: 'MCowBQYDK2VwAyEASXmv-39yF5Wx1vX9lPuP7_9qgWVeGXMdAWr-TKalKMw=',
-  orgHost: 'http://localhost:5137'
-})
-
 function App() {
-  const [balance, setBalance] = useState<string | null>(null);
+  const sdk = new AlWalletSDK({
+    env: 'local', // 'local', 'dev', 'stage', 'prod' 중 선택
+    apiKey: 'MCowBQYDK2VwAyEASXmv-39yF5Wx1vX9lPuP7_9qgWVeGXMdAWr-TKalKMw=', // 임시 API 키
+    orgHost: 'http://localhost:3000' // 조직 호스트 설정
+  });
 
-  const handleCreateWallet = async () => {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [userPassword, setUserPassword] = useState<string>(''); // 비밀번호 입력값
+  const [walletRecovered, setWalletRecovered] = useState<boolean>(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 컴포넌트가 마운트될 때 로그인 상태를 확인합니다.
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const loggedIn = await sdk.auth.isLoggedIn();
+        setIsLoggedIn(loggedIn);
+      } catch (e) {
+        setError(`로그인 상태 확인 오류: ${(e as Error).message}`);
+      }
+    };
+    checkLoginStatus();
+  }, [sdk]);
+
+  // Google 로그인 핸들러
+  const handleGoogleLogin = async () => {
     try {
-      await sdk.createWallet('user-password'); // 지갑 생성
-      alert('Wallet created successfully!');
-    } catch (error) {
-      console.error('Failed to create wallet:', error);
+      await sdk.auth.signInWithGoogle();
+      setIsLoggedIn(true);
+      setError(null); // 에러 초기화
+      setIsPasswordModalOpen(true); // 비밀번호 모달 열기
+    } catch (e) {
+      setError(`로그인 실패: ${(e as Error).message}`);
     }
   };
 
-  const handleGetBalance = async () => {
+  // 지갑 복구 핸들러
+  const handleWalletRecovery = async () => {
     try {
-      const balance = await sdk.getBalance(1); // Chain ID 1 (예: Ethereum Mainnet)
-      setBalance(balance);
-    } catch (error) {
-      console.error('Failed to get balance:', error);
+      if (!userPassword) {
+        setError('비밀번호를 입력해주세요');
+        return;
+      }
+      await sdk.wallets.retrieveWallet(userPassword); // 비밀번호로 지갑 복구
+      setWalletRecovered(true);
+      setError(null); // 에러 초기화
+      setIsPasswordModalOpen(false); // 비밀번호 모달 닫기
+    } catch (e) {
+      setError(`지갑 복구 실패: ${(e as Error).message}`);
+    }
+  };
+
+  // 로그아웃 핸들러
+  const handleLogout = async () => {
+    try {
+      await sdk.auth.signOut();
+      setIsLoggedIn(false);
+      setWalletRecovered(false);
+      setError(null); // 에러 초기화
+    } catch (e) {
+      setError(`로그아웃 실패: ${(e as Error).message}`);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-4xl font-bold mb-4">AlWallet SDK Demo</h1>
+    <div className="App">
+      <h1>AlWallet SDK Example</h1>
 
-      <button
-        onClick={handleCreateWallet}
-        className="px-4 py-2 bg-blue-500 text-white rounded-md mb-2"
-      >
-        Create Wallet
-      </button>
+      {/* 로그인 상태에 따라 UI 변경 */}
+      {isLoggedIn === null ? (
+        <p>로그인 상태 확인 중...</p>
+      ) : isLoggedIn ? (
+        <div>
+          <p>로그인 되었습니다!</p>
+          {walletRecovered ? (
+            <p>지갑이 복구되었습니다! 🎉</p>
+          ) : (
+            <div>
+              {isPasswordModalOpen && (
+                <div>
+                  <label>
+                    비밀번호: {' '}
+                    <input
+                      type="password"
+                      value={userPassword}
+                      onChange={(e) => setUserPassword(e.target.value)}
+                    />
+                  </label>
+                  <button onClick={handleWalletRecovery}>지갑 복구</button>
+                </div>
+              )}
+            </div>
+          )}
+          <button onClick={handleLogout}>로그아웃</button>
+        </div>
+      ) : (
+        <button onClick={handleGoogleLogin}>Google 로그인</button>
+      )}
 
-      <button
-        onClick={handleGetBalance}
-        className="px-4 py-2 bg-green-500 text-white rounded-md"
-      >
-        Get Balance
-      </button>
-
-      {balance && <p className="mt-4 text-xl">Balance: {balance}</p>}
+      {/* 에러가 발생한 경우 */}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
 }
