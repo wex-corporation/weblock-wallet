@@ -1,0 +1,114 @@
+import React, { useEffect, useState } from 'react'
+import { AlWalletSDK } from '@alwallet/sdk'
+import { useRecoilState, useRecoilValue } from 'recoil'
+import { loginState } from '../atom/LoginAtom.ts'
+import BlockchainDropdown from '../components/dropdown/BlockchainDropdown.tsx'
+import CoinDropdown from '../components/dropdown/CoinDropdown.tsx'
+import RegisterTokenButton from '../components/button/RegisterTokenButton.tsx'
+import { useNavigate } from 'react-router-dom'
+
+const sdk = new AlWalletSDK({
+  env: 'local', // 'local', 'dev', 'stage', 'prod' 중 선택
+  apiKey: 'MCowBQYDK2VwAyEASXmv-39yF5Wx1vX9lPuP7_9qgWVeGXMdAWr-TKalKMw=', // 임시 API 키
+  orgHost: 'http://localhost:3000' // 조직 호스트 설정
+})
+
+export default function WalletPage() {
+  const [balance, setBalance] = useState<string | null>(null)
+  const isLoggedIn = useRecoilValue(loginState)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/')
+    }
+  }, [])
+
+  // const handleCreateWallet = async () => {
+  //   try {
+  //     await sdk.createWallet('user-password') // 지갑 생성
+  //     alert('Wallet created successfully!')
+  //   } catch (error) {
+  //     console.error('Failed to create wallet:', error)
+  //   }
+  // }
+  //
+  // const handleGetBalance = async () => {
+  //   try {
+  //     const balance = await sdk.getBalance(1) // Chain ID 1 (예: Ethereum Mainnet)
+  //     setBalance(balance)
+  //   } catch (error) {
+  //     console.error('Failed to get balance:', error)
+  //   }
+  // }
+
+  return (
+    <>
+      {isLoggedIn && (
+        <>
+          <h3 className="text-xl font-bold text-center">
+            Wallet Address : {''}
+          </h3>
+          {balance && <p className="mt-4 text-xl">Balance: {balance}</p>}
+
+          <div className="flex flex-wrap gap-16">
+            <div className="flex flex-col gap-2 w-full items-center">
+              <BlockchainDropdown core={sdk} />
+              <button
+                // onClick={handleGetBalance}
+                className="min-w-[300px] px-4 py-2 bg-green-500 text-white rounded-md"
+              >
+                Get Balance
+              </button>
+            </div>
+
+            <RegisterTokenButton core={sdk} />
+
+            <div className="flex flex-col gap-8 w-full items-center">
+              <CoinDropdown core={sdk} />
+              <div className="flex flex-col gap-2 w-full items-center">
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm text-gray-400">To Address</label>
+                  <input
+                    type="text"
+                    placeholder="To Address"
+                    className="min-w-[300px] w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm text-gray-400">Amount</label>
+                  <input
+                    type="text"
+                    placeholder="Amount"
+                    className="min-w-[300px] w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <button
+                  // onClick={handleCreateWallet}
+                  className="min-w-[300px] px-4 py-2 bg-blue-500 text-white rounded-md mb-2"
+                >
+                  Send Transaction
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/*<div className="flex flex-col gap-4">*/}
+          {/*  <button*/}
+          {/*    onClick={handleCreateWallet}*/}
+          {/*    className="px-4 py-2 bg-blue-500 text-white rounded-md mb-2"*/}
+          {/*  >*/}
+          {/*    Create Wallet*/}
+          {/*  </button>*/}
+          {/*  <button*/}
+          {/*    onClick={handleGetBalance}*/}
+          {/*    className="px-4 py-2 bg-green-500 text-white rounded-md"*/}
+          {/*  >*/}
+          {/*    Get Balance*/}
+          {/*  </button>*/}
+          {/*</div>*/}
+        </>
+      )}
+    </>
+  )
+}
