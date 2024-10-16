@@ -1,27 +1,51 @@
+// src/auth/auth.ts
 import { Users } from '@alwallet/core/src/module/users'
 import { AvailableProviders } from '@alwallet/core/src/infra/clients/users'
 import { Firebase, FirebaseConfig } from '@alwallet/core/src/auth/firebase'
-import { Client } from '@alwallet/core/src/utils/httpClient'
+import { WalletServerHttpClient } from '@alwallet/core/src/utils/httpClient' // WalletServerHttpClient import
+import { SDKError } from '../utils/errors'
 
 export class Auth {
   private users: Users
 
-  constructor(client: Client, firebaseConfig: FirebaseConfig) {
+  constructor(client: WalletServerHttpClient, firebaseConfig: FirebaseConfig) {
     const firebase = new Firebase(firebaseConfig)
-    this.users = new Users(client, firebase) // Users 모듈 초기화
+    this.users = new Users(client, firebase)
   }
 
   async signInWithGoogle(): Promise<void> {
-    console.log('Google sign-in initiated.')
-    await this.users.signIn(AvailableProviders.google) // Users 모듈 통해 로그인
+    try {
+      console.log('Google 로그인 시작')
+      await this.users.signIn(AvailableProviders.google)
+    } catch (error) {
+      console.error('Google 로그인 실패:', error)
+
+      // 'error'를 명시적으로 Error 타입으로 단언
+      const err = error as Error
+      throw new SDKError(`Google 로그인 중 오류가 발생했습니다: ${err.message}`)
+    }
   }
 
   async signOut(): Promise<void> {
-    console.log('User signed out.')
-    await this.users.signOut() // Users 모듈 통해 로그아웃
+    try {
+      console.log('로그아웃 중...')
+      await this.users.signOut()
+    } catch (error) {
+      console.error('로그아웃 실패:', error)
+      const err = error as Error
+      throw new SDKError(`로그아웃 중 오류가 발생했습니다: ${err.message}`)
+    }
   }
 
   async isLoggedIn(): Promise<boolean> {
-    return await this.users.isLoggedIn() // 로그인 상태 확인
+    try {
+      return await this.users.isLoggedIn()
+    } catch (error) {
+      console.error('로그인 상태 확인 실패:', error)
+      const err = error as Error
+      throw new SDKError(
+        `로그인 상태 확인 중 오류가 발생했습니다: ${err.message}`
+      )
+    }
   }
 }

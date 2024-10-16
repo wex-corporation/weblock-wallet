@@ -1,36 +1,23 @@
-export const getBaseUrls = (env: string): string => {
-  switch (env) {
-    case 'local':
-      return 'http://localhost:8080'
-    case 'dev':
-      return 'https://dev.alwallet.io'
-    case 'stage':
-      return 'https://staging.alwallet.io'
-    case 'prod':
-      return 'https://wallet.alwallet.io'
-    default:
-      throw new Error('Invalid environment')
-  }
-}
+// src/utils/config.ts
+import { WalletServerHttpClient } from '@alwallet/core/src/utils/httpClient'
+import { getBaseUrls, getFirebaseConfig } from './env' // 환경별 설정 가져오기
+import { FirebaseConfig } from '@alwallet/core/src/auth/firebase'
 
-export const getFirebaseConfig = (env: string) => {
-  const config = {
-    apiKey: 'AIzaSyBiaHmiqmnUVtuCfKJ3yc9g1rdoSKCJYlE',
-    authDomain: 'al-tech-704e2.firebaseapp.com',
-    projectId: 'al-tech-704e2',
-    storageBucket: 'al-tech-704e2.appspot.com',
-    messagingSenderId: '79434562951',
-    appId: '1:79434562951:web:25571fdadf346b9ad9e722',
-    measurementId: 'G-KDKWTTVWD7'
-  }
+/**
+ * 환경별 HttpClient와 Firebase 설정을 생성하는 함수
+ * @param env 'local' | 'dev' | 'stage' | 'prod'
+ * @param apiKey API 키
+ * @param orgHost 조직 호스트 주소
+ */
+export const createHttpClient = (
+  env: string,
+  apiKey: string,
+  orgHost: string
+): { client: WalletServerHttpClient; firebaseConfig: FirebaseConfig } => {
+  const baseUrl = getBaseUrls(env)
+  const firebaseConfig = getFirebaseConfig(env)
 
-  switch (env) {
-    case 'local':
-    case 'dev':
-    case 'stage':
-    case 'prod':
-      return config
-    default:
-      throw new Error('Invalid environment')
-  }
+  const client = new WalletServerHttpClient({ baseUrl }, apiKey, orgHost) // WalletServerHttpClient 생성
+
+  return { client, firebaseConfig }
 }
