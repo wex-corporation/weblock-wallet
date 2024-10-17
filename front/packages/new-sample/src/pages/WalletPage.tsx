@@ -7,18 +7,22 @@ import CoinDropdown from '../components/dropdown/CoinDropdown.tsx'
 import RegisterTokenButton from '../components/button/RegisterTokenButton.tsx'
 import { useNavigate } from 'react-router-dom'
 import { errorState } from '../atom/ErrorAtom.ts'
+import { balanceState } from '../atom/BalanceAtom.ts'
 
 const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
-  const [balance, setBalance] = useState<string | null>(null)
+  const [balance, setBalance] = useRecoilState(balanceState)
   const isLoggedIn = useRecoilValue(loginState)
   const navigate = useNavigate()
   const setError = useSetRecoilState(errorState)
   const setIsLoggedIn = useSetRecoilState(loginState)
+  const [walletAddress, setWalletAddress] = useState('')
 
   useEffect(() => {
     if (!isLoggedIn) {
       navigate('/')
     }
+    const address = sdk.wallets.getWalletAddress()
+    setWalletAddress(address!)
   }, [])
 
   // const handleCreateWallet = async () => {
@@ -58,8 +62,10 @@ const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
 
     try {
       const chainId = 1 // 예시로 Ethereum 메인넷 체인 ID
-      const balance = await sdk.wallets.getBalance(chainId)
-      setBalance(balance)
+      const fetchedBalance = await sdk.wallets.getBalance(chainId)
+      console.log('Balance:', fetchedBalance)
+      // setBalance(Numbers.weiToEth(Numbers.hexToDecimal(fetchedBalance)))
+      setBalance(fetchedBalance)
       setError('')
     } catch (e) {
       setError(`잔액 조회 실패: ${(e as Error).message}`)
@@ -70,10 +76,14 @@ const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
     <>
       {isLoggedIn && (
         <>
-          <h3 className="text-xl font-bold text-center">
-            Wallet Address : {''}
-          </h3>
-          {balance && <p className="mt-4 text-xl">Balance: {balance} ETH</p>}
+          <div className="flex flex-col gap-2">
+            <h3 className="text-xl font-bold text-center">
+              Wallet Address : {walletAddress}
+            </h3>
+            {balance && (
+              <p className="text-xl font-bold">Balance : {balance} ETH</p>
+            )}
+          </div>
 
           <div className="flex flex-wrap gap-16">
             <div className="flex flex-col gap-2 w-full items-center">
