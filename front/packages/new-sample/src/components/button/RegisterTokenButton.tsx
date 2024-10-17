@@ -1,21 +1,16 @@
 import React, { useState } from 'react'
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
-import { loginState } from '../../atom/LoginAtom'
-import { Core, Numbers, TransactionStatus } from '@alwallet/core'
+import { useRecoilValue, useSetRecoilState } from 'recoil'
 import { blockchainState } from '../../atom/BlockchainAtom'
 import { errorState } from '../../atom/ErrorAtom'
-import { balanceState } from '../../atom/BalanceAtom'
 import { resultState } from '../../atom/ResultAtom'
-import { Time } from '@alwallet/core/dist/utils/time'
 import { txStatusState } from '../../atom/TxStatusAtom'
 import { walletState } from '../../atom/WalletAtom'
-import { coinState } from '../../atom/CoinAtom'
-import CoinDropdown from '../dropdown/CoinDropdown'
 import { coinsState } from '../../atom/CoinsAtom'
+import { AlWalletSDK } from '@alwallet/sdk'
 
-const RegisterTokenButton: React.FC<{ core: Core }> = ({ core }) => {
+const RegisterTokenButton: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const [tokenAddress, setTokenAddress] = useState('')
-  const isLoggedIn = useRecoilValue(loginState)
+  // const isLoggedIn = useRecoilValue(loginState)
   const selectedBlockchain = useRecoilValue(blockchainState)
   const wallet = useRecoilValue(walletState)
   const setCoins = useSetRecoilState(coinsState)
@@ -24,18 +19,22 @@ const RegisterTokenButton: React.FC<{ core: Core }> = ({ core }) => {
   const setError = useSetRecoilState(errorState)
 
   const handleRegisterToken = async () => {
+    if (!tokenAddress) return
+
     try {
       setResult('')
       setError('')
       setStatus(null)
 
       const chainId = selectedBlockchain!.chainId
-      const coin = await core.registerToken(chainId, tokenAddress)
-      setCoins(await core.getCoins(chainId))
+      const coin = await sdk.tokens.registerToken(chainId, tokenAddress)
+      setCoins(await sdk.tokens.getCoins(chainId))
       setResult(`Token '${coin.name}' registered successfully`)
       // TODO: update with token balance
-      const fetchedBalance = await core.getBalance(selectedBlockchain!.chainId)
-    } catch (e) {
+      // const fetchedBalance = await sdk.wallets.getBalance(
+      //   selectedBlockchain!.chainId
+      // )
+    } catch (e: any) {
       setError(e.message)
     }
   }

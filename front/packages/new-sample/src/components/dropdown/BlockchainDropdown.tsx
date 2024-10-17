@@ -1,97 +1,51 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
 // import { Blockchain, Core } from '@alwallet/sdk'
 import { blockchainState } from '../../atom/BlockchainAtom'
 import { blockchainsState } from '../../atom/BlockchainsAtom'
 import { coinsState } from '../../atom/CoinsAtom'
 
-const BlockchainDropdown: React.FC<{ core: any }> = ({ core }) => {
+const BlockchainDropdown: React.FC<{ sdk: any }> = ({ sdk }) => {
   const blockchains = useRecoilValue(blockchainsState)
   const [selectedBlockchain, setSelectedBlockchain] =
     useRecoilState(blockchainState)
   const setCoins = useSetRecoilState(coinsState)
 
-  // useEffect(() => {
-  //   async function fetchData() {
-  //     if (blockchains.length > 0 && !selectedBlockchain) {
-  //       setSelectedBlockchain(blockchains[0])
-  //       const coins = await core.getCoins(blockchains[0].chainId)
-  //       setCoins(coins)
-  //     }
-  //   }
-  //
-  //   fetchData()
-  // }, [blockchains, selectedBlockchain, setSelectedBlockchain])
+  useEffect(() => {
+    async function fetchData() {
+      if (blockchains.length > 0 && !selectedBlockchain) {
+        setSelectedBlockchain(blockchains[0])
+        const coins = await sdk.tokens.getCoins(blockchains[0].chainId)
+        setCoins(coins)
+      }
+    }
 
-  // const handleSelectBlockchain = async (
-  //   event: React.ChangeEvent<HTMLSelectElement>
-  // ) => {
-  //   const selected = blockchains.find(
-  //     (blockchain) => blockchain.name === event.target.value
-  //   )
-  //   if (selected) {
-  //     setSelectedBlockchain(selected)
-  //     setCoins(await core.getCoins(selected.chainId))
-  //   }
-  // }
+    fetchData()
+  }, [blockchains, selectedBlockchain, setSelectedBlockchain])
 
-  // if (blockchains.length == 0) {
-  //   return (
-  //     <div className="container">
-  //       <h3 className="text-xl font-bold text-center">Select Blockchain</h3>
-  //       <select onChange={handleSelectBlockchain} value={''}></select>
-  //     </div>
-  //   )
-  // }
+  const handleSelectBlockchain = async (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const selected = blockchains.find(
+      (blockchain) => blockchain.name === event.target.value
+    )
+    if (selected) {
+      setSelectedBlockchain(selected)
+      setCoins(await sdk.tokens.getCoins(selected.chainId))
+    }
+  }
   return (
     <div className="flex flex-col gap-2.5">
       <h3 className="text-xl font-bold text-center">Select Blockchain</h3>
       {blockchains.length == 0 ? (
         <select
           className="min-w-[300px] w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          // onChange={handleSelectBlockchain}
           value={''}
-        >
-          <option
-            key={'blockchain.name'}
-            value={'blockchain.name'}
-            className="px-4 py-2"
-          >
-            {'blockchain.name'}
-          </option>
-          <option
-            key={'blockchain.name'}
-            value={'blockchain.name'}
-            className="px-4 py-2"
-          >
-            {'blockchain.name'}
-          </option>
-          <option
-            key={'blockchain.name'}
-            value={'blockchain.name'}
-            className="px-4 py-2"
-          >
-            {'blockchain.name'}
-          </option>
-          <option
-            key={'blockchain.name'}
-            value={'blockchain.name'}
-            className="px-4 py-2"
-          >
-            {'blockchain.name'}
-          </option>
-          <option
-            key={'blockchain.name'}
-            value={'blockchain.name'}
-            className="px-4 py-2"
-          >
-            {'blockchain.name'}
-          </option>
-        </select>
+        ></select>
       ) : (
         <select
           className="min-w-[300px] w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          // onChange={handleSelectBlockchain}
+          onChange={handleSelectBlockchain}
           value={selectedBlockchain?.name}
         >
           {blockchains.map((blockchain) => (

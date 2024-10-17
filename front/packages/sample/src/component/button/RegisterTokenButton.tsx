@@ -31,6 +31,7 @@ const RegisterTokenButton: React.FC<{ core: Core }> = ({ core }) => {
 
       const chainId = selectedBlockchain!.chainId
       const coin = await core.registerToken(chainId, tokenAddress)
+      console.log('coin:', coin)
       setCoins(await core.getCoins(chainId))
       setResult(`Token '${coin.name}' registered successfully`)
       // TODO: update with token balance

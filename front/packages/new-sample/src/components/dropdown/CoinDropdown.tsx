@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
-import { Core } from '@alwallet/core'
 import { coinsState } from '../../atom/CoinsAtom'
 import { coinState } from '../../atom/CoinAtom'
 
-const CoinDropdown: React.FC<{ core: Core }> = ({ core }) => {
+const CoinDropdown = () => {
   const coins = useRecoilValue(coinsState)
   const [selectedCoin, setSelectedCoin] = useRecoilState(coinState)
 
@@ -23,43 +22,14 @@ const CoinDropdown: React.FC<{ core: Core }> = ({ core }) => {
     }
   }
 
-  // if (coins.length == 0) {
-  //   return (
-  //     <div className="container">
-  //       <h3>Select Coin</h3>
-  //       <select
-  //         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-  //         onChange={handleSelectCoin}
-  //         value={''}
-  //       ></select>
-  //     </div>
-  //   )
-  // }
   return (
     <div className="flex flex-col gap-2.5">
       <h3 className="text-xl font-bold text-center">Select Coin</h3>
       {coins.length == 0 ? (
         <select
           className="min-w-[300px] w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onChange={handleSelectCoin}
           value={''}
-        >
-          <option key={'coin.name'} value={'coin.name'} className="px-4 py-2">
-            {'coin.name'}
-          </option>
-          <option key={'coin.name'} value={'coin.name'} className="px-4 py-2">
-            {'coin.name'}
-          </option>
-          <option key={'coin.name'} value={'coin.name'} className="px-4 py-2">
-            {'coin.name'}
-          </option>
-          <option key={'coin.name'} value={'coin.name'} className="px-4 py-2">
-            {'coin.name'}
-          </option>
-          <option key={'coin.name'} value={'coin.name'} className="px-4 py-2">
-            {'coin.name'}
-          </option>
-        </select>
+        ></select>
       ) : (
         <select
           className="min-w-[300px] w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

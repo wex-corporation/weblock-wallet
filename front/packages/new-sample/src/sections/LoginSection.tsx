@@ -12,6 +12,8 @@ import { useNavigate } from 'react-router-dom'
 import { balanceState } from '../atom/BalanceAtom.ts'
 import { blockchainsState } from '../atom/BlockchainsAtom.ts'
 import { walletState } from '../atom/WalletAtom.ts'
+import { blockchainState } from '../atom/BlockchainAtom.ts'
+import { loadingState } from '../atom/LoadingAtom.ts'
 
 const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   // const [isLoggedIn, setIsLoggedIn] = useRecoilState(loginState)
@@ -26,6 +28,8 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const setBalance = useSetRecoilState(balanceState)
   const setBlockchains = useSetRecoilState(blockchainsState)
   const setWallet = useSetRecoilState(walletState)
+  const selectedBlockchain = useRecoilValue(blockchainState)
+  const setLoading = useSetRecoilState(loadingState)
 
   const navigate = useNavigate()
 
@@ -47,18 +51,20 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const handleLogin = async () => {
     try {
       // login
+      setLoading(true)
       await sdk.auth.signInWithGoogle()
       // setIsLoggedIn(true)
       setIsDoneLoginWithGoogle(true)
 
       // retrieve wallet without password
       // await core.retrieveWallet()
-      // setBlockchains(await core.getBlockchains())
+      // setBlockchains(await sdk.blockchains.getRegisteredBlockchains())
       setUserPassword('')
       setError('')
-      // setWallet(core.getWallet()!)
+      setWallet(sdk.wallets.getWallet()!)
       setIsPasswordModalOpen(true)
       setIsLoggedIn(true)
+      setLoading(false)
     } catch (e) {
       if (e instanceof Error) {
         if (
@@ -67,6 +73,7 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
         ) {
           // if password needed, open password modal
           setIsPasswordModalOpen(true)
+          setLoading(false)
           return
         }
         setError(e.message)
@@ -82,12 +89,8 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
       return
     }
     try {
+      setLoading(true)
       await sdk.wallets.retrieveWallet(userPassword) // 비밀번호로 지갑 복구
-      // 복구된 지갑의 잔액을 조회
-      const chainId = 1 // 예시로 Ethereum 메인넷(1) 체인 아이디 사용
-      const balance = await sdk.wallets.getBalance(chainId)
-      console.log('잔액 조회:', balance)
-      setBalance(balance)
       setBlockchains(await sdk.blockchains.getRegisteredBlockchains())
 
       setWalletRecovered(true)
@@ -95,6 +98,7 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
       setIsLoggedIn(true)
       setUserPassword('')
       setIsPasswordModalOpen(false) // 비밀번호 모달 닫기
+      setLoading(false)
       navigate('/wallet')
     } catch (e) {
       setError(`지갑 복구 실패: ${(e as Error).message}`)
@@ -111,8 +115,8 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
       if (isDoneLoginWithGoogle && userPassword) {
         // await core.retrieveWallet(userPassword)
         await handleWalletRecovery()
+        setWallet(sdk.wallets.getWallet()!)
         // setBlockchains(await core.getBlockchains())
-        // setWallet(core.getWallet()!)
 
         // setUserPassword('')
         // setError('')
