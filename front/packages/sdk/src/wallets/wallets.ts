@@ -1,6 +1,7 @@
 import { Wallets as CoreWallets } from '@alwallet/core/src/module/wallets'
 import { WalletServerHttpClient } from '@alwallet/core/src/utils/httpClient'
 import { SDKError } from '../utils/errors' // Error handling
+import { Wallet } from 'ethers'
 
 export class Wallets {
   private coreWallets: CoreWallets // CoreWallets 인스턴스 사용
@@ -41,8 +42,7 @@ export class Wallets {
    */
   public async getBalance(chainId: number): Promise<string> {
     try {
-      // CoreWallets의 wallet 객체에서 지갑 주소를 가져와 잔액을 조회
-      const walletAddress = this.coreWallets.wallet?.address
+      const walletAddress = this.getWalletAddress()
       if (!walletAddress) {
         throw new SDKError('지갑을 먼저 생성하거나 복구하세요.')
       }
@@ -58,5 +58,12 @@ export class Wallets {
    */
   public getWalletAddress(): string | null {
     return this.coreWallets.wallet?.address || null
+  }
+
+  /**
+   * 전체 지갑 객체 반환
+   */
+  public getWallet(): Wallet | null {
+    return this.coreWallets.wallet || null
   }
 }

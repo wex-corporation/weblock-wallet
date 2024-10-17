@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@alwallet/core": "workspace:^",
+    "ethers": "^6.8.1",
     "web3": "^4.2.2"
   },
   "devDependencies": {
