@@ -13,39 +13,39 @@ export class Auth {
     this.users = new Users(client, firebase)
   }
 
-  async signInWithGoogle(): Promise<void> {
+  // Google 로그인 처리
+  public async signInWithGoogle(): Promise<void> {
     try {
-      console.log('Google 로그인 시작')
       await this.users.signIn(AvailableProviders.google)
     } catch (error) {
-      console.error('Google 로그인 실패:', error)
-
-      // 'error'를 명시적으로 Error 타입으로 단언
       const err = error as Error
       throw new SDKError(`Google 로그인 중 오류가 발생했습니다: ${err.message}`)
     }
   }
 
-  async signOut(): Promise<void> {
+  // 로그아웃 처리
+  public async signOut(): Promise<void> {
     try {
-      console.log('로그아웃 중...')
       await this.users.signOut()
     } catch (error) {
-      console.error('로그아웃 실패:', error)
       const err = error as Error
       throw new SDKError(`로그아웃 중 오류가 발생했습니다: ${err.message}`)
     }
   }
 
-  async isLoggedIn(): Promise<boolean> {
+  // 로그인 상태 확인
+  public async isLoggedIn(): Promise<boolean> {
     try {
       return await this.users.isLoggedIn()
     } catch (error) {
-      console.error('로그인 상태 확인 실패:', error)
       const err = error as Error
       throw new SDKError(
         `로그인 상태 확인 중 오류가 발생했습니다: ${err.message}`
       )
     }
+  }
+
+  public getUsers(): Users {
+    return this.users
   }
 }
