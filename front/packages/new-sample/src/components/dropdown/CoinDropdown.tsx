@@ -62,7 +62,7 @@ const CoinDropdown: React.FC<{ core: Core }> = ({ core }) => {
         </select>
       ) : (
         <select
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="min-w-[300px] w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           onChange={handleSelectCoin}
           value={selectedCoin?.name}
         >

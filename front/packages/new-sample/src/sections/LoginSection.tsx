@@ -78,6 +78,8 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
       await sdk.wallets.retrieveWallet(userPassword) // 비밀번호로 지갑 복구
       setWalletRecovered(true)
       setError('') // 에러 초기화
+      setIsLoggedIn(true)
+      setUserPassword('')
       setIsPasswordModalOpen(false) // 비밀번호 모달 닫기
     } catch (e) {
       setError(`지갑 복구 실패: ${(e as Error).message}`)
@@ -105,12 +107,15 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
     try {
       if (isDoneLoginWithGoogle && userPassword) {
         // await core.retrieveWallet(userPassword)
+        await handleWalletRecovery()
         // setBlockchains(await core.getBlockchains())
-        setUserPassword('')
-        setError('')
         // setWallet(core.getWallet()!)
-        setIsPasswordModalOpen(false)
-        setIsLoggedIn(true)
+
+        // setUserPassword('')
+        // setError('')
+        // setWalletRecovered(true)
+        // setIsPasswordModalOpen(false)
+        // setIsLoggedIn(true)
         navigate('/wallet')
       }
     } catch (e) {
@@ -133,14 +138,14 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
               type="password"
               value={userPassword}
               onChange={(e) => setUserPassword(e.target.value)}
-              onKeyUp={(e) => e.key === 'Enter' && handleWalletRecovery()}
+              onKeyUp={(e) => e.key === 'Enter' && handleGetWallet}
               placeholder="User Wallet Password"
               className="w-full px-4 pr-32 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
               type="submit"
               className="absolute right-0 top-1/2 transform -translate-y-1/2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onClick={handleWalletRecovery}
+              // onClick={handleWalletRecovery}
             >
               Confirm
             </button>
