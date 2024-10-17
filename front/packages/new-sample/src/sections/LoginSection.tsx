@@ -88,25 +88,33 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
       setError('비밀번호를 입력해주세요')
       return
     }
+
     try {
-      setLoading(true)
+      setLoading(true) // 로딩 시작
+
       const isNewUser = await sdk.auth.isNewUser()
       if (isNewUser) {
         await sdk.wallets.createWallet(userPassword)
       } else {
         await sdk.wallets.retrieveWallet(userPassword)
       }
-      setBlockchains(await sdk.blockchains.getRegisteredBlockchains())
 
-      setWalletRecovered(true)
+      // 공통 로직: 블록체인 목록 가져오기 및 상태 업데이트
+      const blockchains = await sdk.blockchains.getRegisteredBlockchains()
+      setBlockchains(blockchains)
+
+      setWalletRecovered(true) // 지갑 복구 완료 상태 업데이트
+      setWallet(sdk.wallets.getWallet()!) // 지갑 상태 업데이트
       setError('') // 에러 초기화
-      setIsLoggedIn(true)
-      setUserPassword('')
+      setIsLoggedIn(true) // 로그인 상태 업데이트
+      setUserPassword('') // 비밀번호 초기화
       setIsPasswordModalOpen(false) // 비밀번호 모달 닫기
-      setLoading(false)
-      navigate('/wallet')
+
+      navigate('/wallet') // 지갑 페이지로 이동
     } catch (e) {
       setError(`지갑 복구 실패: ${(e as Error).message}`)
+    } finally {
+      setLoading(false) // 로딩 중지
     }
   }
 
