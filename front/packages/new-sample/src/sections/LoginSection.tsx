@@ -19,7 +19,7 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const [userPassword, setUserPassword] = useState('')
   const [walletRecovered, setWalletRecovered] = useState<boolean>(false)
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState<boolean>(false)
-  const [error, setError] = useRecoilState(errorState)
+  const setError = useSetRecoilState(errorState)
   // const setBlockchains = useSetRecoilState(blockchainsState)
   const navigate = useNavigate()
 

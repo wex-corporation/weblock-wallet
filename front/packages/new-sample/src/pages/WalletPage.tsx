@@ -7,13 +7,7 @@ import CoinDropdown from '../components/dropdown/CoinDropdown.tsx'
 import RegisterTokenButton from '../components/button/RegisterTokenButton.tsx'
 import { useNavigate } from 'react-router-dom'
 
-const sdk = new AlWalletSDK({
-  env: 'local', // 'local', 'dev', 'stage', 'prod' 중 선택
-  apiKey: 'MCowBQYDK2VwAyEASXmv-39yF5Wx1vX9lPuP7_9qgWVeGXMdAWr-TKalKMw=', // 임시 API 키
-  orgHost: 'http://localhost:3000' // 조직 호스트 설정
-})
-
-export default function WalletPage() {
+const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const [balance, setBalance] = useState<string | null>(null)
   const isLoggedIn = useRecoilValue(loginState)
   const navigate = useNavigate()
@@ -112,3 +106,5 @@ export default function WalletPage() {
     </>
   )
 }
+
+export default WalletPage
