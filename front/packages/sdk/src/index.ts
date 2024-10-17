@@ -6,7 +6,13 @@ import { Blockchains } from './blockchains/blockchains'
 import { createHttpClient } from './utils/config'
 import { SDKError } from './utils/errors'
 
-export * from '@alwallet/core'
+// 명시적으로 타입, 클래스 내보내기
+export { Coin, Blockchain, User, Wallet } from '@alwallet/core/src/domains'
+export { TransactionStatus } from '@alwallet/core/src/types'
+
+// Numbers 유틸리티 내보내기
+export { Numbers } from '@alwallet/core/src/utils/numbers'
+
 /**
  * SDK 초기화 시 필요한 옵션 타입 정의
  */
