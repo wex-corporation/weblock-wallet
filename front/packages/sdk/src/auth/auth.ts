@@ -48,4 +48,16 @@ export class Auth {
   public getUsers(): Users {
     return this.users
   }
+
+  // 새로운 사용자 여부 확인
+  public async isNewUser(): Promise<boolean> {
+    try {
+      return await this.users.isNewUser()
+    } catch (error) {
+      const err = error as Error
+      throw new SDKError(
+        `새 사용자 여부 확인 중 오류가 발생했습니다: ${err.message}`
+      )
+    }
+  }
 }

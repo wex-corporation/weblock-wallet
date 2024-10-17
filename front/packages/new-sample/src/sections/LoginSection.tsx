@@ -90,7 +90,12 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
     }
     try {
       setLoading(true)
-      await sdk.wallets.retrieveWallet(userPassword) // 비밀번호로 지갑 복구
+      const isNewUser = await sdk.auth.isNewUser()
+      if (isNewUser) {
+        await sdk.wallets.createWallet(userPassword)
+      } else {
+        await sdk.wallets.retrieveWallet(userPassword)
+      }
       setBlockchains(await sdk.blockchains.getRegisteredBlockchains())
 
       setWalletRecovered(true)
