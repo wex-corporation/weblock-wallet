@@ -6,6 +6,7 @@ import { Blockchains } from './blockchains/blockchains'
 import { createHttpClient } from './utils/config'
 import { SDKError } from './utils/errors'
 
+export * from '@alwallet/core'
 /**
  * SDK 초기화 시 필요한 옵션 타입 정의
  */
