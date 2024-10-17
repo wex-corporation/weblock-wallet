@@ -9,6 +9,7 @@ import { errorState } from '../atom/ErrorAtom'
 // import { coinsState } from '../../atom/CoinsAtom'
 // import LoginButton from '../components/button/LoginButton.tsx'
 import { useNavigate } from 'react-router-dom'
+import { balanceState } from '../atom/BalanceAtom.ts'
 
 const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   // const [isLoggedIn, setIsLoggedIn] = useRecoilState(loginState)
@@ -20,6 +21,7 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const [walletRecovered, setWalletRecovered] = useState<boolean>(false)
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState<boolean>(false)
   const setError = useSetRecoilState(errorState)
+  const setBalance = useSetRecoilState(balanceState)
   // const setBlockchains = useSetRecoilState(blockchainsState)
   const navigate = useNavigate()
 
@@ -70,31 +72,26 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
 
   // 지갑 복구 핸들러
   const handleWalletRecovery = async () => {
+    if (!sdk) return
+    if (!userPassword) {
+      setError('비밀번호를 입력해주세요')
+      return
+    }
     try {
-      if (!userPassword) {
-        setError('비밀번호를 입력해주세요')
-        return
-      }
       await sdk.wallets.retrieveWallet(userPassword) // 비밀번호로 지갑 복구
+      // 복구된 지갑의 잔액을 조회
+      const chainId = 1 // 예시로 Ethereum 메인넷(1) 체인 아이디 사용
+      const balance = await sdk.wallets.getBalance(chainId)
+      setBalance(balance)
+
       setWalletRecovered(true)
       setError('') // 에러 초기화
       setIsLoggedIn(true)
       setUserPassword('')
       setIsPasswordModalOpen(false) // 비밀번호 모달 닫기
+      navigate('/wallet')
     } catch (e) {
       setError(`지갑 복구 실패: ${(e as Error).message}`)
-    }
-  }
-
-  // 로그아웃 핸들러
-  const handleLogout = async () => {
-    try {
-      await sdk.auth.signOut()
-      setIsLoggedIn(false)
-      setWalletRecovered(false)
-      setError('') // 에러 초기화
-    } catch (e) {
-      setError(`로그아웃 실패: ${(e as Error).message}`)
     }
   }
 
@@ -116,7 +113,6 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
         // setWalletRecovered(true)
         // setIsPasswordModalOpen(false)
         // setIsLoggedIn(true)
-        navigate('/wallet')
       }
     } catch (e) {
       if (e instanceof Error) {
@@ -145,7 +141,6 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
             <button
               type="submit"
               className="absolute right-0 top-1/2 transform -translate-y-1/2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              // onClick={handleWalletRecovery}
             >
               Confirm
             </button>

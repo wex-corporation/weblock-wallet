@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import { AlWalletSDK } from '@alwallet/sdk'
-import { useRecoilState, useRecoilValue } from 'recoil'
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
 import { loginState } from '../atom/LoginAtom.ts'
 import BlockchainDropdown from '../components/dropdown/BlockchainDropdown.tsx'
 import CoinDropdown from '../components/dropdown/CoinDropdown.tsx'
 import RegisterTokenButton from '../components/button/RegisterTokenButton.tsx'
 import { useNavigate } from 'react-router-dom'
+import { errorState } from '../atom/ErrorAtom.ts'
 
 const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const [balance, setBalance] = useState<string | null>(null)
   const isLoggedIn = useRecoilValue(loginState)
   const navigate = useNavigate()
+  const setError = useSetRecoilState(errorState)
+  const setIsLoggedIn = useSetRecoilState(loginState)
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -36,6 +39,33 @@ const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   //   }
   // }
 
+  // 로그아웃 핸들러
+  const handleLogout = async () => {
+    if (!sdk) return
+    try {
+      await sdk.auth.signOut()
+      setIsLoggedIn(false)
+      setError('') // 에러 초기화
+      navigate('/')
+    } catch (e) {
+      setError(`로그아웃 실패: ${(e as Error).message}`)
+    }
+  }
+
+  // 잔액 조회 핸들러
+  const handleCheckBalance = async () => {
+    if (!sdk) return
+
+    try {
+      const chainId = 1 // 예시로 Ethereum 메인넷 체인 ID
+      const balance = await sdk.wallets.getBalance(chainId)
+      setBalance(balance)
+      setError('')
+    } catch (e) {
+      setError(`잔액 조회 실패: ${(e as Error).message}`)
+    }
+  }
+
   return (
     <>
       {isLoggedIn && (
@@ -43,13 +73,13 @@ const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
           <h3 className="text-xl font-bold text-center">
             Wallet Address : {''}
           </h3>
-          {balance && <p className="mt-4 text-xl">Balance: {balance}</p>}
+          {balance && <p className="mt-4 text-xl">Balance: {balance} ETH</p>}
 
           <div className="flex flex-wrap gap-16">
             <div className="flex flex-col gap-2 w-full items-center">
               <BlockchainDropdown core={sdk} />
               <button
-                // onClick={handleGetBalance}
+                onClick={handleCheckBalance}
                 className="min-w-[300px] px-4 py-2 bg-green-500 text-white rounded-md"
               >
                 Get Balance
@@ -85,6 +115,15 @@ const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
                 </button>
               </div>
             </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-gray-400 text-white rounded-md mb-2"
+            >
+              Logout
+            </button>
           </div>
 
           {/*<div className="flex flex-col gap-4">*/}
