@@ -12,7 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@alwallet/core": "workspace:^"
+    "@alwallet/core": "workspace:^",
+    "web3": "^4.2.2"
   },
   "devDependencies": {
     "@tsconfig/node18": "^18.2.2",
