@@ -21,14 +21,6 @@ const Router = () => {
           orgHost: 'http://localhost:3000' // 조직 호스트 설정
         })
         setSdk(walletSdk)
-
-        // 로그인 상태 확인
-        const loggedIn = await walletSdk.auth.isLoggedIn()
-        console.log(
-          loggedIn
-            ? '로그인 상태 확인: 로그인됨'
-            : '로그인 상태 확인: 로그인 안됨'
-        )
       } catch (e) {
         setError(`SDK 초기화 중 오류가 발생했습니다: ${(e as Error).message}`)
       }

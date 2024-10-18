@@ -9,6 +9,9 @@ import { useNavigate } from 'react-router-dom'
 import { errorState } from '../atom/ErrorAtom.ts'
 import { balanceState } from '../atom/BalanceAtom.ts'
 import { blockchainState } from '../atom/BlockchainAtom.ts'
+import SendCoinButton from '../components/button/SendCoinButton.tsx'
+import { resultState } from '../atom/ResultAtom.ts'
+import { txStatusState } from '../atom/TxStatusAtom.ts'
 
 const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const [balance, setBalance] = useRecoilState(balanceState)
@@ -18,6 +21,8 @@ const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const setIsLoggedIn = useSetRecoilState(loginState)
   const [walletAddress, setWalletAddress] = useState('')
   const selectedBlockchain = useRecoilValue(blockchainState)
+  const result = useRecoilValue(resultState)
+  const status = useRecoilValue(txStatusState)
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -64,11 +69,24 @@ const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
     isLoggedIn && (
       <>
         <div className="flex flex-col gap-2">
-          <h3 className="text-xl font-bold text-center">
-            Wallet Address : {walletAddress}
+          <h3 className="text-xl">
+            <span className="font-bold">Wallet Address :</span> {walletAddress}
           </h3>
           {balance && (
-            <p className="text-xl font-bold">Balance : {balance} ETH</p>
+            <p className="text-xl">
+              <span className="font-bold">Balance :</span> {balance} ETH
+            </p>
+          )}
+
+          {result && (
+            <p className="text-xl">
+              <span className="font-bold">result :</span> {result}
+            </p>
+          )}
+          {status && (
+            <p className="text-xl">
+              <span className="font-bold">status :</span> {status}
+            </p>
           )}
         </div>
 
@@ -86,29 +104,8 @@ const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
           <RegisterTokenButton sdk={sdk} />
 
           <div className="flex flex-col gap-8 w-full items-center">
-            <CoinDropdown />
-
-            <div className="flex flex-col gap-2 w-full items-center">
-              <div className="flex flex-col gap-1">
-                <label className="text-sm text-gray-400">To Address</label>
-                <input
-                  type="text"
-                  placeholder="To Address"
-                  className="min-w-[300px] w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm text-gray-400">Amount</label>
-                <input
-                  type="text"
-                  placeholder="Amount"
-                  className="min-w-[300px] w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <button className="min-w-[300px] px-4 py-2 bg-blue-500 text-white rounded-md mb-2">
-                Send Transaction
-              </button>
-            </div>
+            <CoinDropdown sdk={sdk} />
+            <SendCoinButton sdk={sdk} />
           </div>
         </div>
 

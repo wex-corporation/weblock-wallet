@@ -2,8 +2,9 @@ import React, { useEffect } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { coinsState } from '../../atom/CoinsAtom'
 import { coinState } from '../../atom/CoinAtom'
+import { AlWalletSDK } from '@alwallet/sdk'
 
-const CoinDropdown = () => {
+const CoinDropdown: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const coins = useRecoilValue(coinsState)
   const [selectedCoin, setSelectedCoin] = useRecoilState(coinState)
 
@@ -13,7 +14,9 @@ const CoinDropdown = () => {
     }
   }, [coins, selectedCoin, setSelectedCoin])
 
-  const handleSelectCoin = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSelectCoin = async (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     const selected = coins.find(
       (blockchain) => blockchain.name === event.target.value
     )

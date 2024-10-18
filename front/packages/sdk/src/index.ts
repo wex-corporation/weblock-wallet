@@ -12,6 +12,7 @@ export { TransactionStatus } from '@alwallet/core/src/types'
 
 // Numbers 유틸리티 내보내기
 export { Numbers } from '@alwallet/core/src/utils/numbers'
+export { Time } from '@alwallet/core/src/utils/time'
 
 /**
  * SDK 초기화 시 필요한 옵션 타입 정의
