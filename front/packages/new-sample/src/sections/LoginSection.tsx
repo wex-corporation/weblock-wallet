@@ -77,6 +77,7 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
           return
         }
         setError(e.message)
+        setLoading(false)
       }
     }
   }
@@ -113,6 +114,7 @@ const LoginSection: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
       navigate('/wallet') // 지갑 페이지로 이동
     } catch (e) {
       setError(`지갑 복구 실패: ${(e as Error).message}`)
+      setLoading(false) // 로딩 중지
     } finally {
       setLoading(false) // 로딩 중지
     }

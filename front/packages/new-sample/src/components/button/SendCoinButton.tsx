@@ -8,6 +8,7 @@ import { txStatusState } from '../../atom/TxStatusAtom'
 import { walletState } from '../../atom/WalletAtom'
 import { coinState } from '../../atom/CoinAtom'
 import { AlWalletSDK, Numbers, TransactionStatus, Time } from '@alwallet/sdk'
+import { loadingState } from '../../atom/LoadingAtom.ts'
 
 const SendCoinButton: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const [amount, setAmount] = useState('')
@@ -19,11 +20,13 @@ const SendCoinButton: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const setResult = useSetRecoilState(resultState)
   const setStatus = useSetRecoilState(txStatusState)
   const setError = useSetRecoilState(errorState)
+  const setLoading = useSetRecoilState(loadingState)
 
   const handleSendCoin = async () => {
     if (!to || !amount) return
 
     try {
+      setLoading(true)
       setResult('')
       setError('')
       setStatus(null)
@@ -45,7 +48,9 @@ const SendCoinButton: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
       )
       console.log('fetchedBalance', fetchedBalance)
       await handleCheckTransaction(chainId, txHash, 5000, 180000)
+      setLoading(false)
     } catch (e: any) {
+      setLoading(false)
       setError(e.message)
     }
   }
@@ -64,11 +69,16 @@ const SendCoinButton: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
       Date.now() - start < maxDuration
     ) {
       try {
+        setLoading(true)
         await Time.delay(timeout)
         // TODO: update with getTransactionStatus
         // status = await sdk.wallets.getTransactionStatus(chainId, txHash)
         setStatus(status)
+        setLoading(false)
+        setTo('')
+        setAmount('')
       } catch (error) {
+        setLoading(false)
         console.error('Error checking transaction status:', error)
         break
       }

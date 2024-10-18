@@ -12,6 +12,7 @@ import { blockchainState } from '../atom/BlockchainAtom.ts'
 import SendCoinButton from '../components/button/SendCoinButton.tsx'
 import { resultState } from '../atom/ResultAtom.ts'
 import { txStatusState } from '../atom/TxStatusAtom.ts'
+import { loadingState } from '../atom/LoadingAtom.ts'
 
 const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const [balance, setBalance] = useRecoilState(balanceState)
@@ -23,6 +24,7 @@ const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const selectedBlockchain = useRecoilValue(blockchainState)
   const result = useRecoilValue(resultState)
   const status = useRecoilValue(txStatusState)
+  const setLoading = useSetRecoilState(loadingState)
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -40,11 +42,15 @@ const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const handleLogout = async () => {
     if (!sdk) return
     try {
+      setLoading(true)
       await sdk.auth.signOut()
       setIsLoggedIn(false)
+
       setError('') // 에러 초기화
+      setLoading(false)
       navigate('/')
     } catch (e) {
+      setLoading(false)
       setError(`로그아웃 실패: ${(e as Error).message}`)
     }
   }
@@ -57,10 +63,13 @@ const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
     if (!chainId) return
 
     try {
+      setLoading(true)
       const fetchedBalance = await sdk.wallets.getBalance(chainId)
       setBalance(Numbers.weiToEth(Numbers.hexToDecimal(fetchedBalance)))
       setError('')
+      setLoading(false)
     } catch (e) {
+      setLoading(false)
       setError(`잔액 조회 실패: ${(e as Error).message}`)
     }
   }
@@ -80,12 +89,12 @@ const WalletPage: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
 
           {result && (
             <p className="text-xl">
-              <span className="font-bold">result :</span> {result}
+              <span className="font-bold">Result :</span> {result}
             </p>
           )}
           {status && (
             <p className="text-xl">
-              <span className="font-bold">status :</span> {status}
+              <span className="font-bold">Status :</span> {status}
             </p>
           )}
         </div>

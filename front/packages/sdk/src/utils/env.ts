@@ -16,13 +16,13 @@ export const getBaseUrls = (env: string): string => {
 
 export const getFirebaseConfig = (env: string) => {
   const config = {
-    apiKey: 'AIzaSyBiaHmiqmnUVtuCfKJ3yc9g1rdoSKCJYlE',
-    authDomain: 'al-tech-704e2.firebaseapp.com',
-    projectId: 'al-tech-704e2',
-    storageBucket: 'al-tech-704e2.appspot.com',
-    messagingSenderId: '79434562951',
-    appId: '1:79434562951:web:25571fdadf346b9ad9e722',
-    measurementId: 'G-KDKWTTVWD7'
+    apiKey: 'AIzaSyDXfrpfLOiDskQEc1PEP9j5HrGCLmtddRI',
+    authDomain: 'rwx-wallet.firebaseapp.com',
+    projectId: 'rwx-wallet',
+    storageBucket: 'rwx-wallet.appspot.com',
+    messagingSenderId: '397943391932',
+    appId: '1:397943391932:web:5545b196b8a027c1c172b9',
+    measurementId: 'G-V5YX6ECWTT'
   }
 
   switch (env) {

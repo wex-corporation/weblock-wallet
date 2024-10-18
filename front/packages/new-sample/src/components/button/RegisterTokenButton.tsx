@@ -7,6 +7,7 @@ import { txStatusState } from '../../atom/TxStatusAtom'
 import { walletState } from '../../atom/WalletAtom'
 import { coinsState } from '../../atom/CoinsAtom'
 import { AlWalletSDK } from '@alwallet/sdk'
+import { loadingState } from '../../atom/LoadingAtom.ts'
 
 const RegisterTokenButton: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const [tokenAddress, setTokenAddress] = useState('')
@@ -17,11 +18,13 @@ const RegisterTokenButton: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
   const setResult = useSetRecoilState(resultState)
   const setStatus = useSetRecoilState(txStatusState)
   const setError = useSetRecoilState(errorState)
+  const setLoading = useSetRecoilState(loadingState)
 
   const handleRegisterToken = async () => {
     if (!tokenAddress) return
 
     try {
+      setLoading(true)
       setResult('')
       setError('')
       setStatus(null)
@@ -34,7 +37,9 @@ const RegisterTokenButton: React.FC<{ sdk: AlWalletSDK }> = ({ sdk }) => {
       // const fetchedBalance = await sdk.wallets.getBalance(
       //   selectedBlockchain!.chainId
       // )
+      setLoading(false)
     } catch (e: any) {
+      setLoading(false)
       setError(e.message)
     }
   }
