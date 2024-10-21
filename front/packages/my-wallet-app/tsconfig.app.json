@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext", // ESModules를 사용
+    "skipLibCheck": true,
+
+    /* Node module resolution for better compatibility */
+    "moduleResolution": "node", // 모듈 해석 방식을 Node로 변경
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Emit 설정 (선택 사항: 빌드 결과물을 보고 싶다면 noEmit을 제거) */
+    "noEmit": true // 필요에 따라 제거 가능
+  },
+  "include": ["src"]
+}
