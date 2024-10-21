@@ -42,7 +42,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   cloud:
     gcp:
-      project-id: al-tech-704e2
+      project-id: rwx-wallet
       credentials:
         encoded-key: ${GCP_CREDENTIALS}
       logging:
