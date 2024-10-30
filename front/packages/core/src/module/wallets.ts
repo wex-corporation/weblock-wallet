@@ -183,7 +183,7 @@ export class Wallets {
     return response.result
   }
 
-  public async sendTransction(
+  public async sendTransaction(
     nodeUrl: string,
     chainId: number,
     amount: string,

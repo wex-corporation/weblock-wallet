@@ -209,7 +209,7 @@ export class Core {
       throw new Error('Must sign in first')
     }
 
-    return await this.wallets.sendTransction(
+    return await this.wallets.sendTransaction(
       (await this.getBlockchains()).filter(
         (blockchain) => blockchain.chainId === chainId
       )[0].rpcUrl,
@@ -238,5 +238,17 @@ export class Core {
       chainId,
       txHash
     )
+  }
+
+  public getWalletsModule(): Wallets {
+    return this.wallets
+  }
+
+  public getUsersModule(): Users {
+    return this.users
+  }
+
+  public getOrganizationsModule(): Organizations {
+    return this.organizations
   }
 }

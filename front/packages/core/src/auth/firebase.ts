@@ -55,6 +55,10 @@ export class Firebase {
 
   async signOut(): Promise<void> {
     const auth = getAuth()
-    await signOut(getAuth())
+    await signOut(auth)
+  }
+
+  getGoogleProvider(): OAuthProvider {
+    return new OAuthProvider('google.com')
   }
 }

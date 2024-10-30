@@ -1,0 +1,31 @@
+{
+  "name": "wallet-sdk",
+  "version": "1.0.0",
+  "description": "A simplified SDK for wallet and blockchain interaction, wrapping @alwallet/core.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint 'src/**/*.{js,ts}'",
+    "format": "prettier --write 'src/**/*.{js,ts,json,md}'",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@alwallet/core": "workspace:^",
+    "ethers": "^6.8.1",
+    "web3": "^4.2.2"
+  },
+  "devDependencies": {
+    "@tsconfig/node18": "^18.2.2",
+    "@types/jest": "^29.0.0",
+    "@types/node": "^16.18.62",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "jest": "^29.0.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.2.2"
+  },
+  "license": "ISC"
+}

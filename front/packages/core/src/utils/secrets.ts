@@ -14,15 +14,16 @@ export const Secrets: ISecrets = {
     if (secret.startsWith('0x')) {
       secret = secret.substring(2)
     }
-    const array = await split(
-      new Uint8Array(Buffer.from(secret, 'hex')),
-      total,
-      threshold
-    )
-    return array.map((item) => Buffer.from(item).toString('hex'))
+    const byteArray = Uint8Array.from(Buffer.from(secret, 'hex')) // Hex를 Uint8Array로 변환
+    const shares = await split(byteArray, total, threshold)
+    return shares.map((share) => Buffer.from(share).toString('hex'))
   },
+
   async combine(shares: string[]): Promise<string> {
-    const array = shares.map((item) => new Uint8Array(Buffer.from(item, 'hex')))
-    return `0x${Buffer.from(await combine(array)).toString('hex')}`
+    const byteShares = shares.map((share) =>
+      Uint8Array.from(Buffer.from(share, 'hex'))
+    )
+    const combined = await combine(byteShares)
+    return `0x${Buffer.from(combined).toString('hex')}`
   }
 }

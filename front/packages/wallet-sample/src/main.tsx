@@ -1,17 +1,17 @@
+// src/main.tsx
 import React from 'react'
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import './index.css'
-import LoginPage from './pages/LoginPage'
-import WalletPage from './pages/WalletPage'
+import ReactDOM from 'react-dom/client'
+import { RecoilRoot } from 'recoil' // RecoilRoot 추가
+import { WalletSdkProvider } from './context/WalletSdkContext'
+import App from './App'
+import './styles/index.css' // TailwindCSS 스타일 적용
 
-createRoot(document.getElementById('root')!).render(
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <Router>
-      <Routes>
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/wallet" element={<WalletPage />} />
-      </Routes>
-    </Router>
+    <RecoilRoot> {/* RecoilRoot로 전체 앱을 감쌉니다 */}
+      <WalletSdkProvider>
+        <App />
+      </WalletSdkProvider>
+    </RecoilRoot>
   </React.StrictMode>
 )
