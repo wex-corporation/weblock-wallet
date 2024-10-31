@@ -4,7 +4,8 @@ import {
   Users,
   Wallets,
   Organizations,
-  WalletServerHttpClient
+  WalletServerHttpClient,
+  Numbers
 } from '@alwallet/core'
 import { EnvironmentConfig, SendTransaction, Blockchain } from './types'
 import { Wallet as EthersWallet } from 'ethers'
@@ -62,7 +63,7 @@ export class WalletSdk {
     await this.users.signOut() // Firebase 및 로컬 데이터 정리
     // 필요 시, 지갑 데이터 등도 초기화
     this.wallets.wallet = null // 지갑 인스턴스 초기화
-    console.log("로그아웃 성공적으로 완료되었습니다.")
+    console.log('로그아웃 성공적으로 완료되었습니다.')
   }
 
   // 지갑 복구 메서드
@@ -105,6 +106,14 @@ export class WalletSdk {
 
   public getWalletsModule(): Wallets {
     return this.wallets
+  }
+
+  public weiToEth(wei: string): string {
+    return Numbers.weiToEth(wei)
+  }
+
+  public hexToDecimal(hexString: string): string {
+    return Numbers.hexToDecimal(hexString)
   }
 }
 

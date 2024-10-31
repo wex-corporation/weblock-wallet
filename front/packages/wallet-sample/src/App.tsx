@@ -30,12 +30,10 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 flex flex-col items-center py-16 px-6">
       <div className="bg-white rounded-2xl shadow-lg p-8 max-w-lg w-full text-center space-y-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">지갑 샘플(SDK 적용)</h1>
-        {getMessage() && (
-          <p className="text-gray-600 mb-6">
-            {getMessage()}
-          </p>
-        )}
+        <h1 className="text-3xl font-bold text-gray-800 mb-4">
+          지갑 샘플(SDK 적용)
+        </h1>
+        {getMessage() && <p className="text-gray-600 mb-6">{getMessage()}</p>}
         {isInitialized ? (
           <div className="space-y-6">
             {/* 지갑 복구 완료 시만 하위 섹션 표시 */}
@@ -43,7 +41,6 @@ const App: React.FC = () => {
             {isLoggedIn && isWalletRecovered && (
               <div className="bg-white mt-1 p-6 rounded-xl shadow-inner space-y-2 border border-gray-200">
                 <WalletSection />
-                <TransactionSection />
                 <ResultSection />
               </div>
             )}
@@ -52,6 +49,9 @@ const App: React.FC = () => {
           <p className="text-lg text-gray-500">로딩 중...</p>
         )}
       </div>
+
+      {/* 모달 포탈 루트 */}
+      <div id="modal-root"></div>
     </div>
   )
 }
