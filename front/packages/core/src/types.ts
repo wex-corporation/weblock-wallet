@@ -4,6 +4,11 @@ export enum TransactionStatus {
   PENDING = 'pending'
 }
 
+export interface EnvironmentConfig {
+  apiBaseUrl: string
+  firebaseConfig: FirebaseConfig
+}
+
 export interface FirebaseConfig {
   apiKey: string
   authDomain: string

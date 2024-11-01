@@ -1,3 +1,4 @@
+import { WalletSdk } from './sdk/WalletSdk'
 export * from './core'
 export * from './types'
 export * from './domains'
@@ -8,3 +9,4 @@ export { Firebase } from './auth/firebase'
 export * from './module/users'
 export * from './module/wallets'
 export * from './module/organizations'
+export default WalletSdk
