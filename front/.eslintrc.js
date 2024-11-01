@@ -1,4 +1,5 @@
 module.exports = {
+  root: true,
   extends: [
     'eslint:recommended',
     'plugin:react/recommended',
@@ -14,13 +15,21 @@ module.exports = {
       jsx: true
     }
   },
+  env: {
+    browser: true,
+    es2021: true,
+    node: true
+  },
   rules: {
-    'prettier/prettier': 'error'
-    // 여기에 추가적인 사용자 정의 규칙을 추가할 수 있습니다.
+    'prettier/prettier': 'error',
+    'react/prop-types': 'off',
+    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    'react/react-in-jsx-scope': 'off'
   },
   settings: {
     react: {
       version: 'detect'
     }
   }
-};
+}
