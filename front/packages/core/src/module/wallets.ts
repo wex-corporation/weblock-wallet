@@ -10,7 +10,7 @@ import { toBigInt, Wallet } from 'ethers'
 import Web3 from 'web3'
 import { generateMnemonic, mnemonicToSeed } from 'bip39'
 import {
-  Blockchain,
+  // Blockchain,
   Coin,
   Wallet as WalletType,
   ERC20Info,
@@ -106,7 +106,11 @@ export class Wallets {
     )
     const response = await this.walletClient.getWallet()
 
-    const exp = Jwt.parse(accessToken!)?.exp! * 1000
+    const exp = Jwt.parse(accessToken ?? '')?.exp
+    if (exp === undefined) {
+      throw new Error('Expiration time missing from JWT')
+    }
+    const expMillis = exp * 1000
 
     let share2 = await LocalForage.get<string>(`${this.orgHost}:share2`)
 
@@ -124,20 +128,24 @@ export class Wallets {
 
       if (encryptedShare2) {
         console.log('Retrieve using existing encryptedShare2')
-        share2 = this.decryptShare(encryptedShare2, userPassword!, firebaseId!)
+        share2 = this.decryptShare(
+          encryptedShare2,
+          userPassword ?? '',
+          firebaseId!
+        )
         await LocalForage.save(
           `${this.orgHost}:share2`,
           share2,
-          exp // same as access token
+          expMillis // same as access token
         )
       } else {
         console.log(
           'Signing in to a new device/browser. Decrypting encryptedShare3'
         )
         this.wallet = await this.refreshWallet(
-          exp,
-          response!,
-          userPassword!,
+          expMillis,
+          response ?? ({} as WalletType),
+          userPassword ?? '',
           firebaseId!
         )
       }
@@ -313,7 +321,7 @@ export class Wallets {
 
     const data = tokenContract.methods.transfer(to, tokenAmount).encodeABI()
 
-    let estimatedGas: bigint =
+    const estimatedGas: bigint =
       gasLimit ??
       (await this.estimateGas(
         web3,

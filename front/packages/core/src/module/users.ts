@@ -27,13 +27,25 @@ export class Users {
       const credentials: FirebaseCredentials = await this.firebase.signIn(
         new OAuthProvider(provider)
       )
+
       const response = await this.userClient.signIn({
         firebaseId: credentials.firebaseId,
         email: credentials.email,
         idToken: credentials.idToken,
         provider
       })
-      const accessToken = response!.token
+
+      if (!response) {
+        throw new Error('Failed to sign in: No response from userClient')
+      }
+
+      const accessToken = response.token
+      const expiration = Jwt.parse(accessToken)?.exp
+
+      if (!expiration) {
+        throw new Error('Failed to parse expiration from access token')
+      }
+
       await LocalForage.save(
         `${this.orgHost}:firebaseId`,
         credentials.firebaseId
@@ -41,9 +53,9 @@ export class Users {
       await LocalForage.save(
         `${this.orgHost}:accessToken`,
         accessToken,
-        Jwt.parse(accessToken)?.exp!
+        expiration
       )
-      await LocalForage.save(`${this.orgHost}:isNewUser`, response!.isNewUser)
+      await LocalForage.save(`${this.orgHost}:isNewUser`, response.isNewUser)
     } catch (error) {
       console.error('Error during sign-in:', error)
       throw error

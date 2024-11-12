@@ -10,7 +10,7 @@
     "declaration": true,
     "skipLibCheck": true,
     "typeRoots": ["node_modules/@types"],
-    "lib": ["es2020", "dom"],
+    "lib": ["ES2020", "DOM"],
     "declarationMap": true
   },
   "include": ["./src"]

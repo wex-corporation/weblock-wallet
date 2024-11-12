@@ -19,7 +19,11 @@ export class RpcClient {
         method: 'eth_blockNumber'
       }
     )
-    return response!
+    if (!response) {
+      throw new Error('Failed to retrieve block number response')
+    }
+
+    return response
   }
 
   async getTransactionCount(
@@ -36,7 +40,10 @@ export class RpcClient {
         params: [address, 'latest']
       }
     )
-    return response!
+    if (!response) {
+      throw new Error('Failed to retrieve transaction count response')
+    }
+    return response
   }
 
   async getBalance(
@@ -53,7 +60,10 @@ export class RpcClient {
         params: [address, 'latest']
       }
     )
-    return response!
+    if (!response) {
+      throw new Error('Failed to retrieve balance response')
+    }
+    return response
   }
 
   async getGasPrice(chainId: number): Promise<RpcResponse<string>> {
@@ -66,7 +76,10 @@ export class RpcClient {
         method: 'eth_gasPrice'
       }
     )
-    return response!
+    if (!response) {
+      throw new Error('Failed to retrieve gas price response')
+    }
+    return response
   }
 
   async estimateGas(chainId: number): Promise<RpcResponse<string>> {
@@ -79,7 +92,10 @@ export class RpcClient {
         method: 'eth_estimateGas'
       }
     )
-    return response!
+    if (!response) {
+      throw new Error('Failed to estimate gas')
+    }
+    return response
   }
 
   async sendRawTransaction(
@@ -96,7 +112,10 @@ export class RpcClient {
         params: [signedTx]
       }
     )
-    return response!
+    if (!response) {
+      throw new Error('Failed to send raw transaction')
+    }
+    return response
   }
 
   async getTransactionReceipt(
@@ -113,7 +132,10 @@ export class RpcClient {
         params: [hash]
       }
     )
-    return response!
+    if (!response) {
+      throw new Error('Failed to retrieve transaction receipt')
+    }
+    return response
   }
 
   private getRandomId(): number {

@@ -1,84 +1,30 @@
-import { Firebase } from './auth/firebase'
+// 설정 관련 import
+import { defaultConfig } from './config'
+
+// 유틸리티 관련 import
 import { Client, WalletServerHttpClient } from './utils/httpClient'
+import { Firebase } from './auth/firebase'
+// import { Jwt } from './utils/jwt'
+// import { Secrets } from './utils/secrets'
+
+// 모듈 관련 import
 import { Users } from './module/users'
-import { AvailableProviders } from './infra/clients/users'
-import { ERC20Info, Wallets } from './module/wallets'
-import { Blockchain, Coin } from './domains'
-import { TransactionStatus } from './types'
-import { Wallet } from 'ethers'
 import { Organizations } from './module/organizations'
-import { ApiKeyPair } from './utils/crypto'
+import { Wallets } from './module/wallets'
+import { Wallet as EthersWallet } from 'ethers'
 
-const getBaseUrls = (env: string) => {
-  switch (env) {
-    case 'local':
-      return 'http://localhost:8080'
-    case 'dev':
-      return 'https://dev.alwallet.io'
-    case 'stage':
-      return 'https://staging.alwallet.io'
-    case 'prod':
-      return 'https://wallet.alwallet.io'
-    default:
-      throw new Error('Invalid env')
-  }
-}
-
-const getFirebaseConfig = (env: string) => {
-  switch (env) {
-    case 'local':
-      return {
-        apiKey: 'AIzaSyBiaHmiqmnUVtuCfKJ3yc9g1rdoSKCJYlE',
-        authDomain: 'al-tech-704e2.firebaseapp.com',
-        projectId: 'al-tech-704e2',
-        storageBucket: 'al-tech-704e2.appspot.com',
-        messagingSenderId: '79434562951',
-        appId: '1:79434562951:web:25571fdadf346b9ad9e722',
-        measurementId: 'G-KDKWTTVWD7'
-      }
-    case 'dev':
-      return {
-        apiKey: 'AIzaSyBiaHmiqmnUVtuCfKJ3yc9g1rdoSKCJYlE',
-        authDomain: 'al-tech-704e2.firebaseapp.com',
-        projectId: 'al-tech-704e2',
-        storageBucket: 'al-tech-704e2.appspot.com',
-        messagingSenderId: '79434562951',
-        appId: '1:79434562951:web:25571fdadf346b9ad9e722',
-        measurementId: 'G-KDKWTTVWD7'
-      }
-    case 'stage':
-      return {
-        apiKey: 'AIzaSyBiaHmiqmnUVtuCfKJ3yc9g1rdoSKCJYlE',
-        authDomain: 'al-tech-704e2.firebaseapp.com',
-        projectId: 'al-tech-704e2',
-        storageBucket: 'al-tech-704e2.appspot.com',
-        messagingSenderId: '79434562951',
-        appId: '1:79434562951:web:25571fdadf346b9ad9e722',
-        measurementId: 'G-KDKWTTVWD7'
-      }
-    case 'prod':
-      return {
-        apiKey: 'AIzaSyBiaHmiqmnUVtuCfKJ3yc9g1rdoSKCJYlE',
-        authDomain: 'al-tech-704e2.firebaseapp.com',
-        projectId: 'al-tech-704e2',
-        storageBucket: 'al-tech-704e2.appspot.com',
-        messagingSenderId: '79434562951',
-        appId: '1:79434562951:web:25571fdadf346b9ad9e722',
-        measurementId: 'G-KDKWTTVWD7'
-      }
-    default:
-      throw new Error('Invalid env')
-  }
-}
-
-export interface SendTransaction {
-  amount: string
-  to: string
-  coin: Coin
-  nonce?: number
-  gasLimit?: bigint
-  gasPrice?: string
-}
+// 타입 정의 관련 import
+import {
+  AvailableProviders,
+  AppConfig,
+  ApiKeyPair,
+  Blockchain,
+  Coin,
+  // ERC20Info,
+  TransactionStatus,
+  // CreateWalletRequest,
+  SendTransaction
+} from '@weblock-wallet/types'
 
 export class Core {
   private readonly firebase: Firebase
@@ -87,20 +33,22 @@ export class Core {
   private users: Users
   private wallets: Wallets
 
-  constructor(env: string, apiKey: string, orgHost: string) {
-    this.client = new WalletServerHttpClient(
-      {
-        baseUrl: getBaseUrls(env)
-      },
-      apiKey,
-      orgHost
-    ) as any
-    this.firebase = new Firebase(getFirebaseConfig(env))
+  constructor(
+    env: keyof AppConfig['baseUrls'],
+    apiKey: string,
+    orgHost: string
+  ) {
+    const baseUrl = defaultConfig.baseUrls[env]
+    const firebaseConfig = defaultConfig.firebaseConfig
+
+    this.client = new WalletServerHttpClient({ baseUrl }, apiKey, orgHost)
+    this.firebase = new Firebase(firebaseConfig)
     this.organizations = new Organizations(this.client)
     this.users = new Users(this.client, this.firebase)
     this.wallets = new Wallets(this.client)
   }
 
+  // Organization 생성
   public async createOrganizations(name: string): Promise<ApiKeyPair> {
     return await this.organizations.createOrganization(name)
   }
@@ -112,7 +60,7 @@ export class Core {
     console.log('signing in with google')
     // SignOut first to clear data
     await this.users.signOut()
-    await this.users.signIn(AvailableProviders.google)
+    await this.users.signIn(AvailableProviders.Google)
   }
 
   public async signOut(): Promise<void> {
@@ -192,7 +140,7 @@ export class Core {
     await this.wallets.retrieveWallet(userPassword)
   }
 
-  public getWallet(): Wallet | null {
+  public getWallet(): EthersWallet | null {
     return this.wallets.wallet
   }
 
@@ -209,10 +157,10 @@ export class Core {
       throw new Error('Must sign in first')
     }
 
+    const blockchain = await this.getBlockchainByChainId(chainId)
+
     return await this.wallets.sendTransction(
-      (await this.getBlockchains()).filter(
-        (blockchain) => blockchain.chainId === chainId
-      )[0].rpcUrl,
+      blockchain.rpcUrl,
       chainId,
       transaction.amount,
       transaction.to,
@@ -231,12 +179,21 @@ export class Core {
       throw new Error('Must sign in first')
     }
 
+    const blockchain = await this.getBlockchainByChainId(chainId)
     return await this.wallets.getTransactionStatus(
-      (await this.getBlockchains()).filter(
-        (blockchain) => blockchain.chainId === chainId
-      )[0].rpcUrl,
+      blockchain.rpcUrl,
       chainId,
       txHash
     )
+  }
+
+  private async getBlockchainByChainId(chainId: number): Promise<Blockchain> {
+    const blockchain = (await this.getBlockchains()).find(
+      (blockchain) => blockchain.chainId === chainId
+    )
+    if (!blockchain) {
+      throw new Error(`Blockchain with chainId ${chainId} not found`)
+    }
+    return blockchain
   }
 }

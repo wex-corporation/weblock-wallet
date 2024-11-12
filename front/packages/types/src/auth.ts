@@ -1,10 +1,13 @@
-// types/auth.ts
+// types/src/auth.ts
 import { Blockchain } from './blockchain'
+
+// AvailableProviders enum
 export enum AvailableProviders {
   Google = 'google.com'
   // 필요한 경우 다른 provider 추가
 }
 
+// Firebase 및 인증 관련 타입 정의
 export interface SignInRequest {
   firebaseId: string
   email: string
@@ -42,9 +45,14 @@ export interface FirebaseCredentials {
   idToken: string
 }
 
-export interface CoreConfig {
-  baseUrl: string
+export interface BaseUrlsConfig {
+  local: string
+  dev: string
+  stage: string
+  prod: string
+}
+
+export interface AppConfig {
+  baseUrls: BaseUrlsConfig
   firebaseConfig: FirebaseConfig
-  apiKey: string
-  orgHost: string
 }

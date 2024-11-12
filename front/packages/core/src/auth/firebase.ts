@@ -23,14 +23,17 @@ export class Firebase {
 
       return {
         firebaseId: user.uid,
-        email: user.email!,
+        email: user.email ?? '',
         idToken: idToken
       }
     } catch (error) {
+      const customDataEmail =
+        (error as { customData?: { email?: string } })?.customData?.email ??
+        'N/A'
       console.error(
-        'Error during Firebase authentication: {},\n email: {}',
+        'Error during Firebase authentication: %s,\n email: %s',
         error,
-        (error as any)?.customData?.email ?? 'N/A'
+        customDataEmail
       )
       throw error
     }

@@ -1,5 +1,5 @@
 import { Client } from '../utils/httpClient'
-import { Firebase } from '../auth/firebase'
+// import { Firebase } from '../auth/firebase'
 import { Blockchain, ApiKeyPair } from '@weblock-wallet/types'
 import { OrganizationClient } from '../clients/organizations'
 import { Crypto } from '../utils/crypto'
