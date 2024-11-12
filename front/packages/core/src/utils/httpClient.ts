@@ -1,16 +1,5 @@
 import LocalForage from './localForage'
-import { config } from 'localforage'
-
-interface ClientOptions {
-  baseUrl: string
-  customHeaders?: HeadersInit
-}
-
-interface RequestConfig {
-  headers?: HeadersInit
-  credentials?: RequestCredentials
-  needsAccessToken?: boolean
-}
+import { ClientOptions, RequestConfig } from '@weblock-wallet/types'
 
 export interface Client {
   request<T = any>(
@@ -43,7 +32,7 @@ export interface Client {
 
 export class HttpClient {
   baseUrl: string
-  customHeaders: HeadersInit
+  protected customHeaders: HeadersInit
 
   constructor({ baseUrl, customHeaders = {} }: ClientOptions) {
     this.baseUrl = baseUrl
@@ -151,7 +140,7 @@ export class WalletServerHttpClient extends HttpClient {
     data: any = null,
     config: RequestConfig = {}
   ): Promise<T | null> {
-    const headers = new Headers(super.customHeaders)
+    const headers = new Headers(this.customHeaders)
     headers.set('X-Al-Api-Key', this.apiKey)
     headers.set('X-Al-Org-Host', this.orgHost)
 

@@ -1,9 +1,5 @@
 import { split, combine } from 'shamir-secret-sharing'
-
-interface ISecrets {
-  split(secret: string, total: number, threshold: number): Promise<string[]>
-  combine(shares: string[]): Promise<string>
-}
+import { ISecrets } from '@weblock-wallet/types'
 
 export const Secrets: ISecrets = {
   async split(

@@ -1,9 +1,5 @@
-import { Client } from '../../utils/httpClient'
-
-interface CreateOrganizationRequest {
-  name: string
-  apiKey: string
-}
+import { Client } from '../utils/httpClient'
+import { CreateOrganizationRequest } from '@weblock-wallet/types'
 
 export class OrganizationClient {
   private readonly baseUrl = '/v1/organizations'

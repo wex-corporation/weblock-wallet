@@ -1,17 +1,10 @@
-import { Client } from '../../utils/httpClient'
-import * as domain from '../../domains'
-
-export interface CreateWalletRequest {
-  address: string
-  publicKey: string
-  share1: string
-  encryptedShare3: string
-}
-
-export interface UpdateWalletKeyRequest {
-  share1: string
-  encryptedShare3: string
-}
+// core/src/infra/clients/wallets.ts
+import { Client } from '../utils/httpClient'
+import { Wallet } from '@weblock-wallet/types'
+import {
+  CreateWalletRequest,
+  UpdateWalletKeyRequest
+} from '@weblock-wallet/types'
 
 export class WalletClient {
   private readonly baseUrl = '/v1/wallets'
@@ -25,8 +18,8 @@ export class WalletClient {
     await this.client.post(this.baseUrl, request)
   }
 
-  async getWallet(): Promise<domain.Wallet> {
-    const response = await this.client.get<domain.Wallet>(this.baseUrl)
+  async getWallet(): Promise<Wallet> {
+    const response = await this.client.get<Wallet>(this.baseUrl)
     if (response == null) {
       throw new Error('Wallet not found')
     }

@@ -1,15 +1,5 @@
-import { Client } from '../../utils/httpClient'
-import { TransactionReceipt } from 'ethers'
-
-interface RpcResponse<T> {
-  jsonrpc: string
-  id: number
-  result: T | any
-  error: {
-    code: number
-    message: string
-  }
-}
+import { Client } from '../utils/httpClient'
+import { RpcResponse, TransactionReceipt } from '@weblock-wallet/types'
 
 export class RpcClient {
   private readonly baseUrl = '/v1/rpcs'

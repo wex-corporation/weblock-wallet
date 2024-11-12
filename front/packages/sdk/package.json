@@ -1,5 +1,5 @@
 {
-  "name": "@alwallet/sdk",
+  "name": "@weblock-wallet/sdk",
   "version": "1.0.0",
   "description": "",
   "main": "index.ts",
@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@alwallet/core": "workspace:^",
+    "@weblock-wallet/core": "workspace:^",
     "typescript": "^5.2.2",
     "@tsconfig/node18": "^18.2.2"
   }

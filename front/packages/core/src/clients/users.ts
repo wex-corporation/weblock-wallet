@@ -1,40 +1,14 @@
-import { Client } from '../../utils/httpClient'
-import { Blockchain, Coin, User } from '../../domains'
-
-interface SignInRequest {
-  firebaseId: string
-  email: string
-  idToken: string
-  provider: AvailableProviders
-}
-
-interface SignInResponse {
-  token: string
-  isNewUser: boolean
-}
-
-interface RegisterBlockchainRequest {
-  name: string
-  rpcUrl: string
-  chainId: number
-  currencySymbol: string
-  currencyName: string
-  currencyDecimals: number
-  explorerUrl: string
-  isTestnet: boolean
-}
-
-interface RegisterTokenRequest {
-  blockchainId: string
-  contractAddress: string
-  name: string
-  symbol: string
-  decimals: number
-}
-
-export enum AvailableProviders {
-  google = 'google.com'
-}
+// core/src/infra/clients/users.ts
+import { Client } from '../utils/httpClient'
+import {
+  Blockchain,
+  Coin,
+  SignInRequest,
+  SignInResponse,
+  RegisterBlockchainRequest,
+  RegisterTokenRequest,
+  User
+} from '@weblock-wallet/types'
 
 export class UserClient {
   private readonly baseUrl = '/v1/users'

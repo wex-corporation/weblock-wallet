@@ -1,23 +1,22 @@
-import { Client } from '../utils/httpClient'
-import { CreateWalletRequest, WalletClient } from '../infra/clients/wallets'
+import { RpcClient } from '../clients/rpcs'
+import { WalletClient } from '../clients/wallets'
 import LocalForage from '../utils/localForage'
-import { RpcClient } from '../infra/clients/rpcs'
-import { Web3 } from 'web3'
+import { Client } from '../utils/httpClient'
 import { ERC20_ABI } from '../contract/contracts'
-import { TransactionStatus } from '../types'
 import { Jwt } from '../utils/jwt'
-import { generateMnemonic, mnemonicToSeed } from 'bip39'
 import { Secrets } from '../utils/secrets'
 import crypto from 'crypto'
-import * as domain from '../domains'
 import { toBigInt, Wallet } from 'ethers'
-import { Coin } from '../domains'
-
-export interface ERC20Info {
-  name: string
-  symbol: string
-  decimals: number
-}
+import Web3 from 'web3'
+import { generateMnemonic, mnemonicToSeed } from 'bip39'
+import {
+  Blockchain,
+  Coin,
+  Wallet as WalletType,
+  ERC20Info,
+  TransactionStatus,
+  CreateWalletRequest
+} from '@weblock-wallet/types'
 
 export class Wallets {
   public wallet: Wallet | null = null
@@ -390,7 +389,7 @@ export class Wallets {
 
   private async refreshWallet(
     exp: number,
-    wallet: domain.Wallet,
+    wallet: WalletType,
     userPassword: string,
     firebaseId: string
   ): Promise<Wallet> {
@@ -434,10 +433,10 @@ export class Wallets {
       decrypted += decipher.final('utf8')
       return decrypted
     } catch (e) {
-      console.error('Error during decrypting share:', e)
-      if (e.message == 'unable to decrypt data') {
+      if (e instanceof Error && e.message === 'unable to decrypt data') {
         throw new Error('Wrong password')
       }
+      console.error('Error during decrypting share:', e)
       throw e
     }
   }

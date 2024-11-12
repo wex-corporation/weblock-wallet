@@ -1,8 +1,13 @@
-import { AvailableProviders, UserClient } from '../infra/clients/users'
+import {
+  AvailableProviders,
+  Blockchain,
+  Coin,
+  FirebaseCredentials
+} from '@weblock-wallet/types'
+import { UserClient } from '../clients/users'
 import { Client } from '../utils/httpClient'
-import { Firebase, FirebaseCredentials } from '../auth/firebase'
+import { Firebase } from '../auth/firebase'
 import LocalForage from '../utils/localForage'
-import { Blockchain, Coin } from '../domains'
 import { OAuthProvider } from 'firebase/auth'
 import { Jwt } from '../utils/jwt'
 
