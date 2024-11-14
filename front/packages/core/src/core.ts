@@ -48,6 +48,15 @@ export class Core {
     this.wallets = new Wallets(this.client)
   }
 
+  public async developerSignIn(provider: AvailableProviders): Promise<void> {
+    if (await this.users.isLoggedIn()) {
+      return
+    }
+    console.log('Developer signing in')
+    await this.users.signOut()
+    await this.users.signIn(provider)
+  }
+
   // Organization 생성
   public async createOrganizations(name: string): Promise<ApiKeyPair> {
     return await this.organizations.createOrganization(name)

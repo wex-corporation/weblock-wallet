@@ -14,14 +14,22 @@
     "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.4",
+    "@weblock-wallet/core": "workspace:*",
+    "@weblock-wallet/types": "workspace:*",
+    "assert": "^2.1.0",
+    "buffer": "^6.0.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "crypto-browserify": "^3.12.0",
+    "firebase": "^10.5.2",
     "lucide-react": "^0.456.0",
     "next": "15.0.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "stream-browserify": "^3.0.0",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "webpack": "^5.89.0"
   },
   "devDependencies": {
     "@types/node": "^20",
