@@ -1,9 +1,8 @@
-// src/app/layout.tsx
 'use client'
 
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import '@/app/globals.css'
+import './globals.css'
 
 export default function RootLayout({
   children
@@ -14,7 +13,8 @@ export default function RootLayout({
     <html lang="en">
       <body className="flex flex-col min-h-screen">
         <Header />
-        <main className="flex-1 container mx-auto">{children}</main>
+        <div className="h-16" />
+        <main className="flex-1 container mx-auto p-4">{children}</main>
         <Footer />
       </body>
     </html>

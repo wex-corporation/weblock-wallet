@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "description": "Core module for Weblock Wallet",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "pnpm format && tsc -p tsconfig.json --sourceMap true",
     "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
     "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,md}'"
@@ -21,7 +24,7 @@
     "shamir-secret-sharing": "^0.0.3",
     "speakeasy": "^2.0.0",
     "web3": "^4.2.2",
-    "@weblock-wallet/types": "workspace:*"
+    "@weblock-wallet/types": "file:../types/weblock-wallet-types-1.0.0.tgz"
   },
   "devDependencies": {
     "@tsconfig/node18": "^18.2.2",

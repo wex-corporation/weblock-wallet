@@ -1,24 +1,9 @@
-import type { NextConfig } from 'next'
-import webpack from 'webpack'
+const { withContentlayer } = require('next-contentlayer')
 
-const nextConfig: NextConfig = {
-  webpack: (config) => {
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      crypto: require.resolve('crypto-browserify'),
-      buffer: require.resolve('buffer/'),
-      stream: require.resolve('stream-browserify'),
-      assert: require.resolve('assert/')
-    }
-
-    config.plugins.push(
-      new webpack.ProvidePlugin({
-        Buffer: ['buffer', 'Buffer']
-      })
-    )
-
-    return config
-  }
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  pageExtensions: ['ts', 'tsx', 'mdx'] // MDX 파일 지원
 }
 
-export default nextConfig
+module.exports = withContentlayer(nextConfig)

@@ -1,29 +1,26 @@
-// src/components/layout/Sidebar.tsx
 import Link from 'next/link'
+
+const docs = [
+  { slug: 'getting-started', title: 'Getting Started' },
+  { slug: 'installation', title: 'Installation' },
+  { slug: 'api-reference', title: 'API Reference' }
+]
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 bg-gray-100 h-screen p-4 border-r">
-      <nav className="space-y-2">
-        <Link
-          href="/docs"
-          className="block p-2 text-gray-700 hover:bg-gray-200 rounded"
-        >
-          Getting Started
-        </Link>
-        <Link
-          href="/docs/api"
-          className="block p-2 text-gray-700 hover:bg-gray-200 rounded"
-        >
-          API Reference
-        </Link>
-        <Link
-          href="/docs/guides"
-          className="block p-2 text-gray-700 hover:bg-gray-200 rounded"
-        >
-          Guides
-        </Link>
-      </nav>
-    </aside>
+    <nav className="w-64 p-4 bg-gray-100">
+      <ul className="space-y-2">
+        {docs.map((doc) => (
+          <li key={doc.slug}>
+            <Link
+              href={`/docs/${doc.slug}`}
+              className="text-gray-800 hover:text-purple-600"
+            >
+              {doc.title}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
   )
 }

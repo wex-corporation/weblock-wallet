@@ -1,0 +1,18 @@
+{
+  "title": "API Reference",
+  "description": "A quick look at all the available API endpoints.",
+  "body": {
+    "raw": "\n# API Reference\n\n### Endpoint: `/get-data`\n\n- **Method**: `GET`\n- **Description**: Fetches the data from the server.\n\n### Endpoint: `/post-data`\n\n- **Method**: `POST`\n- **Description**: Submits data to the server.\n",
+    "code": "import {Fragment as _Fragment, jsx as _jsx, jsxs as _jsxs} from \"react/jsx-runtime\";\nfunction _createMdxContent(props) {\n  const _components = {\n    code: \"code\",\n    h1: \"h1\",\n    h3: \"h3\",\n    li: \"li\",\n    strong: \"strong\",\n    ul: \"ul\",\n    ...props.components\n  };\n  return _jsxs(_Fragment, {\n    children: [_jsx(_components.h1, {\n      children: \"API Reference\"\n    }), \"\\n\", _jsxs(_components.h3, {\n      children: [\"Endpoint: \", _jsx(_components.code, {\n        children: \"/get-data\"\n      })]\n    }), \"\\n\", _jsxs(_components.ul, {\n      children: [\"\\n\", _jsxs(_components.li, {\n        children: [_jsx(_components.strong, {\n          children: \"Method\"\n        }), \": \", _jsx(_components.code, {\n          children: \"GET\"\n        })]\n      }), \"\\n\", _jsxs(_components.li, {\n        children: [_jsx(_components.strong, {\n          children: \"Description\"\n        }), \": Fetches the data from the server.\"]\n      }), \"\\n\"]\n    }), \"\\n\", _jsxs(_components.h3, {\n      children: [\"Endpoint: \", _jsx(_components.code, {\n        children: \"/post-data\"\n      })]\n    }), \"\\n\", _jsxs(_components.ul, {\n      children: [\"\\n\", _jsxs(_components.li, {\n        children: [_jsx(_components.strong, {\n          children: \"Method\"\n        }), \": \", _jsx(_components.code, {\n          children: \"POST\"\n        })]\n      }), \"\\n\", _jsxs(_components.li, {\n        children: [_jsx(_components.strong, {\n          children: \"Description\"\n        }), \": Submits data to the server.\"]\n      }), \"\\n\"]\n    })]\n  });\n}\nexport default function MDXContent(props = {}) {\n  const {wrapper: MDXLayout} = props.components || ({});\n  return MDXLayout ? _jsx(MDXLayout, {\n    ...props,\n    children: _jsx(_createMdxContent, {\n      ...props\n    })\n  }) : _createMdxContent(props);\n}\n"
+  },
+  "_id": "docs/api-reference.mdx",
+  "_raw": {
+    "sourceFilePath": "docs/api-reference.mdx",
+    "sourceFileName": "api-reference.mdx",
+    "sourceFileDir": "docs",
+    "contentType": "mdx",
+    "flattenedPath": "docs/api-reference"
+  },
+  "type": "Doc",
+  "slug": "api-reference"
+}

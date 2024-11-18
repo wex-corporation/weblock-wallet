@@ -1,0 +1,73 @@
+{
+  "cacheItemsMap": {
+    "docs/api-reference.mdx": {
+      "document": {
+        "title": "API Reference",
+        "description": "A quick look at all the available API endpoints.",
+        "body": {
+          "raw": "\n# API Reference\n\n### Endpoint: `/get-data`\n\n- **Method**: `GET`\n- **Description**: Fetches the data from the server.\n\n### Endpoint: `/post-data`\n\n- **Method**: `POST`\n- **Description**: Submits data to the server.\n",
+          "code": "import {Fragment as _Fragment, jsx as _jsx, jsxs as _jsxs} from \"react/jsx-runtime\";\nfunction _createMdxContent(props) {\n  const _components = {\n    code: \"code\",\n    h1: \"h1\",\n    h3: \"h3\",\n    li: \"li\",\n    strong: \"strong\",\n    ul: \"ul\",\n    ...props.components\n  };\n  return _jsxs(_Fragment, {\n    children: [_jsx(_components.h1, {\n      children: \"API Reference\"\n    }), \"\\n\", _jsxs(_components.h3, {\n      children: [\"Endpoint: \", _jsx(_components.code, {\n        children: \"/get-data\"\n      })]\n    }), \"\\n\", _jsxs(_components.ul, {\n      children: [\"\\n\", _jsxs(_components.li, {\n        children: [_jsx(_components.strong, {\n          children: \"Method\"\n        }), \": \", _jsx(_components.code, {\n          children: \"GET\"\n        })]\n      }), \"\\n\", _jsxs(_components.li, {\n        children: [_jsx(_components.strong, {\n          children: \"Description\"\n        }), \": Fetches the data from the server.\"]\n      }), \"\\n\"]\n    }), \"\\n\", _jsxs(_components.h3, {\n      children: [\"Endpoint: \", _jsx(_components.code, {\n        children: \"/post-data\"\n      })]\n    }), \"\\n\", _jsxs(_components.ul, {\n      children: [\"\\n\", _jsxs(_components.li, {\n        children: [_jsx(_components.strong, {\n          children: \"Method\"\n        }), \": \", _jsx(_components.code, {\n          children: \"POST\"\n        })]\n      }), \"\\n\", _jsxs(_components.li, {\n        children: [_jsx(_components.strong, {\n          children: \"Description\"\n        }), \": Submits data to the server.\"]\n      }), \"\\n\"]\n    })]\n  });\n}\nexport default function MDXContent(props = {}) {\n  const {wrapper: MDXLayout} = props.components || ({});\n  return MDXLayout ? _jsx(MDXLayout, {\n    ...props,\n    children: _jsx(_createMdxContent, {\n      ...props\n    })\n  }) : _createMdxContent(props);\n}\n"
+        },
+        "_id": "docs/api-reference.mdx",
+        "_raw": {
+          "sourceFilePath": "docs/api-reference.mdx",
+          "sourceFileName": "api-reference.mdx",
+          "sourceFileDir": "docs",
+          "contentType": "mdx",
+          "flattenedPath": "docs/api-reference"
+        },
+        "type": "Doc",
+        "slug": "api-reference"
+      },
+      "documentHash": "1731660998554",
+      "hasWarnings": false,
+      "documentTypeName": "Doc"
+    },
+    "docs/getting-started.mdx": {
+      "document": {
+        "title": "Getting Started",
+        "description": "Learn how to get started with our SDK.",
+        "body": {
+          "raw": "\n# Getting Started\n\nWelcome to the documentation! This guide will help you get started with our SDK.\n\n## Installation\n\n```bash\npnpm add @weblock-wallet/sdk\n```\n",
+          "code": "import {Fragment as _Fragment, jsx as _jsx, jsxs as _jsxs} from \"react/jsx-runtime\";\nfunction _createMdxContent(props) {\n  const _components = {\n    code: \"code\",\n    h1: \"h1\",\n    h2: \"h2\",\n    p: \"p\",\n    pre: \"pre\",\n    ...props.components\n  };\n  return _jsxs(_Fragment, {\n    children: [_jsx(_components.h1, {\n      children: \"Getting Started\"\n    }), \"\\n\", _jsx(_components.p, {\n      children: \"Welcome to the documentation! This guide will help you get started with our SDK.\"\n    }), \"\\n\", _jsx(_components.h2, {\n      children: \"Installation\"\n    }), \"\\n\", _jsx(_components.pre, {\n      children: _jsx(_components.code, {\n        className: \"language-bash\",\n        children: \"pnpm add @weblock-wallet/sdk\\n\"\n      })\n    })]\n  });\n}\nexport default function MDXContent(props = {}) {\n  const {wrapper: MDXLayout} = props.components || ({});\n  return MDXLayout ? _jsx(MDXLayout, {\n    ...props,\n    children: _jsx(_createMdxContent, {\n      ...props\n    })\n  }) : _createMdxContent(props);\n}\n"
+        },
+        "_id": "docs/getting-started.mdx",
+        "_raw": {
+          "sourceFilePath": "docs/getting-started.mdx",
+          "sourceFileName": "getting-started.mdx",
+          "sourceFileDir": "docs",
+          "contentType": "mdx",
+          "flattenedPath": "docs/getting-started"
+        },
+        "type": "Doc",
+        "slug": "getting-started"
+      },
+      "documentHash": "1731657525989",
+      "hasWarnings": false,
+      "documentTypeName": "Doc"
+    },
+    "docs/installation.mdx": {
+      "document": {
+        "title": "Installation",
+        "description": "How to install the library in your project.",
+        "body": {
+          "raw": "\n# Installation Guide\n\nFollow these steps to set up the library in your project:\n\n1. Run `npm install my-library`.\n2. Import the library using `import { MyLibrary } from 'my-library'`.\n",
+          "code": "import {Fragment as _Fragment, jsx as _jsx, jsxs as _jsxs} from \"react/jsx-runtime\";\nfunction _createMdxContent(props) {\n  const _components = {\n    code: \"code\",\n    h1: \"h1\",\n    li: \"li\",\n    ol: \"ol\",\n    p: \"p\",\n    ...props.components\n  };\n  return _jsxs(_Fragment, {\n    children: [_jsx(_components.h1, {\n      children: \"Installation Guide\"\n    }), \"\\n\", _jsx(_components.p, {\n      children: \"Follow these steps to set up the library in your project:\"\n    }), \"\\n\", _jsxs(_components.ol, {\n      children: [\"\\n\", _jsxs(_components.li, {\n        children: [\"Run \", _jsx(_components.code, {\n          children: \"npm install my-library\"\n        }), \".\"]\n      }), \"\\n\", _jsxs(_components.li, {\n        children: [\"Import the library using \", _jsx(_components.code, {\n          children: \"import { MyLibrary } from 'my-library'\"\n        }), \".\"]\n      }), \"\\n\"]\n    })]\n  });\n}\nexport default function MDXContent(props = {}) {\n  const {wrapper: MDXLayout} = props.components || ({});\n  return MDXLayout ? _jsx(MDXLayout, {\n    ...props,\n    children: _jsx(_createMdxContent, {\n      ...props\n    })\n  }) : _createMdxContent(props);\n}\n"
+        },
+        "_id": "docs/installation.mdx",
+        "_raw": {
+          "sourceFilePath": "docs/installation.mdx",
+          "sourceFileName": "installation.mdx",
+          "sourceFileDir": "docs",
+          "contentType": "mdx",
+          "flattenedPath": "docs/installation"
+        },
+        "type": "Doc",
+        "slug": "installation"
+      },
+      "documentHash": "1731660990197",
+      "hasWarnings": false,
+      "documentTypeName": "Doc"
+    }
+  }
+}
