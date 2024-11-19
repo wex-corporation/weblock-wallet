@@ -12,7 +12,13 @@ import {
   SheetDescription,
   SheetFooter
 } from '@/components/ui/sheet'
-import { Menu, Home as HomeIcon, Book, LayoutDashboard } from 'lucide-react'
+import {
+  Menu,
+  Home as HomeIcon,
+  Book,
+  LayoutDashboard,
+  WalletIcon
+} from 'lucide-react'
 
 export default function Header() {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -66,6 +72,9 @@ export default function Header() {
           <Link href="/docs" className="text-gray-800 hover:text-purple-600">
             Docs
           </Link>
+          <Link href="/sample" className="text-gray-800 hover:text-purple-600">
+            Sample
+          </Link>
           <Link
             href="/dashboard"
             className="text-gray-800 hover:text-purple-600"
@@ -111,6 +120,14 @@ export default function Header() {
                 >
                   <Book className="w-5 h-5" />
                   <span>Docs</span>
+                </Link>
+                <Link
+                  href="/sample"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center space-x-3 text-lg text-gray-800 hover:text-purple-600"
+                >
+                  <WalletIcon className="w-5 h-5" />
+                  <span>Sample</span>
                 </Link>
                 <Link
                   href="/dashboard"
