@@ -16,7 +16,7 @@ export class Organizations {
 
   async createOrganization(name: string): Promise<ApiKeyPair> {
     try {
-      const apiKeyPair = Crypto.createEdDSAKeyPair()
+      const apiKeyPair = await Crypto.createEdDSAKeyPair()
       await this.organizationClient.createOrganization({
         name,
         apiKey: apiKeyPair.apiKey
@@ -24,6 +24,16 @@ export class Organizations {
       return apiKeyPair
     } catch (error) {
       console.error('Error during createOrganization:', error)
+      throw error
+    }
+  }
+
+  async addAllowedHost(hostname: string): Promise<void> {
+    try {
+      await this.organizationClient.addAllowedHost({ hostname })
+      console.log('Allowed host added:', hostname)
+    } catch (error) {
+      console.error('Error adding allowed host:', error)
       throw error
     }
   }

@@ -5,6 +5,7 @@ import { Core } from './core'
 export * from './utils/httpClient'
 export * from './utils/jwt'
 export * from './utils/crypto'
+export * from './utils/localForage'
 
 // `config`와 관련된 기본 설정도 export합니다
 export { defaultConfig } from './config'

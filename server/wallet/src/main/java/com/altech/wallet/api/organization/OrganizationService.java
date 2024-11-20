@@ -22,6 +22,12 @@ public class OrganizationService {
   public Mono<Void> createOrganization(CreateOrganizationRequest request) {
     return this.organizationRepository
         .save(Organization.create(request.name(), request.apiKey()))
+        .flatMap(
+            (Organization org) -> {
+              org.addAllowedHost("http://localhost:3000");
+              org.addAllowedHost("http://localhost:3001");
+              return this.organizationRepository.save(org);
+            })
         .then();
   }
 

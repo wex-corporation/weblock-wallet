@@ -10,3 +10,7 @@ export interface CreateOrganizationRequest {
   name: string
   apiKey: string
 }
+
+export interface AddHostRequest {
+  hostname: string
+}
