@@ -5,6 +5,7 @@ import com.altech.core.domain.organization.OrganizationRepository;
 import com.altech.wallet.api.organization.dto.AddHostRequest;
 import com.altech.wallet.api.organization.dto.CreateOrganizationRequest;
 import com.altech.wallet.config.AttributeStorage;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,13 @@ public class OrganizationService {
   public Mono<Void> createOrganization(CreateOrganizationRequest request) {
     return this.organizationRepository
         .save(Organization.create(request.name(), request.apiKey()))
+        .flatMap(
+            org -> {
+              List<String> defaultAllowedHosts =
+                  List.of("http://localhost:3000", "http://localhost:3333");
+              org.setAllowedHosts(defaultAllowedHosts);
+              return this.organizationRepository.save(org);
+            })
         .then();
   }
 

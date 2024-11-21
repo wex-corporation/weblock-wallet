@@ -1,0 +1,18 @@
+{
+  "title": "Getting Started",
+  "description": "Learn how to get started with our SDK.",
+  "body": {
+    "raw": "\n# Getting Started\n\nWelcome to the documentation! This guide will help you get started with our SDK.\n\n## Installation\n\n```bash\npnpm add @weblock-wallet/sdk\n```\n",
+    "code": "import {Fragment as _Fragment, jsx as _jsx, jsxs as _jsxs} from \"react/jsx-runtime\";\nfunction _createMdxContent(props) {\n  const _components = {\n    code: \"code\",\n    h1: \"h1\",\n    h2: \"h2\",\n    p: \"p\",\n    pre: \"pre\",\n    ...props.components\n  };\n  return _jsxs(_Fragment, {\n    children: [_jsx(_components.h1, {\n      children: \"Getting Started\"\n    }), \"\\n\", _jsx(_components.p, {\n      children: \"Welcome to the documentation! This guide will help you get started with our SDK.\"\n    }), \"\\n\", _jsx(_components.h2, {\n      children: \"Installation\"\n    }), \"\\n\", _jsx(_components.pre, {\n      children: _jsx(_components.code, {\n        className: \"language-bash\",\n        children: \"pnpm add @weblock-wallet/sdk\\n\"\n      })\n    })]\n  });\n}\nexport default function MDXContent(props = {}) {\n  const {wrapper: MDXLayout} = props.components || ({});\n  return MDXLayout ? _jsx(MDXLayout, {\n    ...props,\n    children: _jsx(_createMdxContent, {\n      ...props\n    })\n  }) : _createMdxContent(props);\n}\n"
+  },
+  "_id": "docs/getting-started.mdx",
+  "_raw": {
+    "sourceFilePath": "docs/getting-started.mdx",
+    "sourceFileName": "getting-started.mdx",
+    "sourceFileDir": "docs",
+    "contentType": "mdx",
+    "flattenedPath": "docs/getting-started"
+  },
+  "type": "Doc",
+  "slug": "getting-started"
+}

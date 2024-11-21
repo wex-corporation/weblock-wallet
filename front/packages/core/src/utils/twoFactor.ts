@@ -1,13 +1,7 @@
+// core/src/utils/twoFactor.ts
 import * as speakeasy from 'speakeasy'
 import * as qrcode from 'qrcode'
-import { QRCode } from 'qrcode'
-
-// WIP
-interface ITwoFactor {
-  generateSecret(): string
-  createQRCode(secret: string): QRCode
-  verifyToken(secret: string, userToken: string): boolean
-}
+import { ITwoFactor } from '@weblock-wallet/types'
 
 export const TwoFactor: ITwoFactor = {
   generateSecret(): string {
@@ -15,8 +9,8 @@ export const TwoFactor: ITwoFactor = {
     return secret.base32
   },
 
-  createQRCode(secret: string): QRCode {
-    return qrcode.create('otpauth://totp/MyApp?secret=' + secret)
+  async createQRCode(secret: string): Promise<string> {
+    return await qrcode.toDataURL('otpauth://totp/MyApp?secret=' + secret)
   },
 
   verifyToken(secret: string, userToken: string): boolean {

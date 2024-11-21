@@ -1,0 +1,70 @@
+{
+  "cacheItemsMap": {
+    "docs/api-reference.mdx": {
+      "document": {
+        "title": "API Reference",
+        "description": "A quick look at all the available API endpoints.",
+        "body": {
+          "raw": "\n# API Reference\n\n### Endpoint: `/get-data`\n\n- **Method**: `GET`\n- **Description**: Fetches the data from the server.\n\n### Endpoint: `/post-data`\n\n- **Method**: `POST`\n- **Description**: Submits data to the server.\n",
+          "html": "<h1>API Reference</h1>\n<h3>Endpoint: <code>/get-data</code></h3>\n<ul>\n<li><strong>Method</strong>: <code>GET</code></li>\n<li><strong>Description</strong>: Fetches the data from the server.</li>\n</ul>\n<h3>Endpoint: <code>/post-data</code></h3>\n<ul>\n<li><strong>Method</strong>: <code>POST</code></li>\n<li><strong>Description</strong>: Submits data to the server.</li>\n</ul>"
+        },
+        "_id": "docs/api-reference.mdx",
+        "_raw": {
+          "sourceFilePath": "docs/api-reference.mdx",
+          "sourceFileName": "api-reference.mdx",
+          "sourceFileDir": "docs",
+          "contentType": "mdx",
+          "flattenedPath": "docs/api-reference"
+        },
+        "type": "Doc"
+      },
+      "documentHash": "1731660998554",
+      "hasWarnings": false,
+      "documentTypeName": "Doc"
+    },
+    "docs/getting-started.mdx": {
+      "document": {
+        "title": "Getting Started",
+        "description": "Learn how to get started with our SDK.",
+        "body": {
+          "raw": "\n# Getting Started\n\nWelcome to the documentation! This guide will help you get started with our SDK.\n\n## Installation\n\n```bash\npnpm add @weblock-wallet/sdk\n```\n",
+          "html": "<h1>Getting Started</h1>\n<p>Welcome to the documentation! This guide will help you get started with our SDK.</p>\n<h2>Installation</h2>\n<pre><code class=\"language-bash\">pnpm add @weblock-wallet/sdk\n</code></pre>"
+        },
+        "_id": "docs/getting-started.mdx",
+        "_raw": {
+          "sourceFilePath": "docs/getting-started.mdx",
+          "sourceFileName": "getting-started.mdx",
+          "sourceFileDir": "docs",
+          "contentType": "mdx",
+          "flattenedPath": "docs/getting-started"
+        },
+        "type": "Doc"
+      },
+      "documentHash": "1731657525989",
+      "hasWarnings": false,
+      "documentTypeName": "Doc"
+    },
+    "docs/installation.mdx": {
+      "document": {
+        "title": "Installation",
+        "description": "How to install the library in your project.",
+        "body": {
+          "raw": "\n# Installation Guide\n\nFollow these steps to set up the library in your project:\n\n1. Run `npm install my-library`.\n2. Import the library using `import { MyLibrary } from 'my-library'`.\n",
+          "html": "<h1>Installation Guide</h1>\n<p>Follow these steps to set up the library in your project:</p>\n<ol>\n<li>Run <code>npm install my-library</code>.</li>\n<li>Import the library using <code>import { MyLibrary } from 'my-library'</code>.</li>\n</ol>"
+        },
+        "_id": "docs/installation.mdx",
+        "_raw": {
+          "sourceFilePath": "docs/installation.mdx",
+          "sourceFileName": "installation.mdx",
+          "sourceFileDir": "docs",
+          "contentType": "mdx",
+          "flattenedPath": "docs/installation"
+        },
+        "type": "Doc"
+      },
+      "documentHash": "1731660990197",
+      "hasWarnings": false,
+      "documentTypeName": "Doc"
+    }
+  }
+}

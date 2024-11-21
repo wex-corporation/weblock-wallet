@@ -1,8 +1,13 @@
-import { AvailableProviders, UserClient } from '../infra/clients/users'
+import {
+  AvailableProviders,
+  Blockchain,
+  Coin,
+  FirebaseCredentials
+} from '@weblock-wallet/types'
+import { UserClient } from '../clients/users'
 import { Client } from '../utils/httpClient'
-import { Firebase, FirebaseCredentials } from '../auth/firebase'
+import { Firebase } from '../auth/firebase'
 import LocalForage from '../utils/localForage'
-import { Blockchain, Coin } from '../domains'
 import { OAuthProvider } from 'firebase/auth'
 import { Jwt } from '../utils/jwt'
 
@@ -22,13 +27,25 @@ export class Users {
       const credentials: FirebaseCredentials = await this.firebase.signIn(
         new OAuthProvider(provider)
       )
+
       const response = await this.userClient.signIn({
         firebaseId: credentials.firebaseId,
         email: credentials.email,
         idToken: credentials.idToken,
         provider
       })
-      const accessToken = response!.token
+
+      if (!response) {
+        throw new Error('Failed to sign in: No response from userClient')
+      }
+
+      const accessToken = response.token
+      const expiration = Jwt.parse(accessToken)?.exp
+
+      if (!expiration) {
+        throw new Error('Failed to parse expiration from access token')
+      }
+
       await LocalForage.save(
         `${this.orgHost}:firebaseId`,
         credentials.firebaseId
@@ -36,9 +53,9 @@ export class Users {
       await LocalForage.save(
         `${this.orgHost}:accessToken`,
         accessToken,
-        Jwt.parse(accessToken)?.exp!
+        expiration
       )
-      await LocalForage.save(`${this.orgHost}:isNewUser`, response!.isNewUser)
+      await LocalForage.save(`${this.orgHost}:isNewUser`, response.isNewUser)
     } catch (error) {
       console.error('Error during sign-in:', error)
       throw error

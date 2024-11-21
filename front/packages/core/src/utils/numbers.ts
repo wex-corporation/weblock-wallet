@@ -1,10 +1,6 @@
 import { BN } from 'ethereumjs-util'
 import { ethers } from 'ethers'
-
-interface INumbers {
-  hexToDecimal(hexString: string): string
-  weiToEth(wei: string): string
-}
+import { INumbers } from '@weblock-wallet/types'
 
 export const Numbers: INumbers = {
   hexToDecimal(hexString: string): string {

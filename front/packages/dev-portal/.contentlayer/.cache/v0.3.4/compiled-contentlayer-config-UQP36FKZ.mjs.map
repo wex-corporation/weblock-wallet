@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../contentlayer.config.ts"],
+  "sourcesContent": ["import { defineDocumentType, makeSource } from 'contentlayer/source-files'\n\nexport const Doc = defineDocumentType(() => ({\n  name: 'Doc',\n  filePathPattern: `**/*.mdx`,\n  fields: {\n    title: { type: 'string', required: true },\n    description: { type: 'string', required: false },\n    slug: { type: 'string', required: true }\n  },\n  computedFields: {\n    slug: {\n      type: 'string',\n      resolve: (doc) => doc._raw.sourceFileName.replace(/\\.mdx$/, '')\n    },\n    body: {\n      type: 'json',\n      resolve: (doc) => ({\n        raw: doc.body.raw, // Markdown \uC6D0\uBB38\n        code: doc.body.code // MDX \uCEF4\uD30C\uC77C \uCF54\uB4DC\n      })\n    }\n  }\n}))\n\nexport default makeSource({\n  contentDirPath: 'src/content',\n  documentTypes: [Doc]\n})\n"],
+  "mappings": ";AAAA,SAAS,oBAAoB,kBAAkB;AAExC,IAAM,MAAM,mBAAmB,OAAO;AAAA,EAC3C,MAAM;AAAA,EACN,iBAAiB;AAAA,EACjB,QAAQ;AAAA,IACN,OAAO,EAAE,MAAM,UAAU,UAAU,KAAK;AAAA,IACxC,aAAa,EAAE,MAAM,UAAU,UAAU,MAAM;AAAA,IAC/C,MAAM,EAAE,MAAM,UAAU,UAAU,KAAK;AAAA,EACzC;AAAA,EACA,gBAAgB;AAAA,IACd,MAAM;AAAA,MACJ,MAAM;AAAA,MACN,SAAS,CAAC,QAAQ,IAAI,KAAK,eAAe,QAAQ,UAAU,EAAE;AAAA,IAChE;AAAA,IACA,MAAM;AAAA,MACJ,MAAM;AAAA,MACN,SAAS,CAAC,SAAS;AAAA,QACjB,KAAK,IAAI,KAAK;AAAA;AAAA,QACd,MAAM,IAAI,KAAK;AAAA;AAAA,MACjB;AAAA,IACF;AAAA,EACF;AACF,EAAE;AAEF,IAAO,8BAAQ,WAAW;AAAA,EACxB,gBAAgB;AAAA,EAChB,eAAe,CAAC,GAAG;AACrB,CAAC;",
+  "names": []
+}

@@ -1,108 +1,206 @@
-import { Firebase } from './auth/firebase'
+// 설정 관련 import
+import { defaultConfig } from './config'
+
+// 유틸리티 관련 import
 import { Client, WalletServerHttpClient } from './utils/httpClient'
+import { Firebase } from './auth/firebase'
+import { OAuthProvider } from 'firebase/auth'
+import { LocalForage } from './utils/localForage'
+import { Jwt } from './utils/jwt'
+// import { Secrets } from './utils/secrets'
+
+// 모듈 관련 import
+import { UserClient } from './clients/users'
+import { OrganizationClient } from './clients/organizations'
 import { Users } from './module/users'
-import { AvailableProviders } from './infra/clients/users'
-import { ERC20Info, Wallets } from './module/wallets'
-import { Blockchain, Coin } from './domains'
-import { TransactionStatus } from './types'
-import { Wallet } from 'ethers'
 import { Organizations } from './module/organizations'
-import { ApiKeyPair } from './utils/crypto'
+import { Wallets } from './module/wallets'
+import { Wallet as EthersWallet } from 'ethers'
 
-const getBaseUrls = (env: string) => {
-  switch (env) {
-    case 'local':
-      return 'http://localhost:8080'
-    case 'dev':
-      return 'https://dev.alwallet.io'
-    case 'stage':
-      return 'https://staging.alwallet.io'
-    case 'prod':
-      return 'https://wallet.alwallet.io'
-    default:
-      throw new Error('Invalid env')
-  }
-}
-
-const getFirebaseConfig = (env: string) => {
-  switch (env) {
-    case 'local':
-      return {
-        apiKey: 'AIzaSyBiaHmiqmnUVtuCfKJ3yc9g1rdoSKCJYlE',
-        authDomain: 'al-tech-704e2.firebaseapp.com',
-        projectId: 'al-tech-704e2',
-        storageBucket: 'al-tech-704e2.appspot.com',
-        messagingSenderId: '79434562951',
-        appId: '1:79434562951:web:25571fdadf346b9ad9e722',
-        measurementId: 'G-KDKWTTVWD7'
-      }
-    case 'dev':
-      return {
-        apiKey: 'AIzaSyBiaHmiqmnUVtuCfKJ3yc9g1rdoSKCJYlE',
-        authDomain: 'al-tech-704e2.firebaseapp.com',
-        projectId: 'al-tech-704e2',
-        storageBucket: 'al-tech-704e2.appspot.com',
-        messagingSenderId: '79434562951',
-        appId: '1:79434562951:web:25571fdadf346b9ad9e722',
-        measurementId: 'G-KDKWTTVWD7'
-      }
-    case 'stage':
-      return {
-        apiKey: 'AIzaSyBiaHmiqmnUVtuCfKJ3yc9g1rdoSKCJYlE',
-        authDomain: 'al-tech-704e2.firebaseapp.com',
-        projectId: 'al-tech-704e2',
-        storageBucket: 'al-tech-704e2.appspot.com',
-        messagingSenderId: '79434562951',
-        appId: '1:79434562951:web:25571fdadf346b9ad9e722',
-        measurementId: 'G-KDKWTTVWD7'
-      }
-    case 'prod':
-      return {
-        apiKey: 'AIzaSyBiaHmiqmnUVtuCfKJ3yc9g1rdoSKCJYlE',
-        authDomain: 'al-tech-704e2.firebaseapp.com',
-        projectId: 'al-tech-704e2',
-        storageBucket: 'al-tech-704e2.appspot.com',
-        messagingSenderId: '79434562951',
-        appId: '1:79434562951:web:25571fdadf346b9ad9e722',
-        measurementId: 'G-KDKWTTVWD7'
-      }
-    default:
-      throw new Error('Invalid env')
-  }
-}
-
-export interface SendTransaction {
-  amount: string
-  to: string
-  coin: Coin
-  nonce?: number
-  gasLimit?: bigint
-  gasPrice?: string
-}
+// 타입 정의 관련 import
+import {
+  AvailableProviders,
+  AppConfig,
+  ApiKeyPair,
+  Blockchain,
+  Coin,
+  // ERC20Info,
+  TransactionStatus,
+  // CreateWalletRequest,
+  SendTransaction
+} from '@weblock-wallet/types'
 
 export class Core {
   private readonly firebase: Firebase
   private readonly client: Client
+  private readonly orgHost: string
   private organizations: Organizations
   private users: Users
   private wallets: Wallets
 
-  constructor(env: string, apiKey: string, orgHost: string) {
-    this.client = new WalletServerHttpClient(
-      {
-        baseUrl: getBaseUrls(env)
-      },
-      apiKey,
-      orgHost
-    ) as any
-    this.firebase = new Firebase(getFirebaseConfig(env))
+  constructor(
+    env: keyof AppConfig['baseUrls'],
+    apiKey: string,
+    orgHost: string
+  ) {
+    const baseUrl = defaultConfig.baseUrls[env]
+    const firebaseConfig = defaultConfig.firebaseConfig
+
+    this.orgHost = orgHost
+    this.client = new WalletServerHttpClient({ baseUrl }, apiKey, orgHost)
+    this.firebase = new Firebase(firebaseConfig)
     this.organizations = new Organizations(this.client)
     this.users = new Users(this.client, this.firebase)
     this.wallets = new Wallets(this.client)
   }
+  getOrgHost(): string {
+    return this.orgHost
+  }
+  getClient(): Client {
+    return this.client
+  }
 
-  public async createOrganizations(name: string): Promise<ApiKeyPair> {
-    return await this.organizations.createOrganization(name)
+  public async developerSignIn(providerId: string): Promise<void> {
+    try {
+      const provider = new OAuthProvider(providerId)
+      const credentials = await this.firebase.signIn(provider)
+
+      const { firebaseId, idToken, email } = credentials
+      console.log('Firebase login successful:', { firebaseId, idToken, email })
+
+      // 사용자 인증 및 accessToken 가져오기
+      const userClient = new UserClient(this.client)
+      const signInResponse = await userClient.signIn({
+        firebaseId,
+        idToken,
+        email,
+        provider: AvailableProviders.Google // 또는 다른 provider
+      })
+
+      if (!signInResponse || !signInResponse.token) {
+        throw new Error(
+          'Failed to retrieve accessToken during developer sign-in'
+        )
+      }
+
+      const accessToken = signInResponse.token
+      const expiration = Jwt.parse(accessToken)?.exp
+
+      if (!expiration) {
+        throw new Error('Failed to parse expiration from access token')
+      }
+
+      // LocalForage에 저장
+      await LocalForage.save(`${this.orgHost}:firebaseId`, firebaseId)
+      await LocalForage.save(`${this.orgHost}:idToken`, idToken)
+      await LocalForage.save(`${this.orgHost}:email`, email)
+      await LocalForage.save(
+        `${this.orgHost}:accessToken`,
+        accessToken,
+        expiration
+      )
+
+      console.log('Developer signed in and data saved to LocalForage:', {
+        firebaseId,
+        idToken,
+        email,
+        accessToken
+      })
+    } catch (error) {
+      console.error('Error during developer sign-in:', error)
+      throw error
+    }
+  }
+
+  public async developerSignOut(): Promise<void> {
+    try {
+      await this.firebase.signOut()
+      await LocalForage.delete(`${this.orgHost}:firebaseId`)
+      await LocalForage.delete(`${this.orgHost}:idToken`)
+      await LocalForage.delete(`${this.orgHost}:email`)
+      await LocalForage.delete(`${this.orgHost}:accessToken`)
+
+      console.log('Developer signed out and data removed from LocalForage.')
+    } catch (error) {
+      console.error('Error during developer sign-out:', error)
+      throw error
+    }
+  }
+
+  // 개발자가 조직을 생성하고 사용자를 등록하는 메서드
+  public async createOrganizationsWithUser(
+    orgName: string
+  ): Promise<ApiKeyPair> {
+    try {
+      // 1. Firebase 자격 증명 확인
+      const firebaseId = await LocalForage.get<string>(
+        `${this.getOrgHost()}:firebaseId`
+      )
+      const email = await LocalForage.get<string>(`${this.getOrgHost()}:email`)
+      const idToken = await LocalForage.get<string>(
+        `${this.getOrgHost()}:idToken`
+      )
+      const accessToken = await LocalForage.get<string>(
+        `${this.getOrgHost()}:accessToken`
+      )
+
+      console.log('Step 1: Retrieved Firebase credentials', {
+        firebaseId,
+        email,
+        idToken,
+        accessToken
+      })
+
+      if (!firebaseId || !email || !idToken || !accessToken) {
+        console.error(
+          'Step 1 Error: Missing Firebase credentials or access token'
+        )
+        throw new Error(
+          'Missing Firebase credentials or access token. Please log in again.'
+        )
+      }
+
+      // 2. 조직 생성
+      console.log('Step 2: Creating organization with name:', orgName)
+      const organization = await this.organizations.createOrganization(orgName)
+      console.log('Step 2 Success: Organization created', organization)
+
+      // 3. Core 초기화 (새로운 API Key 사용)
+      console.log(
+        'Step 3: Reinitializing Core with new organization credentials'
+      )
+      const newCore = new Core(
+        'local',
+        organization.apiKey,
+        'http://localhost:3000'
+      )
+      console.log('Step 3 Success: Core re-initialized')
+
+      // 4. 새로운 Core로 사용자 등록
+      console.log('Step 4: Registering user with new organization')
+      const userClient = new UserClient(newCore['client'])
+      const signInResponse = await userClient.signIn({
+        firebaseId,
+        email,
+        idToken,
+        provider: AvailableProviders.Google
+      })
+      console.log('Step 4 Success: User registered', signInResponse)
+
+      // 5. API Key 반환
+      console.log(
+        'Step 5: Returning new organization API Key',
+        organization.apiKey
+      )
+      return organization
+    } catch (error) {
+      console.error('Error during createOrganizationsWithUser:', error)
+      throw error
+    }
+  }
+
+  public getOrganizations(): Organizations {
+    return this.organizations
   }
 
   public async signInWithGoogle(): Promise<void> {
@@ -112,7 +210,7 @@ export class Core {
     console.log('signing in with google')
     // SignOut first to clear data
     await this.users.signOut()
-    await this.users.signIn(AvailableProviders.google)
+    await this.users.signIn(AvailableProviders.Google)
   }
 
   public async signOut(): Promise<void> {
@@ -192,7 +290,7 @@ export class Core {
     await this.wallets.retrieveWallet(userPassword)
   }
 
-  public getWallet(): Wallet | null {
+  public getWallet(): EthersWallet | null {
     return this.wallets.wallet
   }
 
@@ -209,10 +307,10 @@ export class Core {
       throw new Error('Must sign in first')
     }
 
+    const blockchain = await this.getBlockchainByChainId(chainId)
+
     return await this.wallets.sendTransction(
-      (await this.getBlockchains()).filter(
-        (blockchain) => blockchain.chainId === chainId
-      )[0].rpcUrl,
+      blockchain.rpcUrl,
       chainId,
       transaction.amount,
       transaction.to,
@@ -231,12 +329,21 @@ export class Core {
       throw new Error('Must sign in first')
     }
 
+    const blockchain = await this.getBlockchainByChainId(chainId)
     return await this.wallets.getTransactionStatus(
-      (await this.getBlockchains()).filter(
-        (blockchain) => blockchain.chainId === chainId
-      )[0].rpcUrl,
+      blockchain.rpcUrl,
       chainId,
       txHash
     )
+  }
+
+  private async getBlockchainByChainId(chainId: number): Promise<Blockchain> {
+    const blockchain = (await this.getBlockchains()).find(
+      (blockchain) => blockchain.chainId === chainId
+    )
+    if (!blockchain) {
+      throw new Error(`Blockchain with chainId ${chainId} not found`)
+    }
+    return blockchain
   }
 }

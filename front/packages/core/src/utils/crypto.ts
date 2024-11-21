@@ -1,47 +1,33 @@
-import * as crypto from 'crypto'
+import sodium from 'libsodium-wrappers'
+import { ApiKeyPair } from '@weblock-wallet/types'
 
-export interface ApiKeyPair {
-  apiKey: string
-  secretKey: string
-}
+export const Crypto = {
+  async createEdDSAKeyPair(): Promise<ApiKeyPair> {
+    // 1. 라이브러리 초기화
+    await sodium.ready
 
-interface ICrypto {
-  createEdDSAKeyPair(): ApiKeyPair
-}
+    // 2. ed25519 키 쌍 생성
+    const keyPair = sodium.crypto_sign_keypair()
 
-function urlEncode(pemKey: string) {
-  const pemFormat =
-    /-----(BEGIN|END) (RSA PRIVATE|EC PRIVATE|PRIVATE|PUBLIC) KEY-----/g
-  const base64Key = pemKey.replace(pemFormat, '') // remove all whitespace characters from the key
-  return base64Key
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/g, '')
-    .replace(/ /g, '')
-    .replace(/\r/g, '')
-    .replace(/\n/g, '')
-}
-
-export const Crypto: ICrypto = {
-  createEdDSAKeyPair(): ApiKeyPair {
-    const now = Date.now()
-    const keyPair = crypto.generateKeyPairSync('ed25519', {
-      publicKeyEncoding: {
-        type: 'spki',
-        format: 'der'
-      },
-      privateKeyEncoding: {
-        type: 'pkcs8',
-        format: 'pem'
-      }
-    })
-    console.log('time: ' + (Date.now() - now) + 'ms')
-
-    const apiKey = Buffer.from(keyPair.publicKey.subarray(12)).toString(
-      'base64url'
+    // 3. 공개 키와 비밀 키를 Base64 URL-safe 형식으로 변환
+    const apiKey = urlEncode(
+      sodium.to_base64(
+        keyPair.publicKey,
+        sodium.base64_variants.URLSAFE_NO_PADDING
+      )
     )
-    const secretKey = urlEncode(keyPair.privateKey)
+    const secretKey = urlEncode(
+      sodium.to_base64(
+        keyPair.privateKey,
+        sodium.base64_variants.URLSAFE_NO_PADDING
+      )
+    )
 
     return { apiKey, secretKey }
   }
+}
+
+// URL-safe Base64 변환
+function urlEncode(base64Key: string): string {
+  return base64Key.replace(/=+$/g, '') // '=' 제거
 }

@@ -1,16 +1,5 @@
 import LocalForage from './localForage'
-import { config } from 'localforage'
-
-interface ClientOptions {
-  baseUrl: string
-  customHeaders?: HeadersInit
-}
-
-interface RequestConfig {
-  headers?: HeadersInit
-  credentials?: RequestCredentials
-  needsAccessToken?: boolean
-}
+import { ClientOptions, RequestConfig } from '@weblock-wallet/types'
 
 export interface Client {
   request<T = any>(
@@ -43,7 +32,7 @@ export interface Client {
 
 export class HttpClient {
   baseUrl: string
-  customHeaders: HeadersInit
+  protected customHeaders: HeadersInit
 
   constructor({ baseUrl, customHeaders = {} }: ClientOptions) {
     this.baseUrl = baseUrl
@@ -69,6 +58,14 @@ export class HttpClient {
       headers.set('Content-Type', 'application/json')
     }
 
+    // Log the outgoing request details
+    console.log('HttpClient Request:', {
+      method,
+      url: url.toString(),
+      // headers: Object.fromEntries(headers),
+      body
+    })
+
     const response = await fetch(url.toString(), {
       method,
       headers,
@@ -76,8 +73,23 @@ export class HttpClient {
       credentials: config.credentials || 'same-origin'
     })
 
+    // Log the response details
+    console.log('HttpClient Response:', {
+      url: url.toString(),
+      status: response.status,
+      // headers: Object.fromEntries(response.headers.entries()),
+      body: await response.clone().text()
+    })
+
     if (!response.ok) {
-      throw new Error(`HTTP error! response: ${JSON.stringify(response)}`)
+      console.error('HttpClient Error Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        response
+      })
+      throw new Error(
+        `HTTP error! Status: ${response.status} ${response.statusText}`
+      )
     }
 
     const contentType = response.headers.get('content-type')
@@ -151,7 +163,7 @@ export class WalletServerHttpClient extends HttpClient {
     data: any = null,
     config: RequestConfig = {}
   ): Promise<T | null> {
-    const headers = new Headers(super.customHeaders)
+    const headers = new Headers(this.customHeaders)
     headers.set('X-Al-Api-Key', this.apiKey)
     headers.set('X-Al-Org-Host', this.orgHost)
 
@@ -164,9 +176,19 @@ export class WalletServerHttpClient extends HttpClient {
       }
     }
 
+    // Log additional details for WalletServerHttpClient
+    console.log('WalletServerHttpClient Request:', {
+      method,
+      url: new URL(path, this.baseUrl).toString(),
+      apiKey: this.apiKey,
+      orgHost: this.orgHost,
+      // headers: Object.fromEntries(headers),
+      data
+    })
+
     return super.request(method, path, data, {
       ...config,
-      headers: headers
+      headers
     })
   }
 

@@ -4,7 +4,6 @@ import com.altech.core.domain.jwt.AccessTokenValidator;
 import com.altech.core.domain.organization.OrganizationRepository;
 import com.altech.core.exceptions.AuthorizationException;
 import com.altech.core.exceptions.ErrorCode;
-import com.altech.core.exceptions.InternalServerException;
 import com.altech.core.exceptions.JWTException;
 import com.altech.wallet.config.AttributeStorage;
 import com.altech.wallet.config.filter.FilterProperties;
@@ -46,45 +45,70 @@ public class UserValidationExcludeFilter extends ExcludeUrlFilter {
     String orgHostHeader = exchange.getRequest().getHeaders().getFirst("X-Al-Org-Host");
     String authorizationHeader =
         exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+
+    log.debug(
+        "Processing request - API Key: {}, Org Host: {}, Authorization: {}",
+        apiKeyHeader,
+        orgHostHeader,
+        authorizationHeader);
+
     if (apiKeyHeader == null
         || orgHostHeader == null
         || authorizationHeader == null
         || !authorizationHeader.startsWith("Bearer ")) {
+      log.warn(
+          "Invalid or missing headers. API Key: {}, Org Host: {}, Authorization: {}",
+          apiKeyHeader,
+          orgHostHeader,
+          authorizationHeader);
       return this.sendErrorResponse(
               exchange,
               HttpStatus.UNAUTHORIZED,
               ErrorCode.AUTHORIZATION_HEADER_NOT_FOUND.getMessage())
           .thenReturn(false);
     }
+
     String token = authorizationHeader.substring(7);
+    log.debug("Extracted token from authorization header: {}", token);
+
     return this.organizationRepository
         .findByApiKey(apiKeyHeader)
+        .doOnNext(org -> log.debug("Found organization for API Key: {}", org))
         .flatMap(
             org -> {
               if (!org.getAllowedHosts().contains(orgHostHeader)) {
+                log.warn(
+                    "Org Host '{}' not allowed for organization '{}'",
+                    orgHostHeader,
+                    org.getName());
                 return Mono.error(new AuthorizationException(ErrorCode.NOT_ALLOWED_HOST));
               }
+
               exchange.getAttributes().put(AttributeStorage.ORGANIZATION_ATTRIBUTE_KEY, org);
+              log.debug("Organization stored in attributes: {}", org);
+
               try {
                 return this.accessTokenValidator
                     .validate(token)
-                    .doOnError(Throwable::printStackTrace)
+                    .doOnNext(user -> log.debug("Validated user: {}", user))
                     .flatMap(
                         user -> {
                           if (!user.getOrgId().equals(org.getId())) {
-                            return Mono.error(
-                                new AuthorizationException(
-                                    String.format(
-                                        "User not registered on org id '%s'", org.getId()),
-                                    ErrorCode.USER_NOT_FOUND));
+                            log.warn(
+                                "User '{}' not associated with organization '{}'",
+                                user.getId(),
+                                org.getId());
+                            return Mono.error(new AuthorizationException(ErrorCode.USER_NOT_FOUND));
                           }
                           exchange.getAttributes().put(AttributeStorage.USER_ATTRIBUTE_KEY, user);
+                          log.debug("User stored in attributes: {}", user);
                           return Mono.just(true);
-                        })
-                    .switchIfEmpty(
-                        Mono.error(new AuthorizationException(ErrorCode.USER_NOT_FOUND)));
+                        });
               } catch (JsonProcessingException e) {
-                return Mono.error(new InternalServerException(e.getMessage()));
+                log.error("Error processing JSON: {}", e.getMessage());
+                return this.sendErrorResponse(
+                        exchange, HttpStatus.INTERNAL_SERVER_ERROR, "Error processing JSON")
+                    .thenReturn(false);
               }
             })
         .switchIfEmpty(
@@ -95,21 +119,13 @@ public class UserValidationExcludeFilter extends ExcludeUrlFilter {
         .onErrorResume(
             e -> {
               if (e instanceof JWTException || e instanceof AuthorizationException) {
+                log.error("Authorization error: {}", e.getMessage());
                 return this.sendErrorResponse(exchange, HttpStatus.UNAUTHORIZED, e.getMessage())
                     .thenReturn(false);
               } else {
+                log.error("Unhandled error during filter execution: {}", e.getMessage());
                 return Mono.error(e);
               }
-            })
-        .onErrorResume(
-            InternalServerException.class,
-            e ->
-                this.sendErrorResponse(exchange, HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage())
-                    .thenReturn(false))
-        .onErrorResume(
-            e ->
-                this.sendErrorResponse(
-                        exchange, HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error")
-                    .thenReturn(false));
+            });
   }
 }
