@@ -1,0 +1,26 @@
+{
+  "name": "weblock-wallet",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Workspace for Weblock Wallet SDK development",
+  "scripts": {
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "dev": "pnpm -r dev",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-react": "^7.0.0",
+    "prettier": "^2.0.0",
+    "rollup": "^2.79.2",
+    "typescript": "^5.1.6"
+  }
+}

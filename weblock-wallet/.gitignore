@@ -1,0 +1,9 @@
+# Node modules
+node_modules
+
+# Build outputs
+dist
+/types/dist/
+
+# Rollup cache
+.cache

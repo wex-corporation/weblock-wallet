@@ -1,0 +1,22 @@
+{
+  "name": "@weblock-wallet/types",
+  "version": "1.0.0",
+  "description": "Types package for Weblock Wallet",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && rollup -c && rollup -c rollup.config.dts.js",
+    "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
+    "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,md}'"
+  },
+  "devDependencies": {
+    "ethers": "^6.13.4",
+    "rollup": "^2.78.0",
+    "rollup-plugin-dts": "^5.1.1",
+    "rollup-plugin-typescript2": "^0.34.1",
+    "typescript": "^5.2.2"
+  }
+}
