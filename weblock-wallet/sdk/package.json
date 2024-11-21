@@ -1,0 +1,31 @@
+{
+  "name": "@weblock-wallet/sdk",
+  "version": "0.1.0",
+  "description": "SDK package for Weblock Wallet",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "private": false,
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "rm -rf dist && rollup -c && rollup -c rollup.config.dts.js",
+    "dev": "pnpm run build --watch",
+    "lint": "eslint 'src/**/*.{js,ts}'",
+    "format": "prettier --write 'src/**/*.{js,ts,json,md}'"
+  },
+  "dependencies": {
+    "@weblock-wallet/core": "workspace:*",
+    "@weblock-wallet/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^24.0.1",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "rollup": "^2.78.0",
+    "rollup-plugin-dts": "^5.1.1",
+    "rollup-plugin-typescript2": "^0.34.1",
+    "typescript": "^5.2.2"
+  }
+}

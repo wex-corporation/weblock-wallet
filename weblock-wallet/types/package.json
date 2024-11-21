@@ -7,6 +7,9 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "build": "rm -rf dist && rollup -c && rollup -c rollup.config.dts.js",
     "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
