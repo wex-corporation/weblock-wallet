@@ -17,8 +17,8 @@
     "format": "prettier --write 'src/**/*.{js,ts,json,md}'"
   },
   "dependencies": {
-    "@wefunding-dev/wallet-core": "^1.0.0",
-    "@wefunding-dev/wallet-types": "^1.0.0"
+    "@wefunding-dev/wallet-core": "^0.1.0",
+    "@wefunding-dev/wallet-types": "^0.1.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^24.0.1",

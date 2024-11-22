@@ -1,6 +1,6 @@
 {
   "name": "@wefunding-dev/wallet-core",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Core module for Weblock Wallet",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,7 +16,7 @@
     "format": "prettier --write 'src/**/*.{js,ts,json,md}'"
   },
   "dependencies": {
-    "@wefunding-dev/wallet-types": "^1.0.0",
+    "@wefunding-dev/wallet-types": "^0.1.0",
     "axios": "^0.27.2",
     "ethers": "^6.8.1"
   },
