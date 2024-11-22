@@ -1,6 +1,6 @@
 // Core 및 Types 패키지와의 연결
-import { Core } from '@weblock-wallet/core'
-import { Blockchain, Wallet } from '@weblock-wallet/types'
+import { Core } from '@wefunding-dev/wallet-core'
+import { Blockchain, Wallet } from '@wefunding-dev/wallet-types'
 
 // SDK에서 Core를 래핑한 클래스
 export class CoreAdapter {

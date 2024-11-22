@@ -1,5 +1,5 @@
 {
-  "name": "@weblock-wallet/core",
+  "name": "@wefunding-dev/wallet-core",
   "version": "1.0.0",
   "description": "Core module for Weblock Wallet",
   "main": "./dist/index.js",
@@ -16,7 +16,7 @@
     "format": "prettier --write 'src/**/*.{js,ts,json,md}'"
   },
   "dependencies": {
-    "@weblock-wallet/types": "workspace:*",
+    "@wefunding-dev/wallet-types": "^1.0.0",
     "axios": "^0.27.2",
     "ethers": "^6.8.1"
   },

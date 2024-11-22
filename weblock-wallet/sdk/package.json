@@ -1,5 +1,5 @@
 {
-  "name": "@wefunding-dev/sdk",
+  "name": "@wefunding-dev/wallet-sdk",
   "version": "0.1.0",
   "description": "SDK package for Weblock Wallet",
   "main": "./dist/cjs/index.js",
@@ -17,8 +17,8 @@
     "format": "prettier --write 'src/**/*.{js,ts,json,md}'"
   },
   "dependencies": {
-    "@weblock-wallet/core": "workspace:*",
-    "@weblock-wallet/types": "workspace:*"
+    "@wefunding-dev/wallet-core": "^1.0.0",
+    "@wefunding-dev/wallet-types": "^1.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^24.0.1",

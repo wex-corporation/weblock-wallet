@@ -1,5 +1,5 @@
 // 의존성 모듈 import
-import { Blockchain, Wallet } from '@weblock-wallet/types'
+import { Blockchain, Wallet } from '@wefunding-dev/wallet-types'
 
 // 주요 클래스 및 설정 export
 export class Core {
