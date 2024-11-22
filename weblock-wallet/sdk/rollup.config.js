@@ -16,9 +16,12 @@ export default {
       sourcemap: true
     }
   ],
-  plugins: [
-    resolve(),
-    commonjs(),
-    typescript({ tsconfig: './tsconfig.json' }) 
-  ]
+  plugins: [resolve(), commonjs(), typescript({ tsconfig: './tsconfig.json' })],
+  external: (id) =>
+    id !== 'src/index.ts' &&
+    (/^@wefunding-dev\//.test(id) || /^[a-z0-9@]/i.test(id)),
+  onwarn(warning, warn) {
+    if (warning.code === 'UNRESOLVED_IMPORT') return
+    warn(warning)
+  }
 }

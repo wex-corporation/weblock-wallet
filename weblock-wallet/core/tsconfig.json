@@ -12,7 +12,10 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "typeRoots": ["node_modules/@types"],
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@wefunding-dev/wallet-types": ["../types/dist"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
