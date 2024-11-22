@@ -1,4 +1,4 @@
 packages:
-  - core
-  - types
-  - sdk
+  - 'types'
+  - 'core'
+  - 'sdk'
