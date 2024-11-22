@@ -76,11 +76,11 @@ importers:
   sdk:
     dependencies:
       '@wefunding-dev/wallet-core':
-        specifier: workspace:*
-        version: link:../core
+        specifier: ^0.1.0
+        version: 0.1.0
       '@wefunding-dev/wallet-types':
-        specifier: workspace:*
-        version: link:../types
+        specifier: ^0.1.0
+        version: 0.1.0
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^24.0.1
@@ -321,6 +321,9 @@ packages:
 
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
+
+  '@wefunding-dev/wallet-core@0.1.0':
+    resolution: {integrity: sha512-EPvuCXAJRe8xcdk6+lRkcNpY8hxH2Qku97/pAwpPVSMyo0cJ43aJLeT6zYAJwAhfkt0x456kOLOcd8PCwse8Rg==, tarball: https://npm.pkg.github.com/download/@wefunding-dev/wallet-core/0.1.0/8d82e03725d943db11b7992c18fe3a09b76b4f59}
 
   '@wefunding-dev/wallet-types@0.1.0':
     resolution: {integrity: sha512-TV+UYgk8MsgOw/sWS1caBQjbDJTNk7WBO1QgkoriBTcIoQA4zWFV277qPx0bU/nXaBO2u/gdUIx1FUaf3DgRRQ==, tarball: https://npm.pkg.github.com/download/@wefunding-dev/wallet-types/0.1.0/23dae8039bde012ab9d88b7638ef5280ec1b53f9}
@@ -1596,6 +1599,16 @@ snapshots:
       eslint-visitor-keys: 3.4.3
 
   '@ungap/structured-clone@1.2.0': {}
+
+  '@wefunding-dev/wallet-core@0.1.0':
+    dependencies:
+      '@wefunding-dev/wallet-types': 0.1.0
+      axios: 0.27.2
+      ethers: 6.13.4
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - utf-8-validate
 
   '@wefunding-dev/wallet-types@0.1.0': {}
 

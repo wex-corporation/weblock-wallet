@@ -12,11 +12,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "typeRoots": ["node_modules/@types"],
-    "baseUrl": ".",
-    "paths": {
-      "@weblock-wallet/core": ["../core/dist"],
-      "@weblock-wallet/types": ["../types/dist"]
-    }
+    "baseUrl": "."
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
