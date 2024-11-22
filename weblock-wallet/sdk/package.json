@@ -1,5 +1,5 @@
 {
-  "name": "@weblock-wallet/sdk",
+  "name": "@wefunding-dev/sdk",
   "version": "0.1.0",
   "description": "SDK package for Weblock Wallet",
   "main": "./dist/cjs/index.js",
