@@ -10,7 +10,6 @@ const packageDirMap = {
 
 const rootPath = path.resolve(__dirname, '..')
 
-// 의존성 업데이트 함수
 function updateDependencies(packageDir) {
   const packageJsonPath = path.join(rootPath, packageDir, 'package.json')
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
@@ -32,10 +31,8 @@ function updateDependencies(packageDir) {
     }
   })
 
-  // 변경된 package.json 저장
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n')
   console.log(`Updated dependencies in ${packageDir}/package.json`)
 }
 
-// 각 패키지의 의존성을 업데이트
 Object.values(packageDirMap).forEach(updateDependencies)

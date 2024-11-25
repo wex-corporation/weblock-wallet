@@ -34,6 +34,7 @@ jobs:
         working-directory: ./weblock-wallet
         run: |
           cp .npmrc ~/.npmrc
+          echo "Copied .npmrc to home directory for authentication"
 
       # Step 5: Install dependencies
       - name: Install dependencies
