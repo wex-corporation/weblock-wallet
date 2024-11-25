@@ -19,41 +19,47 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: npm
+          cache: pnpm
           cache-dependency-path: ./weblock-wallet/pnpm-lock.yaml
 
       # Step 3: Install pnpm
       - name: Install pnpm
-        run: |
-          npm install -g pnpm
-          echo "Installed pnpm version: $(pnpm --version)"
-          echo "PATH after pnpm install: $PATH"
-          which pnpm
+        run: npm install -g pnpm
 
-      # Step 4: Debug Environment (Verify pnpm)
-      - name: Verify pnpm installation
-        run: |
-          pnpm --version
-          echo "PATH: $PATH"
-
-      # Step 5: Install dependencies
+      # Step 4: Install dependencies
       - name: Install dependencies
         working-directory: ./weblock-wallet
         run: pnpm install
+
+      # Step 5: Update dependencies
+      - name: Update dependencies
+        working-directory: ./weblock-wallet
+        run: node scripts/update-dependencies.js
 
       # Step 6: Build packages
       - name: Build packages
         working-directory: ./weblock-wallet
         run: pnpm -r run build
 
-      # Step 7: Update dependencies
-      - name: Update dependencies
-        working-directory: ./weblock-wallet
-        run: node scripts/update-dependencies.js
-
-      # Step 8: Publish packages
+      # Step 7: Publish packages
       - name: Publish packages
         working-directory: ./weblock-wallet
-        run: pnpm -r publish --access restricted
+        run: pnpm -r publish --access restricted --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+
+      # Step 8: Revert dependencies
+      - name: Revert dependencies
+        working-directory: ./weblock-wallet
+        run: node scripts/revert-dependencies.js
+
+      # Step 9: Commit reverted changes (Optional)
+      - name: Commit reverted changes
+        working-directory: ./weblock-wallet
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Revert dependencies to workspace:*"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
