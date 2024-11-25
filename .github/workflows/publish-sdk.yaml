@@ -10,14 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 0: Print environment info
-      - name: Print environment info
-        run: |
-          uname -a
-          node --version
-          npm --version
-          echo "PATH: $PATH"
-
       # Step 1: Check out the repository
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -27,34 +19,39 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: pnpm
+          cache: npm
           cache-dependency-path: ./weblock-wallet/pnpm-lock.yaml
 
       # Step 3: Install pnpm
       - name: Install pnpm
         run: |
           npm install -g pnpm
-          export PATH=$(npm bin -g):$PATH
-          echo "Updated PATH: $PATH"
+          echo "Installed pnpm version: $(pnpm --version)"
+          echo "PATH after pnpm install: $PATH"
           which pnpm
-          pnpm --version
 
-      # Step 4: Install dependencies
+      # Step 4: Debug Environment (Verify pnpm)
+      - name: Verify pnpm installation
+        run: |
+          pnpm --version
+          echo "PATH: $PATH"
+
+      # Step 5: Install dependencies
       - name: Install dependencies
         working-directory: ./weblock-wallet
         run: pnpm install
 
-      # Step 5: Run build script
+      # Step 6: Build packages
       - name: Build packages
         working-directory: ./weblock-wallet
         run: pnpm -r run build
 
-      # Step 6: Run the custom script to update dependencies
+      # Step 7: Update dependencies
       - name: Update dependencies
         working-directory: ./weblock-wallet
         run: node scripts/update-dependencies.js
 
-      # Step 7: Publish packages
+      # Step 8: Publish packages
       - name: Publish packages
         working-directory: ./weblock-wallet
         run: pnpm -r publish --access restricted
