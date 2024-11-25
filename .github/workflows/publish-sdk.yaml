@@ -3,7 +3,7 @@ name: Build and Publish SDK
 on:
   push:
     branches:
-      - sdk-development # push 이벤트가 발생할 브랜치 지정
+      - sdk-development
 
 jobs:
   build-and-publish:
@@ -24,7 +24,9 @@ jobs:
 
       # Step 3: Install pnpm
       - name: Install pnpm
-        run: npm install -g pnpm
+        run: |
+          npm install -g pnpm
+          pnpm --version # 설치 확인
 
       # Step 4: Install dependencies
       - name: Install dependencies
