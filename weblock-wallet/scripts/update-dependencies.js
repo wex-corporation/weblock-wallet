@@ -10,11 +10,10 @@ const packageDirMap = {
 
 const rootPath = path.resolve(__dirname, '..')
 
-function updateDependenciesAndVersion(packageDir) {
+function updateDependencies(packageDir) {
   const packageJsonPath = path.join(rootPath, packageDir, 'package.json')
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
 
-  // 최신 버전 의존성 업데이트
   const updateFields = ['dependencies', 'devDependencies']
   updateFields.forEach((field) => {
     if (packageJson[field]) {
@@ -32,7 +31,6 @@ function updateDependenciesAndVersion(packageDir) {
     }
   })
 
-  // 패키지 버전 업데이트
   const currentVersion = packageJson.version
   const [major, minor, patch] = currentVersion.split('.').map(Number)
   const newVersion = `${major}.${minor}.${patch + 1}`
@@ -41,10 +39,8 @@ function updateDependenciesAndVersion(packageDir) {
   )
   packageJson.version = newVersion
 
-  // 변경된 package.json 저장
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n')
   console.log(`Updated dependencies and version in ${packageDir}/package.json`)
 }
 
-// 각 패키지의 의존성과 버전 업데이트
-Object.values(packageDirMap).forEach(updateDependenciesAndVersion)
+Object.values(packageDirMap).forEach(updateDependencies)

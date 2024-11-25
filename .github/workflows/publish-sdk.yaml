@@ -13,9 +13,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Check out the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Step 2: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -23,33 +25,40 @@ jobs:
           cache: npm
           cache-dependency-path: ./weblock-wallet/pnpm-lock.yaml
 
+      # Step 3: Install pnpm globally
       - name: Install pnpm
         run: npm install -g pnpm
 
+      # Step 4: Use existing .npmrc
       - name: Use existing .npmrc
         working-directory: ./weblock-wallet
         run: |
           cp .npmrc ~/.npmrc
 
+      # Step 5: Install dependencies
       - name: Install dependencies
         working-directory: ./weblock-wallet
         run: pnpm install
 
+      # Step 6: Build packages
       - name: Build packages
         working-directory: ./weblock-wallet
         run: pnpm -r run build
 
+      # Step 7: Increment version (push events only)
       - name: Increment version
         if: ${{ github.event_name == 'push' }}
         working-directory: ./weblock-wallet
         run: pnpm version patch
 
+      # Step 8: Update dependencies (push events only)
       - name: Update dependencies
         if: ${{ github.event_name == 'push' }}
         working-directory: ./weblock-wallet
         run: node scripts/update-dependencies.js
 
-      - name: Check existing versions
+      # Step 9: Check existing versions and publish packages
+      - name: Check existing versions and publish packages
         if: ${{ github.event_name == 'push' }}
         working-directory: ./weblock-wallet
         run: |
@@ -64,11 +73,13 @@ jobs:
             pnpm publish --filter $pkg --access restricted --no-git-checks
           done
 
+      # Step 10: Revert dependencies to workspace (push events only)
       - name: Revert dependencies to workspace
         if: ${{ github.event_name == 'push' }}
         working-directory: ./weblock-wallet
         run: node scripts/revert-dependencies.js
 
+      # Step 11: Push changes and tags (push events only)
       - name: Push changes and tags
         if: ${{ github.event_name == 'push' }}
         working-directory: ./weblock-wallet
