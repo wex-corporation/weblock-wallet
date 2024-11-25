@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 
-// 패키지 이름과 디렉토리 이름의 매핑
+// 패키지 이름과 디렉토리 이름 매핑
 const packageDirMap = {
   '@wefunding-dev/wallet-types': 'types',
   '@wefunding-dev/wallet-core': 'core',
@@ -15,12 +15,13 @@ function updateDependencies(packageDir) {
   const packageJsonPath = path.join(rootPath, packageDir, 'package.json')
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
 
+  let isUpdated = false // 변경 여부 확인
   const updateFields = ['dependencies', 'devDependencies']
+
   updateFields.forEach((field) => {
     if (packageJson[field]) {
       for (const [key, value] of Object.entries(packageJson[field])) {
         if (value.startsWith('workspace:*')) {
-          // 매핑된 디렉토리로 이동
           const dependencyDir = packageDirMap[key]
           if (!dependencyDir) {
             console.error(`Error: No directory mapping for ${key}`)
@@ -41,14 +42,21 @@ function updateDependencies(packageDir) {
             `Updating ${key} in ${packageDir}: workspace:* -> ${dependencyVersion}`
           )
           packageJson[field][key] = dependencyVersion
+          isUpdated = true
         }
       }
     }
   })
 
-  // 변경된 package.json 저장
-  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n')
-  console.log(`Updated dependencies in ${packageDir}/package.json`)
+  if (isUpdated) {
+    fs.writeFileSync(
+      packageJsonPath,
+      JSON.stringify(packageJson, null, 2) + '\n'
+    )
+    console.log(`Updated dependencies in ${packageDir}/package.json`)
+  } else {
+    console.log(`No changes made to ${packageDir}/package.json`)
+  }
 }
 
 // 각 패키지의 의존성을 업데이트

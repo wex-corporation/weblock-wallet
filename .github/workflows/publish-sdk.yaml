@@ -29,43 +29,48 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      # Step 4: Install dependencies
+      # Step 4: Create .npmrc file for GitHub Packages
+      - name: Create .npmrc
+        working-directory: ./weblock-wallet
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.NODE_AUTH_TOKEN }}" > .npmrc
+          echo "@wefunding-dev:registry=https://npm.pkg.github.com" >> .npmrc
+
+      # Step 5: Install dependencies
       - name: Install dependencies
         working-directory: ./weblock-wallet
         run: pnpm install
 
-      # Step 5: Run build script
+      # Step 6: Run build script
       - name: Build packages
         working-directory: ./weblock-wallet
         run: pnpm -r run build
 
-      # Step 6: Increment version (only for push events)
+      # Step 7: Increment version (only for push events)
       - name: Increment version
         if: ${{ github.event_name == 'push' }}
         working-directory: ./weblock-wallet
         run: pnpm version patch
 
-      # Step 7: Update dependencies (only for push events)
+      # Step 8: Update dependencies (only for push events)
       - name: Update dependencies
         if: ${{ github.event_name == 'push' }}
         working-directory: ./weblock-wallet
         run: node scripts/update-dependencies.js
 
-      # Step 8: Publish packages (only for push events)
+      # Step 9: Publish packages (only for push events)
       - name: Publish packages
         if: ${{ github.event_name == 'push' }}
         working-directory: ./weblock-wallet
         run: pnpm -r publish --access restricted --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
-      # Step 9: Revert dependencies (only for push events)
+      # Step 10: Revert dependencies (only for push events)
       - name: Revert dependencies to workspace
         if: ${{ github.event_name == 'push' }}
         working-directory: ./weblock-wallet
         run: node scripts/revert-dependencies.js
 
-      # Step 10: Push changes with tags (only for push events)
+      # Step 11: Push changes with tags (only for push events)
       - name: Push changes and tags
         if: ${{ github.event_name == 'push' }}
         working-directory: ./weblock-wallet
