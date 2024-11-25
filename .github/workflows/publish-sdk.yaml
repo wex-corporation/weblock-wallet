@@ -36,14 +36,35 @@ jobs:
         working-directory: ./weblock-wallet
         run: pnpm -r run build
 
-      # Step 6: Run the custom script to update dependencies
+      # Step 6: Increment version
+      - name: Increment version
+        working-directory: ./weblock-wallet
+        run: pnpm version patch
+
+      # Step 7: Update dependencies
       - name: Update dependencies
         working-directory: ./weblock-wallet
         run: node scripts/update-dependencies.js
 
-      # Step 7: Publish packages
+      # Step 8: Publish packages
       - name: Publish packages
         working-directory: ./weblock-wallet
         run: pnpm -r publish --access restricted --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+
+      # Step 9: Revert dependencies
+      - name: Revert dependencies to workspace
+        working-directory: ./weblock-wallet
+        run: node scripts/revert-dependencies.js
+
+      # Step 10: Push changes with tags
+      - name: Push changes and tags
+        working-directory: ./weblock-wallet
+        run: |
+          git add .
+          git commit -m "chore: bump version and revert dependencies" || echo "No changes to commit"
+          git push origin sdk-development
+          git push origin --tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
