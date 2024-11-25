@@ -14,39 +14,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js with pnpm cache
+      # Step 2: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: pnpm # Use pnpm for caching
-          cache-dependency-path: ./weblock-wallet/pnpm-lock.yaml # Specify lock file path
+          cache: pnpm
+          cache-dependency-path: ./weblock-wallet/pnpm-lock.yaml
 
-      # Step 3: Install pnpm
+      # Step 3: Install pnpm (ensure pnpm is globally available)
       - name: Install pnpm
         run: npm install -g pnpm
 
-      # Step 4: Change to workspace directory
-      - name: Navigate to workspace
-        working-directory: ./weblock-wallet
-        run: echo "Moved to ./weblock-wallet"
-
-      # Step 5: Install dependencies
+      # Step 4: Install dependencies in workspace
       - name: Install dependencies
         working-directory: ./weblock-wallet
         run: pnpm install
 
-      # Step 6: Run build script
+      # Step 5: Build packages
       - name: Build packages
         working-directory: ./weblock-wallet
         run: pnpm -r run build
 
-      # Step 7: Run the custom script to update dependencies
+      # Step 6: Update dependencies
       - name: Update dependencies
         working-directory: ./weblock-wallet
         run: node scripts/update-dependencies.js
 
-      # Step 8: Publish packages
+      # Step 7: Publish packages
       - name: Publish packages
         working-directory: ./weblock-wallet
         run: pnpm -r publish --access restricted
