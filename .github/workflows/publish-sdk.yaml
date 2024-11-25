@@ -36,32 +36,39 @@ jobs:
         working-directory: ./weblock-wallet
         run: pnpm -r run build
 
-      # Step 6: Increment version
+      # Step 6: Increment version (only for push events)
       - name: Increment version
+        if: github.event_name == 'push'
         working-directory: ./weblock-wallet
         run: pnpm version patch
 
-      # Step 7: Update dependencies
+      # Step 7: Update dependencies (only for push events)
       - name: Update dependencies
+        if: github.event_name == 'push'
         working-directory: ./weblock-wallet
         run: node scripts/update-dependencies.js
 
-      # Step 8: Publish packages
+      # Step 8: Publish packages (only for push events)
       - name: Publish packages
+        if: github.event_name == 'push'
         working-directory: ./weblock-wallet
         run: pnpm -r publish --access restricted --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
-      # Step 9: Revert dependencies
+      # Step 9: Revert dependencies (only for push events)
       - name: Revert dependencies to workspace
+        if: github.event_name == 'push'
         working-directory: ./weblock-wallet
         run: node scripts/revert-dependencies.js
 
-      # Step 10: Push changes with tags
+      # Step 10: Push changes with tags (only for push events)
       - name: Push changes and tags
+        if: github.event_name == 'push'
         working-directory: ./weblock-wallet
         run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
           git add .
           git commit -m "chore: bump version and revert dependencies" || echo "No changes to commit"
           git push origin sdk-development
