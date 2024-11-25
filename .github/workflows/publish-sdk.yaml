@@ -61,7 +61,7 @@ jobs:
       - name: Publish packages
         if: ${{ github.event_name == 'push' }}
         working-directory: ./weblock-wallet
-        run: pnpm -r publish --access restricted --no-git-checks
+        run: pnpm -r publish --access restricted --no-git-checks --force
 
       # Step 10: Revert dependencies (only for push events)
       - name: Revert dependencies to workspace
