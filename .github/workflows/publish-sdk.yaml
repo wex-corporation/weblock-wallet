@@ -11,7 +11,7 @@ jobs:
 
     steps:
       # Step 1: Check out the repository
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
       # Step 2: Set up Node.js
@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: pnpm
+          cache: npm # Use npm cache initially
 
       # Step 3: Install pnpm
       - name: Install pnpm
@@ -29,16 +29,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      # Step 5: Run build script
+      # Step 5: Run the build
       - name: Build packages
         run: pnpm -r run build
 
-      # Step 6: Run the custom script to update dependencies
-      - name: Update dependencies
-        run: node scripts/update-dependencies.js
-
-      # Step 7: Publish packages
-      - name: Publish packages
+      # Step 6: Publish to GitHub Packages
+      - name: Publish SDK
         run: pnpm -r publish --access restricted
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
