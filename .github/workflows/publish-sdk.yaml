@@ -1,10 +1,10 @@
 name: Build and Publish SDK
 
 on:
-  push:
+  pull_request:
     branches:
       - sdk-development
-  pull_request:
+  push:
     branches:
       - sdk-development
 
@@ -16,11 +16,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: "pnpm"
+          cache: pnpm
+
+      - name: Install pnpm
+        run: npm install -g pnpm
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Build packages
+        run: pnpm -r run build
+
+      - name: Update dependencies
+        run: node scripts/update-dependencies.js
+
+      - name: Publish packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+        run: pnpm -r publish --access restricted
