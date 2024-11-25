@@ -26,27 +26,22 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      # Step 4: Change to workspace directory
-      - name: Navigate to workspace
-        working-directory: ./weblock-wallet
-        run: echo "Moved to ./weblock-wallet"
-
-      # Step 5: Install dependencies
+      # Step 4: Change to workspace directory and install dependencies
       - name: Install dependencies
         working-directory: ./weblock-wallet
         run: pnpm install
 
-      # Step 6: Run build script
+      # Step 5: Run build script
       - name: Build packages
         working-directory: ./weblock-wallet
         run: pnpm -r run build
 
-      # Step 7: Run the custom script to update dependencies
+      # Step 6: Run the custom script to update dependencies
       - name: Update dependencies
         working-directory: ./weblock-wallet
         run: node scripts/update-dependencies.js
 
-      # Step 8: Publish packages
+      # Step 7: Publish packages
       - name: Publish packages
         working-directory: ./weblock-wallet
         run: pnpm -r publish --access restricted
