@@ -4,37 +4,41 @@ on:
   pull_request:
     branches:
       - sdk-development
-  push:
-    branches:
-      - sdk-development
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      # Step 1: Check out the repository
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
           cache: pnpm
 
+      # Step 3: Install pnpm
       - name: Install pnpm
         run: npm install -g pnpm
 
+      # Step 4: Install dependencies
       - name: Install dependencies
         run: pnpm install
 
+      # Step 5: Run build script
       - name: Build packages
         run: pnpm -r run build
 
+      # Step 6: Run the custom script to update dependencies
       - name: Update dependencies
         run: node scripts/update-dependencies.js
 
+      # Step 7: Publish packages
       - name: Publish packages
+        run: pnpm -r publish --access restricted
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
-        run: pnpm -r publish --access restricted
