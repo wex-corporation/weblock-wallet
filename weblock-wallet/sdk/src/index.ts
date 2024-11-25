@@ -8,14 +8,17 @@ export class CoreAdapter {
 
   constructor() {
     this.coreInstance = new Core()
+    console.log('[CoreAdapter] Core instance initialized.')
   }
 
   // 간단한 예제 메서드
   getWallet(): Wallet | null {
+    console.log('[CoreAdapter] Fetching wallet...')
     return this.coreInstance.getWallet()
   }
 
   getBlockchains(): Blockchain[] {
+    console.log('[CoreAdapter] Fetching blockchains...')
     return this.coreInstance.getBlockchains()
   }
 }

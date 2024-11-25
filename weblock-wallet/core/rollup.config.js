@@ -17,5 +17,5 @@ export default {
     }
   ],
   plugins: [resolve(), commonjs(), typescript({ tsconfig: './tsconfig.json' })],
-  external: ['@wefunding-dev/wallet-types'] // Ensure this is external
+  external: ['@wefunding-dev/wallet-types']
 }
