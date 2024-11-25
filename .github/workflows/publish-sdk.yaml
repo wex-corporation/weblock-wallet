@@ -1,7 +1,7 @@
 name: Build and Publish SDK
 
 on:
-  push:
+  pull_request:
     branches:
       - sdk-development
 
@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: pnpm
+          cache: npm
           cache-dependency-path: ./weblock-wallet/pnpm-lock.yaml
 
       # Step 3: Install pnpm
@@ -31,15 +31,15 @@ jobs:
         working-directory: ./weblock-wallet
         run: pnpm install
 
-      # Step 5: Update dependencies
-      - name: Update dependencies
-        working-directory: ./weblock-wallet
-        run: node scripts/update-dependencies.js
-
-      # Step 6: Build packages
+      # Step 5: Run build script
       - name: Build packages
         working-directory: ./weblock-wallet
         run: pnpm -r run build
+
+      # Step 6: Run the custom script to update dependencies
+      - name: Update dependencies
+        working-directory: ./weblock-wallet
+        run: node scripts/update-dependencies.js
 
       # Step 7: Publish packages
       - name: Publish packages
@@ -47,19 +47,3 @@ jobs:
         run: pnpm -r publish --access restricted --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
-
-      # Step 8: Revert dependencies
-      - name: Revert dependencies
-        working-directory: ./weblock-wallet
-        run: node scripts/revert-dependencies.js
-
-      # Step 9: Commit reverted changes (Optional)
-      - name: Commit reverted changes
-        working-directory: ./weblock-wallet
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add .
-          git commit -m "Revert dependencies to workspace:*"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
