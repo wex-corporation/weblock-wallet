@@ -10,6 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 0: Print environment info
+      - name: Print environment info
+        run: |
+          uname -a
+          node --version
+          npm --version
+          echo "PATH: $PATH"
+
       # Step 1: Check out the repository
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -26,7 +34,10 @@ jobs:
       - name: Install pnpm
         run: |
           npm install -g pnpm
-          pnpm --version # 설치 확인
+          export PATH=$(npm bin -g):$PATH
+          echo "Updated PATH: $PATH"
+          which pnpm
+          pnpm --version
 
       # Step 4: Install dependencies
       - name: Install dependencies
