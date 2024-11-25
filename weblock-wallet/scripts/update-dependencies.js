@@ -36,7 +36,7 @@ function updateDependencies(packageDir) {
           const dependencyPackageJson = JSON.parse(
             fs.readFileSync(dependencyPackagePath, 'utf-8')
           )
-          const dependencyVersion = dependencyPackageJson.version
+          const dependencyVersion = `^${dependencyPackageJson.version}`
 
           console.log(
             `Updating ${key} in ${packageDir}: workspace:* -> ${dependencyVersion}`
