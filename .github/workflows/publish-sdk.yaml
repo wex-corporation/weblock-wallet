@@ -1,7 +1,7 @@
 name: Build and Publish SDK
 
 on:
-  pull_request:
+  push:
     branches:
       - sdk-development
 
