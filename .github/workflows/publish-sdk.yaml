@@ -1,9 +1,9 @@
 name: Build and Publish SDK
 
 on:
-  pull_request:
+  push:
     branches:
-      - sdk-development
+      - sdk-development # push 이벤트가 발생할 브랜치 지정
 
 jobs:
   build-and-publish:
@@ -20,6 +20,7 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+          cache-dependency-path: ./weblock-wallet/pnpm-lock.yaml
 
       # Step 3: Install pnpm
       - name: Install pnpm
@@ -27,18 +28,22 @@ jobs:
 
       # Step 4: Install dependencies
       - name: Install dependencies
+        working-directory: ./weblock-wallet
         run: pnpm install
 
       # Step 5: Run build script
       - name: Build packages
+        working-directory: ./weblock-wallet
         run: pnpm -r run build
 
       # Step 6: Run the custom script to update dependencies
       - name: Update dependencies
+        working-directory: ./weblock-wallet
         run: node scripts/update-dependencies.js
 
       # Step 7: Publish packages
       - name: Publish packages
+        working-directory: ./weblock-wallet
         run: pnpm -r publish --access restricted
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
