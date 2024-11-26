@@ -1,30 +1,36 @@
 import { Logger } from './utils/logger'
+import { CoreAdapter } from './core-adapter'
+import { WalletSDKConfig } from './types/sdk-types'
 
 export class WalletSDK {
   private initialized = false
+  private coreAdapter: CoreAdapter | null = null
 
   /**
-   * Initialize the SDK with configuration.
-   * @param config - Configuration object containing API key and environment info.
+   * Initialize the SDK with the necessary configuration.
+   * @param config - Configuration object containing API key, environment, and optional organization host.
+   * @throws Error if the SDK is already initialized.
    */
-  initialize(config: {
-    apiKey: string
-    env: 'local' | 'staging' | 'production'
-    orgHost?: string
-  }): void {
+  initialize(config: WalletSDKConfig): void {
     if (this.initialized) {
       throw new Error('SDK is already initialized.')
     }
 
     Logger.log('Initializing SDK with config:', config)
-    // TODO: CoreAdapter를 사용해 Core와 연결
+
+    this.coreAdapter = new CoreAdapter(
+      config.apiKey,
+      config.env,
+      config.orgHost
+    )
 
     this.initialized = true
+    Logger.log('SDK initialized successfully.')
   }
 
   /**
-   * Check if the SDK is initialized.
-   * @returns true if initialized, false otherwise.
+   * Check if the SDK has been initialized.
+   * @returns boolean - True if the SDK is initialized, false otherwise.
    */
   isInitialized(): boolean {
     return this.initialized
