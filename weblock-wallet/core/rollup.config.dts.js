@@ -15,6 +15,9 @@ export default {
     })
   ],
   external: [
-    '@wefunding-dev/wallet-types' // Ensure this is treated as external
+    '@wefunding-dev/wallet-types', // Ensure this is treated as external
+    'firebase',
+    'firebase/app',
+    'firebase/auth'
   ]
 }

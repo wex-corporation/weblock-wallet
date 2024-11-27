@@ -16,6 +16,15 @@ export default {
       sourcemap: true
     }
   ],
-  plugins: [resolve(), commonjs(), typescript({ tsconfig: './tsconfig.json' })],
-  external: ['@wefunding-dev/wallet-types']
+  plugins: [
+    resolve(),
+    commonjs(),
+    typescript({ tsconfig: './tsconfig.json', clean: true })
+  ],
+  external: [
+    '@wefunding-dev/wallet-types',
+    'firebase',
+    'firebase/app',
+    'firebase/auth'
+  ]
 }

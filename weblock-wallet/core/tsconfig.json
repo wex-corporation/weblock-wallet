@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "lib": ["ES2020"],
+    "lib": ["ES2020", "dom"],
     "outDir": "./dist",
     "rootDir": "./src",
     "declaration": true,
@@ -11,7 +11,9 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "typeRoots": ["node_modules/@types"],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "typeRoots": ["node_modules/@types", "./types"],
     "baseUrl": ".",
     "paths": {
       "@wefunding-dev/wallet-types": ["../types/dist"]

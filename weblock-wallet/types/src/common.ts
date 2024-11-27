@@ -1,4 +1,5 @@
 // common.ts
+import { Blockchain } from './blockchain'
 
 // HTTP 상태 코드와 오류 정의
 export interface ErrorResponse {
@@ -32,4 +33,13 @@ export interface CryptoBuffer {
   toHex(): string
   toUInt8Array(): Uint8Array
   toBigNumber(): bigint
+}
+
+export interface User {
+  id: string
+  orgId: string
+  email: string
+  firebaseId: string
+  provider: string
+  blockchains: Blockchain[]
 }
