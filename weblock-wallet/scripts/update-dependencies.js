@@ -3,9 +3,9 @@ const path = require('path')
 const { execSync } = require('child_process')
 
 const packageDirMap = {
-  '@wefunding-dev/wallet-types': 'types',
-  '@wefunding-dev/wallet-core': 'core',
-  '@wefunding-dev/wallet-sdk': 'sdk'
+  '@wefunding-dev/wallet-types': './types',
+  '@wefunding-dev/wallet-core': './core',
+  '@wefunding-dev/wallet-sdk': './sdk'
 }
 
 const rootPath = path.resolve(__dirname, '..')

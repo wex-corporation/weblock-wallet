@@ -62,7 +62,9 @@ jobs:
         if: ${{ github.event_name == 'push' }}
         working-directory: ./weblock-wallet
         run: |
-          for pkg in types core sdk; do
+          echo "Checking and publishing packages..."
+          for pkg in ./types ./core ./sdk; do
+            echo "Processing package: $pkg"
             name=$(jq -r '.name' $pkg/package.json)
             version=$(jq -r '.version' $pkg/package.json)
             published_version=$(npm show $name@latest version || echo "none")
@@ -70,7 +72,8 @@ jobs:
               echo "$name@$version already published. Skipping."
               continue
             fi
-            pnpm publish --filter $pkg --access restricted --no-git-checks
+            echo "Publishing $name@$version..."
+            pnpm publish $pkg --access restricted --no-git-checks
           done
 
       # Step 10: Revert dependencies to workspace (push events only)
