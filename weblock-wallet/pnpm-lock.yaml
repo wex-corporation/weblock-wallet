@@ -66,15 +66,21 @@ importers:
       '@rollup/plugin-node-resolve':
         specifier: ^13.3.0
         version: 13.3.0(rollup@4.27.4)
+      '@rollup/plugin-terser':
+        specifier: ^0.4.4
+        version: 0.4.4(rollup@4.27.4)
+      '@rollup/plugin-typescript':
+        specifier: ^8.5.0
+        version: 8.5.0(rollup@4.27.4)(tslib@2.8.1)(typescript@5.7.2)
+      eslint:
+        specifier: ^8.54.0
+        version: 8.57.1
+      prettier:
+        specifier: ^3.1.0
+        version: 3.4.1
       rollup:
         specifier: ^4.27.4
         version: 4.27.4
-      rollup-plugin-dts:
-        specifier: ^5.1.1
-        version: 5.3.1(rollup@4.27.4)(typescript@5.7.2)
-      rollup-plugin-typescript2:
-        specifier: ^0.34.1
-        version: 0.34.1(rollup@4.27.4)(typescript@5.7.2)
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
@@ -618,6 +624,9 @@ packages:
     resolution: {integrity: sha512-R8gLRTZeyp03ymzP/6Lil/28tGeGEzhx1q2k703KGWRAI1VdvPIXdG70VJc2pAMw3NA6JKL5hhFu1sJX0Mnn/A==}
     engines: {node: '>=6.0.0'}
 
+  '@jridgewell/source-map@0.3.6':
+    resolution: {integrity: sha512-1ZJTZebgqllO79ue2bm3rIGud/bOe0pP5BjSRCRxxYkEZS8STV7zN84UBbiYu7jy+eCKSnVIUgoWWE/tt+shMQ==}
+
   '@jridgewell/sourcemap-codec@1.5.0':
     resolution: {integrity: sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==}
 
@@ -704,6 +713,26 @@ packages:
       rollup: ^2.78.0||^3.0.0||^4.0.0
     peerDependenciesMeta:
       rollup:
+        optional: true
+
+  '@rollup/plugin-terser@0.4.4':
+    resolution: {integrity: sha512-XHeJC5Bgvs8LfukDwWZp7yeqin6ns8RTl2B9avbejt6tZqsqvVoWI7ZTQrcNsfKEDWBTnTxM8nMDkO2IFFbd0A==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^2.0.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+
+  '@rollup/plugin-typescript@8.5.0':
+    resolution: {integrity: sha512-wMv1/scv0m/rXx21wD2IsBbJFba8wGF3ErJIr6IKRfRj49S85Lszbxb4DCo8iILpluTjk2GAAu9CoZt4G3ppgQ==}
+    engines: {node: '>=8.0.0'}
+    peerDependencies:
+      rollup: ^2.14.0
+      tslib: '*'
+      typescript: '>=3.7.0'
+    peerDependenciesMeta:
+      tslib:
         optional: true
 
   '@rollup/pluginutils@3.1.0':
@@ -1144,6 +1173,9 @@ packages:
   combined-stream@1.0.8:
     resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
     engines: {node: '>= 0.8'}
+
+  commander@2.20.3:
+    resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
 
   commondir@1.0.1:
     resolution: {integrity: sha512-W9pAhw0ja1Edb5GVdIF1mjZw/ASI0AlShXM83UUGe2DVr5TdAPEA1OA8m/g8zWp9x6On7gqufY+FatDbC3MDQg==}
@@ -2237,6 +2269,9 @@ packages:
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
+  randombytes@2.1.0:
+    resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
+
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
@@ -2334,6 +2369,9 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  serialize-javascript@6.0.2:
+    resolution: {integrity: sha512-Saa1xPByTTq2gdeFZYLLo+RFE35NHZkAbqZeWNd3BpzppeVisAqpDjcp8dyf6uIvEqJRd46jemmyA4iFIeVk8g==}
+
   set-function-length@1.2.2:
     resolution: {integrity: sha512-pgRc4hJ4/sNjWCSS9AmnS40x3bNMDTknHgL5UaMBTMyJnU90EgWh1Rz+MC9eFu4BuN/UwZjKQuY/1v3rM7HMfg==}
     engines: {node: '>= 0.4'}
@@ -2364,8 +2402,14 @@ packages:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
     engines: {node: '>=8'}
 
+  smob@1.5.0:
+    resolution: {integrity: sha512-g6T+p7QO8npa+/hNx9ohv1E5pVCmWrVCUzUXJyLdMmftX6ER0oiWY/w9knEonLpnOp6b6FenKnMfR8gqwWdwig==}
+
   source-map-support@0.5.13:
     resolution: {integrity: sha512-SHSKFHadjVA5oR4PPqhtAVdcBWwRYVd6g6cAXnIbRiIwc2EhPrTuKUBdSLvlEKyIP3GCf89fltvcZiP9MMFA1w==}
+
+  source-map-support@0.5.21:
+    resolution: {integrity: sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==}
 
   source-map@0.6.1:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
@@ -2431,6 +2475,11 @@ packages:
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  terser@5.36.0:
+    resolution: {integrity: sha512-IYV9eNMuFAV4THUspIRXkLakHnV6XO7FEdtKjf/mDyrnqUg9LnlOn6/RwRvM9SZjR4GUq8Nk8zj67FzVARr74w==}
+    engines: {node: '>=10'}
+    hasBin: true
 
   test-exclude@6.0.0:
     resolution: {integrity: sha512-cAGWPIyOHU6zlmg88jwm7VRyXnMN7iV68OGAbYDk/Mh/xC/pzVPlQtY6ngoIH/5/tciuhGfvESU8GrHrcxD56w==}
@@ -3376,6 +3425,11 @@ snapshots:
 
   '@jridgewell/set-array@1.2.1': {}
 
+  '@jridgewell/source-map@0.3.6':
+    dependencies:
+      '@jridgewell/gen-mapping': 0.3.5
+      '@jridgewell/trace-mapping': 0.3.25
+
   '@jridgewell/sourcemap-codec@1.5.0': {}
 
   '@jridgewell/trace-mapping@0.3.25':
@@ -3466,6 +3520,23 @@ snapshots:
       resolve: 1.22.8
     optionalDependencies:
       rollup: 2.79.2
+
+  '@rollup/plugin-terser@0.4.4(rollup@4.27.4)':
+    dependencies:
+      serialize-javascript: 6.0.2
+      smob: 1.5.0
+      terser: 5.36.0
+    optionalDependencies:
+      rollup: 4.27.4
+
+  '@rollup/plugin-typescript@8.5.0(rollup@4.27.4)(tslib@2.8.1)(typescript@5.7.2)':
+    dependencies:
+      '@rollup/pluginutils': 3.1.0(rollup@4.27.4)
+      resolve: 1.22.8
+      rollup: 4.27.4
+      typescript: 5.7.2
+    optionalDependencies:
+      tslib: 2.8.1
 
   '@rollup/pluginutils@3.1.0(rollup@4.27.4)':
     dependencies:
@@ -3961,6 +4032,8 @@ snapshots:
   combined-stream@1.0.8:
     dependencies:
       delayed-stream: 1.0.0
+
+  commander@2.20.3: {}
 
   commondir@1.0.1: {}
 
@@ -5351,6 +5424,10 @@ snapshots:
 
   queue-microtask@1.2.3: {}
 
+  randombytes@2.1.0:
+    dependencies:
+      safe-buffer: 5.2.1
+
   react-is@16.13.1: {}
 
   react-is@18.3.1: {}
@@ -5471,6 +5548,10 @@ snapshots:
 
   semver@7.6.3: {}
 
+  serialize-javascript@6.0.2:
+    dependencies:
+      randombytes: 2.1.0
+
   set-function-length@1.2.2:
     dependencies:
       define-data-property: 1.1.4
@@ -5506,7 +5587,14 @@ snapshots:
 
   slash@3.0.0: {}
 
+  smob@1.5.0: {}
+
   source-map-support@0.5.13:
+    dependencies:
+      buffer-from: 1.1.2
+      source-map: 0.6.1
+
+  source-map-support@0.5.21:
     dependencies:
       buffer-from: 1.1.2
       source-map: 0.6.1
@@ -5588,6 +5676,13 @@ snapshots:
       has-flag: 4.0.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
+
+  terser@5.36.0:
+    dependencies:
+      '@jridgewell/source-map': 0.3.6
+      acorn: 8.14.0
+      commander: 2.20.3
+      source-map-support: 0.5.21
 
   test-exclude@6.0.0:
     dependencies:

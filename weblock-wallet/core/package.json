@@ -2,8 +2,9 @@
   "name": "@wefunding-dev/wallet-core",
   "version": "0.1.4",
   "description": "Core module for Weblock Wallet",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "dist/cjs/index.cjs.js",
+  "module": "dist/esm/index.esm.js",
+  "types": "dist/types/index.d.ts",
   "files": [
     "dist"
   ],
@@ -12,10 +13,12 @@
     "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
-    "build": "rm -rf dist && rollup -c && rollup -c rollup.config.dts.js",
-    "dev": "pnpm run build --watch",
-    "lint": "eslint 'src/**/*.{js,ts}'",
-    "format": "prettier --write 'src/**/*.{js,ts,json,md}'"
+    "clean": "rm -rf dist",
+    "build:ts": "tsc",
+    "build:rollup": "rollup -c",
+    "build": "pnpm run clean && pnpm run build:ts && pnpm run build:rollup",
+    "lint": "eslint 'src/**/*.{ts,js}'",
+    "format": "prettier --write 'src/**/*.{ts,js,json,md}'"
   },
   "dependencies": {
     "@wefunding-dev/wallet-types": "workspace:*",
@@ -27,9 +30,11 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^24.1.0",
     "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^8.5.0",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0",
     "rollup": "^4.27.4",
-    "rollup-plugin-dts": "^5.1.1",
-    "rollup-plugin-typescript2": "^0.34.1",
     "typescript": "^5.7.2"
   }
 }
