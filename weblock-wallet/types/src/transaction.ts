@@ -1,6 +1,4 @@
-// transaction.ts
-
-import type { BigNumberish } from 'ethers'
+export type BigNumberish = string | number | bigint
 
 export interface Transaction {
   id: string

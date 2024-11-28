@@ -2,24 +2,20 @@
   "name": "@wefunding-dev/wallet-types",
   "version": "0.1.4",
   "description": "Types package for Weblock Wallet",
-  "main": "./dist/index.js",
+  "files": ["dist"],
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "private": true,
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
-    "build": "rm -rf dist && rollup -c && rollup -c rollup.config.dts.js",
+    "build": "rm -rf dist && tsc",
     "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
     "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,md}'"
   },
   "devDependencies": {
-    "ethers": "^6.13.4",
-    "rollup": "^4.27.4",
-    "rollup-plugin-dts": "^5.3.1",
-    "rollup-plugin-typescript2": "^0.34.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "eslint": "^8.57.1",
+    "prettier": "^3.0.0"
   }
 }

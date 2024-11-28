@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "emitDeclarationOnly": false,
+    "emitDeclarationOnly": true,
     "outDir": "./dist",
     "moduleResolution": "node",
     "target": "esnext",
-    "module": "esnext",
-    "strict": true
+    "strict": true,
+    "skipLibCheck": true
   },
   "include": ["src/**/*"]
 }
