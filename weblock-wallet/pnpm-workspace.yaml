@@ -2,3 +2,4 @@ packages:
   - './types'
   - './core'
   - './sdk'
+  - './sample'
