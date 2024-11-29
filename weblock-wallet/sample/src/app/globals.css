@@ -2,11 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
+/* 추가적인 전역 스타일 */
 body {
-  @apply bg-gray-100 text-gray-900 font-sans;
-}
-
-a {
-  @apply text-blue-500 hover:underline;
+  font-family: 'Inter', sans-serif;
 }
