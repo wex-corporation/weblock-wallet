@@ -2,9 +2,10 @@
   "name": "@wefunding-dev/wallet-types",
   "version": "0.1.4",
   "description": "Types package for Weblock Wallet",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "types": "./dist/index.d.ts",
-  "private": true,
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
