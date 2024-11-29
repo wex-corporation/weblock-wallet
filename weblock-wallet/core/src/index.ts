@@ -4,3 +4,4 @@
 export { Core } from './core'
 export { UsersModule } from './modules/users'
 export { AuthModule } from './modules/auth'
+export { defaultConfig } from './config'

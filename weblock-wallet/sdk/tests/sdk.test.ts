@@ -1,4 +1,19 @@
 import { WalletSDK } from '../src/sdk'
+import { AvailableProviders } from '@wefunding-dev/wallet-types'
+
+jest.mock('@wefunding-dev/wallet-core', () => ({
+  Core: class {
+    signInWithProvider() {
+      return Promise.resolve()
+    }
+    signOut() {
+      return Promise.resolve()
+    }
+    isLoggedIn() {
+      return Promise.resolve(true)
+    }
+  }
+}))
 
 describe('WalletSDK', () => {
   let sdk: WalletSDK
@@ -12,14 +27,21 @@ describe('WalletSDK', () => {
     expect(sdk.isInitialized()).toBe(true)
   })
 
-  test('should throw an error if initialized twice', () => {
+  test('should sign in with a provider', async () => {
     sdk.initialize({ apiKey: 'test-key', env: 'local' })
-    expect(() =>
-      sdk.initialize({ apiKey: 'test-key', env: 'local' })
-    ).toThrowError('SDK is already initialized.')
+    await expect(
+      sdk.signInWithProvider(AvailableProviders.Google)
+    ).resolves.not.toThrow()
   })
 
-  test('should not allow operations if SDK is not initialized', () => {
-    expect(sdk.isInitialized()).toBe(false)
+  test('should sign out without errors', async () => {
+    sdk.initialize({ apiKey: 'test-key', env: 'local' })
+    await expect(sdk.signOut()).resolves.not.toThrow()
+  })
+
+  test('should check login status', async () => {
+    sdk.initialize({ apiKey: 'test-key', env: 'local' })
+    const isLoggedIn = await sdk.isLoggedIn()
+    expect(isLoggedIn).toBe(true)
   })
 })

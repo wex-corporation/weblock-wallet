@@ -29,13 +29,12 @@ export class Core {
 
     // AuthModule 및 UsersModule 초기화
     this.auth = new AuthModule(firebase)
-    const userClient = new UserClient(client) // WalletServerHttpClient로 UserClient 생성
+    const userClient = new UserClient(client)
     this.users = new UsersModule(this.auth, userClient, orgHost)
 
     console.log(`[Core] Initialized with env: ${env}, orgHost: ${orgHost}`)
   }
 
-  // 사용자 인증 관련 메서드
   async signInWithProvider(providerId: AvailableProviders): Promise<void> {
     await this.users.signIn(providerId)
   }
