@@ -1,3 +1,4 @@
-import { WalletSDK } from './sdk'
+export { WalletSDK } from './sdk'
+export { Logger } from './utils/logger'
 
-export { WalletSDK }
+export * from './types'

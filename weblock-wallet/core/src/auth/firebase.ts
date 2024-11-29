@@ -4,12 +4,13 @@ import { defaultConfig } from '../config'
 import { FirebaseCredentials } from '@wefunding-dev/wallet-types'
 
 export class Firebase {
-  private auth = getAuth()
+  private auth
 
   constructor() {
     if (!firebase.getApps().length) {
       firebase.initializeApp(defaultConfig.firebaseConfig)
     }
+    this.auth = getAuth()
   }
 
   async signIn(providerId: string): Promise<FirebaseCredentials> {

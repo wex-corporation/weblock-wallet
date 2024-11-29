@@ -1,10 +1,7 @@
-import React from 'react'
-import './globals.css'
+'use client'
 
-export const metadata = {
-  title: 'Local SDK Sample',
-  description: 'Testing local SDK integration'
-}
+import './globals.css' // TailwindCSS 및 전역 스타일 포함
+import { SDKProvider } from '../context/SDKContext'
 
 export default function RootLayout({
   children
@@ -13,8 +10,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        <main className="container mx-auto px-4 py-8">{children}</main>
+      <body className="bg-gray-50 text-gray-800">
+        <SDKProvider>
+          <main className="container mx-auto py-6">{children}</main>
+        </SDKProvider>
       </body>
     </html>
   )

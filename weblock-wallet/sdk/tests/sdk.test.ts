@@ -1,15 +1,16 @@
 import { WalletSDK } from '../src/sdk'
-import { AvailableProviders } from '@wefunding-dev/wallet-types'
+import { AvailableProviders } from '../src/types'
 
+// Core의 동작을 모킹
 jest.mock('@wefunding-dev/wallet-core', () => ({
   Core: class {
-    signInWithProvider() {
+    async signInWithProvider() {
       return Promise.resolve()
     }
-    signOut() {
+    async signOut() {
       return Promise.resolve()
     }
-    isLoggedIn() {
+    async isLoggedIn() {
       return Promise.resolve(true)
     }
   }
