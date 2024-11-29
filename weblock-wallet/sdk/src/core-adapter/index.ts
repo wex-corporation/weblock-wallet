@@ -1,11 +1,26 @@
-import { Core } from '@wefunding-dev/wallet-core'
+import { Core, defaultConfig } from '@wefunding-dev/wallet-core'
+import { AvailableProviders } from '@wefunding-dev/wallet-types'
 
 export class CoreAdapter {
   private core: Core
 
-  constructor(apiKey: string, env: string, orgHost?: string) {
-    this.core = new Core()
+  constructor(
+    apiKey: string,
+    env: keyof (typeof defaultConfig)['baseUrls'],
+    orgHost?: string
+  ) {
+    this.core = new Core(env, apiKey, orgHost ?? 'http://default.org')
   }
 
-  // TODO: Core와의 연결 메서드 추가
+  async signInWithProvider(providerId: AvailableProviders): Promise<void> {
+    return this.core.signInWithProvider(providerId)
+  }
+
+  async signOut(): Promise<void> {
+    return this.core.signOut()
+  }
+
+  async isLoggedIn(): Promise<boolean> {
+    return this.core.isLoggedIn()
+  }
 }

@@ -1,5 +1,7 @@
+import { defaultConfig } from '@wefunding-dev/wallet-core'
+
 export interface WalletSDKConfig {
   apiKey: string
-  env: 'local' | 'staging' | 'production'
+  env: keyof (typeof defaultConfig)['baseUrls']
   orgHost?: string
 }

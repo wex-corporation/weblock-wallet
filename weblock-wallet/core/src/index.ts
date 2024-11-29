@@ -1,20 +1,7 @@
-// 의존성 모듈 import
-import { Blockchain, Wallet } from '@wefunding-dev/wallet-types'
+// index.ts
 
-// 주요 클래스 및 설정 export
-export class Core {
-  private readonly blockchains: Blockchain[] = []
-  private readonly wallet: Wallet | null = null
-
-  // 간단한 예제 메서드
-  getWallet(): Wallet | null {
-    return this.wallet
-  }
-
-  getBlockchains(): Blockchain[] {
-    return this.blockchains
-  }
-}
-
-// 주요 타입 재정의 export (의존성 연결만)
-export { Blockchain, Wallet }
+// Core 클래스와 주요 모듈 export
+export { Core } from './core'
+export { UsersModule } from './modules/users'
+export { AuthModule } from './modules/auth'
+export { defaultConfig } from './config'
