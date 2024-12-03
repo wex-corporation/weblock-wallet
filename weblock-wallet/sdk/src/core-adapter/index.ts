@@ -18,11 +18,14 @@ export class CoreAdapter {
    * @param providerId - 사용하려는 OAuth 프로바이더
    * @throws Error - 로그인 중 발생한 에러
    */
-  async signInWithProvider(providerId: AvailableProviders): Promise<void> {
+  async signInWithProvider(
+    providerId: AvailableProviders
+  ): Promise<{ isNewUser: boolean }> {
     Logger.debug('CoreAdapter: signInWithProvider 호출', { providerId })
     try {
-      await this.core.signInWithProvider(providerId)
-      Logger.info('CoreAdapter: 로그인 성공')
+      const result = await this.core.signInWithProvider(providerId)
+      Logger.info('CoreAdapter: 로그인 성공', { isNewUser: result.isNewUser })
+      return { isNewUser: result.isNewUser }
     } catch (error) {
       Logger.error('CoreAdapter: 로그인 실패', error)
       throw error

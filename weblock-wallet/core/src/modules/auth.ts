@@ -1,7 +1,5 @@
 import { Firebase } from '../auth/firebase'
-import { LocalForage } from '../utils/localForage'
-import { Jwt } from '../utils/jwt'
-import { FirebaseCredentials } from '@wefunding-dev/wallet-types'
+import { FirebaseUserInfo } from '../types/auth'
 
 export class AuthModule {
   private firebase: Firebase
@@ -10,47 +8,25 @@ export class AuthModule {
     this.firebase = firebase
   }
 
-  async signInWithProvider(providerId: string): Promise<void> {
+  async signInWithProvider(providerId: string): Promise<FirebaseUserInfo> {
     try {
-      const credentials: FirebaseCredentials =
-        await this.firebase.signIn(providerId)
-      const accessToken = credentials.idToken
-      const expiration = Jwt.parse(accessToken)?.exp
-      if (!expiration) throw new Error('Invalid or missing token expiration.')
+      const result = await this.firebase.signInWithPopup(providerId)
+      const idToken = await result.user.getIdToken()
 
-      await LocalForage.save('firebaseId', credentials.firebaseId)
-      await LocalForage.save('email', credentials.email)
-      await LocalForage.save('accessToken', accessToken, expiration)
-
-      console.log('Sign-in successful. User data saved locally.')
+      return {
+        uid: result.user.uid,
+        email: result.user.email,
+        displayName: result.user.displayName,
+        photoURL: result.user.photoURL,
+        idToken
+      }
     } catch (error) {
-      console.error('Error during sign-in:', error)
+      console.error('Firebase sign-in failed:', error)
       throw error
     }
   }
 
   async signOut(): Promise<void> {
-    try {
-      await this.firebase.signOut()
-      await LocalForage.delete('firebaseId')
-      await LocalForage.delete('email')
-      await LocalForage.delete('accessToken')
-
-      console.log('Sign-out successful. Local data cleared.')
-    } catch (error) {
-      console.error('Error during sign-out:', error)
-      throw error
-    }
-  }
-
-  async isLoggedIn(): Promise<boolean> {
-    try {
-      const accessToken = await LocalForage.get<string>('accessToken')
-      const firebaseId = await LocalForage.get<string>('firebaseId')
-      return !!accessToken && !!firebaseId
-    } catch (error) {
-      console.error('Error checking login status:', error)
-      return false
-    }
+    await this.firebase.signOut()
   }
 }

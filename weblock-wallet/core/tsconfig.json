@@ -1,23 +1,18 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "lib": ["ES2020", "DOM"],
-    "outDir": "./dist", // JS 및 타입 파일을 Rollup과 동일한 경로에 출력
-    "rootDir": "./src",
+    "target": "es2020",
+    "module": "esnext",
+    "lib": ["dom", "esnext"],
     "declaration": true,
     "declarationMap": true,
-    "strict": true,
+    "sourceMap": true,
     "moduleResolution": "node",
-    "resolveJsonModule": true,
     "skipLibCheck": true,
+    "strict": true,
     "esModuleInterop": true,
-    "typeRoots": ["node_modules/@types", "./src/types"],
-    "baseUrl": ".",
-    "paths": {
-      "@wefunding-dev/wallet-types": ["../types/dist"]
-    }
+    "outDir": "dist",
+    "rootDir": "src"
   },
-  "include": ["src/**/*"],
+  "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }

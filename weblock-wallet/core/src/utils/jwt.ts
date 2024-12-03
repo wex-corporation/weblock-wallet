@@ -1,14 +1,11 @@
-export interface JwtPayload {
+interface JwtPayload {
   exp?: number
-  [key: string]: any
+  iat?: number
+  [key: string]: unknown
 }
 
-export interface IJwt {
-  parse(token: string): JwtPayload
-}
-
-export const Jwt: IJwt = {
-  parse(token: string): JwtPayload {
+export class Jwt {
+  static decode<T extends JwtPayload = JwtPayload>(token: string): T | null {
     try {
       const base64Url = token.split('.')[1]
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
@@ -18,10 +15,18 @@ export const Jwt: IJwt = {
           .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
           .join('')
       )
-
-      return JSON.parse(jsonPayload) as JwtPayload
-    } catch (error) {
-      throw new Error(`Error parsing JWT: ${error}`)
+      return JSON.parse(jsonPayload)
+    } catch (err) {
+      console.error('Error decoding JWT:', err)
+      return null
     }
   }
+
+  static isExpired(token: string): boolean {
+    const payload = this.decode(token)
+    if (!payload?.exp) return true
+    return Date.now() >= payload.exp * 1000
+  }
 }
+
+export type { JwtPayload }

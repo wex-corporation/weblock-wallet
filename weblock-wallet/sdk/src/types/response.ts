@@ -1,8 +1,13 @@
+export interface UserInfo {
+  email: string
+  displayName: string
+  photoURL: string
+}
+
 export interface SignInResponse {
-  /**
-   * 새 사용자 여부
-   */
   isNewUser: boolean
+  userInfo: UserInfo
+  accessToken: string
 }
 
 export interface UserResponse {

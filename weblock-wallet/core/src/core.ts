@@ -35,8 +35,11 @@ export class Core {
     console.log(`[Core] Initialized with env: ${env}, orgHost: ${orgHost}`)
   }
 
-  async signInWithProvider(providerId: AvailableProviders): Promise<void> {
-    await this.users.signIn(providerId)
+  async signInWithProvider(
+    providerId: AvailableProviders
+  ): Promise<{ isNewUser: boolean }> {
+    const result = await this.users.signIn(providerId)
+    return { isNewUser: result.isNewUser }
   }
 
   async signOut(): Promise<void> {
