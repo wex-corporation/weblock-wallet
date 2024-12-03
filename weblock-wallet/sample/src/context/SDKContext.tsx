@@ -1,10 +1,11 @@
 'use client'
 
-import React, { createContext, useContext, useState } from 'react'
+import React, { createContext, useContext, useState, useEffect } from 'react'
 import {
   WalletSDK,
   WalletSDKConfig,
-  AvailableProviders
+  AvailableProviders,
+  AuthResult
 } from '@wefunding-dev/wallet-sdk'
 
 interface SDKContextType {
@@ -12,7 +13,7 @@ interface SDKContextType {
   isInitialized: boolean
   isLoggedIn: boolean
   initializeSDK: (config: WalletSDKConfig) => void
-  login: () => Promise<void>
+  login: () => Promise<AuthResult>
   logout: () => Promise<void>
 }
 
@@ -20,12 +21,16 @@ const defaultContext: SDKContextType = {
   sdk: null,
   isInitialized: false,
   isLoggedIn: false,
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  initializeSDK: () => {},
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  login: async () => {},
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  logout: async () => {}
+  initializeSDK: (_config: WalletSDKConfig) => {
+    // intentionally left blank
+  },
+  login: async () => {
+    // intentionally left blank
+    return { isNewUser: false, userId: '' }
+  },
+  logout: async () => {
+    // intentionally left blank
+  }
 }
 
 const SDKContext = createContext<SDKContextType>(defaultContext)
@@ -38,6 +43,21 @@ export const SDKProvider: React.FC<{ children: React.ReactNode }> = ({
   const [sdk, setSdk] = useState<WalletSDK | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      if (sdk && isInitialized) {
+        try {
+          const loggedIn = await sdk.isLoggedIn()
+          setIsLoggedIn(loggedIn)
+        } catch (error) {
+          console.error('[SDKContext] 로그인 상태 확인 실패:', error)
+        }
+      }
+    }
+
+    checkLoginStatus()
+  }, [sdk, isInitialized])
 
   const initializeSDK = (config: WalletSDKConfig) => {
     if (isInitialized) {
@@ -52,12 +72,12 @@ export const SDKProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsInitialized(true)
       console.log('[SDKContext] SDK 초기화 성공')
     } catch (error) {
-      console.error('[SDKContext] SDK 초기화 실패:', error)
+      console.error('[SDKContext] SDK 초기화 패:', error)
       throw error
     }
   }
 
-  const login = async () => {
+  const login = async (): Promise<AuthResult> => {
     if (!sdk) {
       throw new Error('SDK가 초기화되지 않았습니다.')
     }
@@ -66,10 +86,9 @@ export const SDKProvider: React.FC<{ children: React.ReactNode }> = ({
       const { isNewUser } = await sdk.signInWithProvider(
         AvailableProviders.Google
       )
-      const loggedIn = await sdk.isLoggedIn()
-      setIsLoggedIn(loggedIn)
-      console.log('[SDKContext] 로그인 성공', { isNewUser })
-      return { isNewUser }
+      setIsLoggedIn(true)
+      console.log('[SDKContext] 로그인 성공')
+      return { isNewUser, userId: '' }
     } catch (error) {
       console.error('[SDKContext] 로그인 실패:', error)
       throw error

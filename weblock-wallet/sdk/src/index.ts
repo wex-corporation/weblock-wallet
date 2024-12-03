@@ -1,3 +1,4 @@
-// 메인 진입점: 필요한 것만 export
+// SDK 클래스만 export
 export { WalletSDK } from './wallet-sdk'
-export type { WalletSDKConfig } from './types'
+// 모든 타입은 types에서 export
+export * from './types'

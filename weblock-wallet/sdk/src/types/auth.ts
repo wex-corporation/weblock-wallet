@@ -1,5 +1,11 @@
-import { AvailableProviders } from '@wefunding-dev/wallet-types'
-export { AvailableProviders }
+/**
+ * 사용 가능한 인증 프로바이더
+ * @public
+ */
+export enum AvailableProviders {
+  Google = 'google.com',
+  Facebook = 'facebook.com'
+}
 
 /**
  * 인증 결과

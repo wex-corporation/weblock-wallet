@@ -1,7 +1,8 @@
 import { Core } from '@wefunding-dev/wallet-core'
+import type { AvailableProviders as CoreProviders } from '@wefunding-dev/wallet-types'
+import { AvailableProviders } from '../types/auth'
 import { WalletSDKConfig } from '../types'
 import { Logger } from '../utils/logger'
-import { AvailableProviders } from '@wefunding-dev/wallet-types'
 
 /**
  * Core 모듈과의 통신을 담당하는 어댑터
@@ -20,15 +21,10 @@ export class CoreAdapter {
   /**
    * 프로바이더를 통한 로그인
    */
-  async signInWithProvider(
-    providerId: AvailableProviders
-  ): Promise<{ isNewUser: boolean }> {
-    try {
-      return await this.core.signInWithProvider(providerId)
-    } catch (error) {
-      Logger.error('CoreAdapter: Sign in failed', error)
-      throw error
-    }
+  async signInWithProvider(provider: AvailableProviders) {
+    return await this.core.signInWithProvider(
+      provider as unknown as CoreProviders
+    )
   }
 
   /**

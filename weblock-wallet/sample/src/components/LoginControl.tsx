@@ -8,24 +8,35 @@ import UsageInfo from './UsageInfo'
 const LoginControl = () => {
   const { isInitialized, isLoggedIn, login, logout } = useSDK()
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const handleLogin = async () => {
     try {
       setError(null)
-      await login()
+      setLoading(true)
+      const result = await login()
+      console.log('[LoginControl] 로그인 결과:', result)
+      if (result.isNewUser) {
+        console.log('[LoginControl] 신규 사용자입니다.')
+      }
     } catch (err) {
       console.error('[LoginControl] 로그인 실패:', err)
       setError((err as Error)?.message || '알 수 없는 에러')
+    } finally {
+      setLoading(false)
     }
   }
 
   const handleLogout = async () => {
     try {
       setError(null)
+      setLoading(true)
       await logout()
     } catch (err) {
       console.error('[LoginControl] 로그아웃 실패:', err)
       setError((err as Error)?.message || '알 수 없는 에러')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -63,36 +74,31 @@ const LoginControl = () => {
       usageInfo={<UsageInfo steps={usageSteps} notes={usageNotes} />}
     >
       <div className="space-y-4">
-        {isLoggedIn ? (
-          <div className="space-y-4">
-            <div className="bg-green-50 border border-green-200 rounded p-4">
-              <p className="text-green-600 text-center">
-                WeBlock 지갑이 연결되었습니다!
-              </p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="w-full bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600 transition focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-            >
-              연결 해제
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={handleLogin}
-            className="w-full bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600 transition focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            지갑 연결하기
-          </button>
-        )}
-
         {error && (
           <div className="bg-red-50 border border-red-200 rounded p-4">
-            <p className="text-red-600 text-sm text-center">
-              에러 발생: {error}
-            </p>
+            <p className="text-red-600 text-center">{error}</p>
           </div>
         )}
+
+        <div className="flex justify-center">
+          {isLoggedIn ? (
+            <button
+              onClick={handleLogout}
+              disabled={loading}
+              className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 disabled:opacity-50"
+            >
+              {loading ? '로그아웃 중...' : '로그아웃'}
+            </button>
+          ) : (
+            <button
+              onClick={handleLogin}
+              disabled={loading}
+              className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+            >
+              {loading ? '로그인 중...' : '로그인'}
+            </button>
+          )}
+        </div>
       </div>
     </Card>
   )
