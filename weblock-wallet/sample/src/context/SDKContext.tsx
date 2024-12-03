@@ -63,10 +63,13 @@ export const SDKProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     try {
-      await sdk.signInWithProvider(AvailableProviders.Google)
+      const { isNewUser } = await sdk.signInWithProvider(
+        AvailableProviders.Google
+      )
       const loggedIn = await sdk.isLoggedIn()
       setIsLoggedIn(loggedIn)
-      console.log('[SDKContext] 로그인 성공')
+      console.log('[SDKContext] 로그인 성공', { isNewUser })
+      return { isNewUser }
     } catch (error) {
       console.error('[SDKContext] 로그인 실패:', error)
       throw error

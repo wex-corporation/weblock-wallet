@@ -1,11 +1,17 @@
+/**
+ * 로그 레벨 타입
+ * @internal
+ */
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
+/**
+ * SDK 로깅을 위한 유틸리티 클래스
+ * @internal
+ */
 export class Logger {
-  // 현재 활성화된 로깅 수준 (기본값: info)
   private static currentLevel: LogLevel = 'info'
 
-  // 로깅 수준의 우선순위 정의
-  private static levels: Record<LogLevel, number> = {
+  private static readonly levels: Record<LogLevel, number> = {
     debug: 0,
     info: 1,
     warn: 2,
@@ -13,73 +19,57 @@ export class Logger {
   }
 
   /**
-   * 로깅 수준 설정
-   * @param level - 활성화할 로깅 수준
+   * 로깅 레벨 설정
+   * @param level - 설정할 로그 레벨
    */
   static setLogLevel(level: LogLevel): void {
-    if (Logger.levels[level] !== undefined) {
-      Logger.currentLevel = level
-      Logger.info(`로깅 수준이 '${level}'(으)로 설정되었습니다.`)
-    } else {
-      console.warn(`[Logger] 잘못된 로그 수준: ${level}`)
+    if (this.levels[level] !== undefined) {
+      this.currentLevel = level
+      this.info(`Log level set to '${level}'`)
     }
   }
 
   /**
-   * 브라우저 환경에 적합한 출력 메서드
-   * @param level - 로깅 수준
-   * @param message - 출력할 메시지
-   * @param optionalParams - 추가 정보
+   * 로그 출력 처리
    */
-  private static logMessage(
+  private static log(
     level: LogLevel,
     message: string,
-    ...optionalParams: unknown[]
+    ...args: unknown[]
   ): void {
-    if (Logger.levels[level] >= Logger.levels[Logger.currentLevel]) {
-      const prefix = `%c[WalletSDK][${level.toUpperCase()}]`
-      const styles =
-        level === 'debug'
-          ? 'color: gray'
-          : level === 'info'
-          ? 'color: blue'
+    if (this.levels[level] >= this.levels[this.currentLevel]) {
+      const prefix = `[WeblockSDK][${level.toUpperCase()}]`
+      const style =
+        level === 'error'
+          ? 'color: red'
           : level === 'warn'
           ? 'color: orange'
-          : 'color: red'
+          : level === 'info'
+          ? 'color: blue'
+          : 'color: gray'
+
       console[level === 'debug' ? 'log' : level](
-        prefix,
-        styles,
+        `%c${prefix}`,
+        style,
         message,
-        ...optionalParams
+        ...args
       )
     }
   }
 
-  /**
-   * 디버그 메시지 출력
-   */
-  static debug(message: string, ...optionalParams: unknown[]): void {
-    Logger.logMessage('debug', message, ...optionalParams)
+  static debug(message: string, ...args: unknown[]): void {
+    this.log('debug', message, ...args)
   }
 
-  /**
-   * 정보 메시지 출력
-   */
-  static info(message: string, ...optionalParams: unknown[]): void {
-    Logger.logMessage('info', message, ...optionalParams)
+  static info(message: string, ...args: unknown[]): void {
+    this.log('info', message, ...args)
   }
 
-  /**
-   * 경고 메시지 출력
-   */
-  static warn(message: string, ...optionalParams: unknown[]): void {
-    Logger.logMessage('warn', message, ...optionalParams)
+  static warn(message: string, ...args: unknown[]): void {
+    this.log('warn', message, ...args)
   }
 
-  /**
-   * 에러 메시지 출력
-   */
-  static error(message: string, ...optionalParams: unknown[]): void {
-    Logger.logMessage('error', message, ...optionalParams)
+  static error(message: string, ...args: unknown[]): void {
+    this.log('error', message, ...args)
   }
 }
