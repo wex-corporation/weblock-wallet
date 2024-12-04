@@ -3,6 +3,7 @@ import { WalletSDKConfig, AvailableProviders } from './types'
 import { SDKAlreadyInitializedError, SDKNotInitializedError } from './errors'
 import { Logger } from './utils/logger'
 import { Validation } from './utils/validation'
+import { AuthResult } from './types/auth'
 
 /**
  * WeBlock Wallet SDK의 메인 클래스
@@ -56,13 +57,13 @@ export class WalletSDK {
   }
 
   /**
-   * OAuth 프로바이더로 로그인
+   * OAuth 프로바이더로 ��그인
    * @param providerId - 인증 프로바이더 ID
    * @throws {SDKNotInitializedError} SDK가 초기화되지 않은 경우
    */
   async signInWithProvider(
     providerId: AvailableProviders
-  ): Promise<{ isNewUser: boolean }> {
+  ): Promise<AuthResult> {
     this.ensureInitialized()
     if (!this.adapter) {
       throw new SDKNotInitializedError()

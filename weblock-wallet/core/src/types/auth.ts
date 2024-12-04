@@ -1,19 +1,14 @@
-export interface FirebaseUserInfo {
-  uid: string
-  email: string | null
-  displayName: string | null
-  photoURL: string | null
-  idToken: string
-}
+import { AvailableProviders } from '@wefunding-dev/wallet-types'
 
-export interface UserInfo {
-  email: string | null
-  displayName: string | null
-  photoURL: string | null
+export interface FirebaseUserInfo {
+  firebaseId: string
+  email: string
+  idToken: string
+  photoURL?: string | null
 }
 
 export interface AuthResponse {
   isNewUser: boolean
-  user: UserInfo
-  token: string
+  email: string
+  photoURL?: string
 }

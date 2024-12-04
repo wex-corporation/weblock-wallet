@@ -37,9 +37,13 @@ export class Core {
 
   async signInWithProvider(
     providerId: AvailableProviders
-  ): Promise<{ isNewUser: boolean }> {
+  ): Promise<{ isNewUser: boolean; email: string; photoURL?: string }> {
     const result = await this.users.signIn(providerId)
-    return { isNewUser: result.isNewUser }
+    return {
+      isNewUser: result.isNewUser,
+      email: result.email,
+      photoURL: result.photoURL
+    }
   }
 
   async signOut(): Promise<void> {

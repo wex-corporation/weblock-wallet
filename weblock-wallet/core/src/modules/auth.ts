@@ -1,5 +1,6 @@
 import { Firebase } from '../auth/firebase'
 import { FirebaseUserInfo } from '../types/auth'
+import { AvailableProviders } from '@wefunding-dev/wallet-types'
 
 export class AuthModule {
   private firebase: Firebase
@@ -8,18 +9,11 @@ export class AuthModule {
     this.firebase = firebase
   }
 
-  async signInWithProvider(providerId: string): Promise<FirebaseUserInfo> {
+  async signInWithProvider(
+    providerId: AvailableProviders
+  ): Promise<FirebaseUserInfo> {
     try {
-      const result = await this.firebase.signInWithPopup(providerId)
-      const idToken = await result.user.getIdToken()
-
-      return {
-        uid: result.user.uid,
-        email: result.user.email,
-        displayName: result.user.displayName,
-        photoURL: result.user.photoURL,
-        idToken
-      }
+      return await this.firebase.signIn(providerId)
     } catch (error) {
       console.error('Firebase sign-in failed:', error)
       throw error

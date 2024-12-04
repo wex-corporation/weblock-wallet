@@ -14,6 +14,8 @@ export enum AvailableProviders {
 export interface AuthResult {
   /** 신규 사용자 여부 */
   isNewUser: boolean
-  /** 사용자 ID */
-  userId: string
+  /** 사용자 이메일 */
+  email: string
+  /** 사용자 프로필 사진 URL */
+  photoURL?: string
 }

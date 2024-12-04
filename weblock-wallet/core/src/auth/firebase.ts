@@ -25,14 +25,9 @@ export class Firebase {
     return {
       firebaseId: user.uid,
       email: user.email ?? '',
-      idToken
+      idToken,
+      photoURL: user.photoURL
     }
-  }
-
-  async signInWithPopup(providerId: string) {
-    const provider = new OAuthProvider(providerId)
-    const result = await signInWithPopup(this.auth, provider)
-    return result
   }
 
   async signOut(): Promise<void> {

@@ -4,6 +4,13 @@ export enum AvailableProviders {
   Google = 'google.com'
 }
 
+export interface FirebaseCredentials {
+  firebaseId: string
+  email: string
+  idToken: string
+  photoURL?: string | null
+}
+
 export interface SignInRequest {
   firebaseId: string
   email: string
@@ -24,10 +31,4 @@ export interface FirebaseConfig {
   messagingSenderId: string
   appId: string
   measurementId: string
-}
-
-export interface FirebaseCredentials {
-  firebaseId: string
-  email: string
-  idToken: string
 }

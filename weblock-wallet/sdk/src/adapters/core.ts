@@ -1,6 +1,6 @@
 import { Core } from '@wefunding-dev/wallet-core'
-import type { AvailableProviders as CoreProviders } from '@wefunding-dev/wallet-types'
-import { AvailableProviders } from '../types/auth'
+import { AvailableProviders as CoreProviders } from '@wefunding-dev/wallet-types'
+import { AvailableProviders, AuthResult } from '../types/auth'
 import { WalletSDKConfig } from '../types'
 import { Logger } from '../utils/logger'
 
@@ -14,22 +14,23 @@ export class CoreAdapter {
   constructor(config: WalletSDKConfig) {
     const { apiKey, env, orgHost } = config
     Logger.info('CoreAdapter: Initializing...', { env, orgHost })
-
     this.core = new Core(env, apiKey, orgHost ?? 'http://localhost:3000')
   }
 
   /**
    * 프로바이더를 통한 로그인
    */
-  async signInWithProvider(provider: AvailableProviders) {
-    return await this.core.signInWithProvider(
+  async signInWithProvider(provider: AvailableProviders): Promise<AuthResult> {
+    const result = await this.core.signInWithProvider(
       provider as unknown as CoreProviders
     )
+    return {
+      isNewUser: result.isNewUser,
+      email: result.email,
+      photoURL: result.photoURL
+    }
   }
 
-  /**
-   * 로그아웃
-   */
   async signOut(): Promise<void> {
     try {
       await this.core.signOut()
@@ -39,9 +40,6 @@ export class CoreAdapter {
     }
   }
 
-  /**
-   * 로그인 상태 확인
-   */
   async isLoggedIn(): Promise<boolean> {
     try {
       return await this.core.isLoggedIn()
