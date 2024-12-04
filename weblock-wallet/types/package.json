@@ -1,6 +1,6 @@
 {
   "name": "@wefunding-dev/wallet-types",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Types package for Weblock Wallet",
   "files": [
     "dist"
