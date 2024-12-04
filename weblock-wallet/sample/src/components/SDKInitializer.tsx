@@ -27,59 +27,111 @@ const SDKInitializer = () => {
   }
 
   const usageSteps = [
-    'API Key를 입력하세요.',
-    '환경(로컬/개발/스테이징/프로덕션)을 선택하세요.',
-    '초기화 버튼을 클릭하여 SDK를 초기화합니다.'
+    {
+      title: 'Installation',
+      description: 'Install the WeBlock Wallet SDK package',
+      code: 'npm install @wefunding-dev/wallet-sdk'
+    },
+    {
+      title: 'Import SDK',
+      description: 'Import the SDK and required types',
+      code: `import { WalletSDK, WalletSDKConfig } from '@wefunding-dev/wallet-sdk'`
+    },
+    {
+      title: 'Create Instance',
+      description: 'Create and initialize SDK instance with configuration',
+      code: `const sdk = new WalletSDK()
+sdk.initialize({
+  apiKey: 'YOUR_API_KEY',
+  env: 'dev',
+  orgHost: 'your-organization-host'
+})`
+    },
+    {
+      title: 'Verify Initialization',
+      description: 'Check if SDK is properly initialized',
+      code: `if (sdk.isInitialized()) {
+  console.log('SDK is ready to use')
+}`
+    }
   ]
 
-  const usageNotes = [
-    'API Key는 WeBlock 대시보드에서 확인할 수 있습니다.',
-    '초기화는 앱 시작시 한 번만 수행하면 됩니다.'
-  ]
+  const interfaceInfo = {
+    name: 'WalletSDKConfig',
+    description: 'Configuration interface for SDK initialization',
+    properties: [
+      {
+        name: 'apiKey',
+        type: 'string',
+        description: 'API key from WeBlock Dashboard',
+        required: true
+      },
+      {
+        name: 'env',
+        type: "'local' | 'dev' | 'stage' | 'prod'",
+        description: 'Environment configuration',
+        required: true
+      },
+      {
+        name: 'orgHost',
+        type: 'string',
+        description: 'Organization host URL',
+        required: true
+      }
+    ]
+  }
 
   return (
     <Card
       title="SDK 초기화"
-      description="WeBlock SDK를 초기화하여 서비스를 시작합니다."
-      usageInfo={<UsageInfo steps={usageSteps} notes={usageNotes} />}
+      description="WeBlock SDK를 초기화하여 서비스를 시작합니다"
+      usageInfo={<UsageInfo steps={usageSteps} interfaceInfo={interfaceInfo} />}
     >
       {!isInitialized ? (
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">API Key:</label>
-            <input
-              type="text"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Environment:
-            </label>
-            <select
-              value={env}
-              onChange={(e) =>
-                setEnv(e.target.value as 'local' | 'dev' | 'stage' | 'prod')
-              }
-              className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="local">Local</option>
-              <option value="dev">Dev</option>
-              <option value="stage">Stage</option>
-              <option value="prod">Prod</option>
-            </select>
-          </div>
-          <button
-            onClick={handleInitialize}
-            className="w-full bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600 transition focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            초기화
-          </button>
           {error && (
-            <p className="text-red-500 text-sm mt-2">에러 발생: {error}</p>
+            <div className="bg-red-50 border border-red-200 rounded p-4">
+              <p className="text-red-600 text-center">{error}</p>
+            </div>
           )}
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                API Key
+              </label>
+              <input
+                type="text"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Environment
+              </label>
+              <select
+                value={env}
+                onChange={(e) =>
+                  setEnv(e.target.value as 'local' | 'dev' | 'stage' | 'prod')
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="local">Local</option>
+                <option value="dev">Development</option>
+                <option value="stage">Staging</option>
+                <option value="prod">Production</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <button
+              onClick={handleInitialize}
+              className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
+            >
+              SDK 초기화
+            </button>
+          </div>
         </div>
       ) : (
         <div className="bg-green-50 border border-green-200 rounded p-4">

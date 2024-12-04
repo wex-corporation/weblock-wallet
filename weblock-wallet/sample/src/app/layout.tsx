@@ -1,6 +1,6 @@
 'use client'
 
-import './globals.css' // TailwindCSS 및 전역 스타일 포함
+import './globals.css'
 import { SDKProvider } from '../context/SDKContext'
 
 export default function RootLayout({
@@ -9,10 +9,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className="bg-gray-50 text-gray-800">
+    <html lang="en" className="h-full scroll-smooth">
+      <body className="h-full bg-gray-50 text-gray-800 antialiased">
         <SDKProvider>
-          <main className="container mx-auto py-6">{children}</main>
+          <div className="min-h-full relative">{children}</div>
         </SDKProvider>
       </body>
     </html>

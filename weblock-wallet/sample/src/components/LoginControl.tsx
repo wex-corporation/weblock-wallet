@@ -41,22 +41,53 @@ const LoginControl = () => {
   }
 
   const usageSteps = [
-    'SDK 초기화가 완료되어야 합니다.',
-    '로그인 버튼을 클릭하여 WeBlock 지갑에 연결합니다.',
-    '지갑 연결 후 서비스를 이용할 수 있습니다.'
+    {
+      title: 'Check SDK Initialization',
+      description: 'SDK must be initialized before authentication',
+      code: 'if (!sdk.isInitialized()) throw new Error("SDK not initialized")'
+    },
+    {
+      title: 'Implement Authentication',
+      description: 'Use the signInWithProvider method for Google OAuth login',
+      code: `const result = await sdk.signInWithProvider(AvailableProviders.Google)
+if (result.isNewUser) {
+  console.log('New user registered')
+}`
+    },
+    {
+      title: 'Handle Sign Out',
+      description: 'Implement logout functionality',
+      code: 'await sdk.signOut()'
+    }
   ]
 
-  const usageNotes = [
-    '로그인은 WeBlock 지갑 앱을 통해 진행됩니다.',
-    '지갑이 설치되어 있지 않은 경우 설치 페이지로 이동합니다.'
-  ]
+  const interfaceInfo = {
+    name: 'AuthResult',
+    description: 'Authentication result interface',
+    properties: [
+      {
+        name: 'isNewUser',
+        type: 'boolean',
+        description: 'Indicates if the user is newly registered',
+        required: true
+      },
+      {
+        name: 'userId',
+        type: 'string',
+        description: 'Unique identifier for the authenticated user',
+        required: true
+      }
+    ]
+  }
 
   if (!isInitialized) {
     return (
       <Card
         title="로그인"
         description="WeBlock 지갑 연결"
-        usageInfo={<UsageInfo steps={usageSteps} notes={usageNotes} />}
+        usageInfo={
+          <UsageInfo steps={usageSteps} interfaceInfo={interfaceInfo} />
+        }
       >
         <div className="bg-yellow-50 border border-yellow-200 rounded p-4">
           <p className="text-yellow-600 text-center">
@@ -71,7 +102,7 @@ const LoginControl = () => {
     <Card
       title="로그인"
       description="WeBlock 지갑 연결"
-      usageInfo={<UsageInfo steps={usageSteps} notes={usageNotes} />}
+      usageInfo={<UsageInfo steps={usageSteps} interfaceInfo={interfaceInfo} />}
     >
       <div className="space-y-4">
         {error && (

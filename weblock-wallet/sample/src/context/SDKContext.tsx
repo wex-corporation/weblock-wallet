@@ -7,6 +7,7 @@ import {
   AvailableProviders,
   AuthResult
 } from '@wefunding-dev/wallet-sdk'
+import { useRequestResponseLogger } from '../hooks/useRequestResponseLogger'
 
 interface SDKContextType {
   sdk: WalletSDK | null
@@ -43,6 +44,7 @@ export const SDKProvider: React.FC<{ children: React.ReactNode }> = ({
   const [sdk, setSdk] = useState<WalletSDK | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const { addLog } = useRequestResponseLogger()
 
   useEffect(() => {
     const checkLoginStatus = async () => {
@@ -66,13 +68,18 @@ export const SDKProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     try {
+      addLog({
+        method: 'initialize',
+        request: { ...config },
+        response: { success: true }
+      })
       const newSDK = new WalletSDK()
       newSDK.initialize(config)
       setSdk(newSDK)
       setIsInitialized(true)
       console.log('[SDKContext] SDK 초기화 성공')
     } catch (error) {
-      console.error('[SDKContext] SDK 초기화 패:', error)
+      console.error('[SDKContext] SDK 초기화 실패:', error)
       throw error
     }
   }
@@ -83,12 +90,14 @@ export const SDKProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     try {
-      const { isNewUser } = await sdk.signInWithProvider(
-        AvailableProviders.Google
-      )
+      const result = await sdk.signInWithProvider(AvailableProviders.Google)
+      addLog({
+        method: 'login',
+        request: { provider: AvailableProviders.Google },
+        response: result
+      })
       setIsLoggedIn(true)
-      console.log('[SDKContext] 로그인 성공')
-      return { isNewUser, userId: '' }
+      return { isNewUser: result.isNewUser, userId: '' }
     } catch (error) {
       console.error('[SDKContext] 로그인 실패:', error)
       throw error
@@ -101,6 +110,7 @@ export const SDKProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     try {
+      addLog({ method: 'logout', request: null, response: { success: true } })
       await sdk.signOut()
       setIsLoggedIn(false)
       console.log('[SDKContext] 로그아웃 성공')
