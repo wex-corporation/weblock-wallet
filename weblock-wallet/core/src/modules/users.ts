@@ -2,6 +2,7 @@ import { AuthModule } from './auth'
 import { UserClient } from '../clients/users'
 import { LocalForage } from '../utils/localForage'
 import { AvailableProviders } from '@wefunding-dev/wallet-types'
+import { UserInfo, AuthResponse } from '../types/auth'
 
 export class UsersModule {
   private auth: AuthModule
@@ -14,34 +15,60 @@ export class UsersModule {
     this.orgHost = orgHost
   }
 
-  async signIn(providerId: AvailableProviders): Promise<void> {
-    await this.auth.signInWithProvider(providerId)
+  async signIn(providerId: AvailableProviders): Promise<AuthResponse> {
+    const firebaseUserInfo = await this.auth.signInWithProvider(providerId)
 
-    const firebaseId = await LocalForage.get<string>('firebaseId')
-    const idToken = await LocalForage.get<string>('accessToken')
-    const email = await LocalForage.get<string>('email')
-
-    if (!firebaseId || !idToken || !email) {
-      throw new Error('Authentication failed.')
+    if (!firebaseUserInfo) {
+      throw new Error('Firebase authentication failed')
     }
 
     const response = await this.userClient.signIn({
-      firebaseId,
-      email,
-      idToken,
+      firebaseId: firebaseUserInfo.uid,
+      email: firebaseUserInfo.email ?? '',
+      idToken: firebaseUserInfo.idToken,
       provider: providerId
     })
 
-    await LocalForage.save(`${this.orgHost}:isNewUser`, response.isNewUser)
+    const authResponse: AuthResponse = {
+      isNewUser: response.isNewUser,
+      user: {
+        email: firebaseUserInfo.email,
+        displayName: firebaseUserInfo.displayName,
+        photoURL: firebaseUserInfo.photoURL
+      },
+      token: response.token
+    }
+
+    await this.saveUserData(authResponse)
+    return authResponse
+  }
+
+  private async saveUserData(response: AuthResponse): Promise<void> {
+    const prefix = `${this.orgHost}:`
+    await LocalForage.save(`${prefix}isNewUser`, response.isNewUser)
+    await LocalForage.save(`${prefix}user`, response.user)
+    await LocalForage.save(`${prefix}token`, response.token)
   }
 
   async signOut(): Promise<void> {
     await this.auth.signOut()
-    await LocalForage.delete(`${this.orgHost}:isNewUser`)
+    await this.clearUserData()
+  }
+
+  private async clearUserData(): Promise<void> {
+    const prefix = `${this.orgHost}:`
+    await LocalForage.delete(`${prefix}isNewUser`)
+    await LocalForage.delete(`${prefix}user`)
+    await LocalForage.delete(`${prefix}token`)
+  }
+
+  async getUserInfo(): Promise<UserInfo | null> {
+    return await LocalForage.get<UserInfo>(`${this.orgHost}:user`)
   }
 
   async isLoggedIn(): Promise<boolean> {
-    return this.auth.isLoggedIn()
+    const token = await LocalForage.get<string>(`${this.orgHost}:token`)
+    return !!token
   }
 
   async isNewUser(): Promise<boolean> {

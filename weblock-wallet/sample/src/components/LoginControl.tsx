@@ -2,75 +2,136 @@
 
 import React, { useState } from 'react'
 import { useSDK } from '../context/SDKContext'
-import { AvailableProviders } from '@wefunding-dev/wallet-sdk'
+import Card from './Card'
+import UsageInfo from './UsageInfo'
 
 const LoginControl = () => {
-  const { isInitialized, sdk } = useSDK()
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const { isInitialized, isLoggedIn, login, logout } = useSDK()
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  const handleSignIn = async () => {
-    if (!sdk) {
-      setError('SDK가 초기화되지 않았습니다.')
-      return
-    }
-
+  const handleLogin = async () => {
     try {
       setError(null)
-      await sdk.signInWithProvider(AvailableProviders.Google)
-      const loggedIn = await sdk.isLoggedIn()
-      setIsLoggedIn(loggedIn)
+      setLoading(true)
+      const result = await login()
+      console.log('[LoginControl] 로그인 결과:', result)
+      if (result.isNewUser) {
+        console.log('[LoginControl] 신규 사용자입니다.')
+      }
     } catch (err) {
       console.error('[LoginControl] 로그인 실패:', err)
       setError((err as Error)?.message || '알 수 없는 에러')
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleSignOut = async () => {
-    if (!sdk) {
-      setError('SDK가 초기화되지 않았습니다.')
-      return
-    }
-
+  const handleLogout = async () => {
     try {
       setError(null)
-      await sdk.signOut()
-      setIsLoggedIn(false)
+      setLoading(true)
+      await logout()
     } catch (err) {
       console.error('[LoginControl] 로그아웃 실패:', err)
       setError((err as Error)?.message || '알 수 없는 에러')
+    } finally {
+      setLoading(false)
     }
   }
 
+  const usageSteps = [
+    {
+      title: 'Check SDK Initialization',
+      description: 'SDK must be initialized before authentication',
+      code: 'if (!sdk.isInitialized()) throw new Error("SDK not initialized")'
+    },
+    {
+      title: 'Implement Authentication',
+      description: 'Use the signInWithProvider method for Google OAuth login',
+      code: `const result = await sdk.signInWithProvider(AvailableProviders.Google)
+if (result.isNewUser) {
+  console.log('New user registered')
+}`
+    },
+    {
+      title: 'Handle Sign Out',
+      description: 'Implement logout functionality',
+      code: 'await sdk.signOut()'
+    }
+  ]
+
+  const interfaceInfo = {
+    name: 'AuthResult',
+    description: 'Authentication result interface',
+    properties: [
+      {
+        name: 'isNewUser',
+        type: 'boolean',
+        description: 'Indicates if the user is newly registered',
+        required: true
+      },
+      {
+        name: 'userId',
+        type: 'string',
+        description: 'Unique identifier for the authenticated user',
+        required: true
+      }
+    ]
+  }
+
+  if (!isInitialized) {
+    return (
+      <Card
+        title="로그인"
+        description="WeBlock 지갑 연결"
+        usageInfo={
+          <UsageInfo steps={usageSteps} interfaceInfo={interfaceInfo} />
+        }
+      >
+        <div className="bg-yellow-50 border border-yellow-200 rounded p-4">
+          <p className="text-yellow-600 text-center">
+            SDK 초기화가 필요합니다.
+          </p>
+        </div>
+      </Card>
+    )
+  }
+
   return (
-    <div className="p-4 border rounded shadow-md bg-white w-full max-w-md">
-      <h2 className="text-xl font-bold mb-2">로그인/로그아웃</h2>
-      {!isInitialized && (
-        <p className="text-red-500">
-          SDK가 초기화되지 않았습니다. 먼저 초기화해주세요.
-        </p>
-      )}
-      {isInitialized && (
-        <>
-          {!isLoggedIn ? (
+    <Card
+      title="로그인"
+      description="WeBlock 지갑 연결"
+      usageInfo={<UsageInfo steps={usageSteps} interfaceInfo={interfaceInfo} />}
+    >
+      <div className="space-y-4">
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded p-4">
+            <p className="text-red-600 text-center">{error}</p>
+          </div>
+        )}
+
+        <div className="flex justify-center">
+          {isLoggedIn ? (
             <button
-              onClick={handleSignIn}
-              className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600 transition"
+              onClick={handleLogout}
+              disabled={loading}
+              className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 disabled:opacity-50"
             >
-              Google 로그인
+              {loading ? '로그아웃 중...' : '로그아웃'}
             </button>
           ) : (
             <button
-              onClick={handleSignOut}
-              className="bg-gray-500 text-white px-4 py-2 rounded shadow hover:bg-gray-600 transition"
+              onClick={handleLogin}
+              disabled={loading}
+              className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
             >
-              로그아웃
+              {loading ? '로그인 중...' : '로그인'}
             </button>
           )}
-          {error && <p className="text-red-500 mt-2">에러 발생: {error}</p>}
-        </>
-      )}
-    </div>
+        </div>
+      </div>
+    </Card>
   )
 }
 

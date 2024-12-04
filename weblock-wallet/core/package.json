@@ -1,6 +1,6 @@
 {
   "name": "@wefunding-dev/wallet-core",
-  "version": "0.1.7",
+  "version": "0.1.6",
   "description": "Core module for Weblock Wallet",
   "main": "dist/cjs/index.cjs.js",
   "module": "dist/esm/index.esm.js",

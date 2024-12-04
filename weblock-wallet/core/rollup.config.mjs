@@ -2,22 +2,18 @@ import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import terser from '@rollup/plugin-terser'
 
-console.log('[DEBUG] Rollup Config Loaded')
-
 export default {
-  input: 'dist/index.js', // TypeScript 출력 파일 사용
+  input: 'dist/index.js',
   output: [
     {
-      dir: 'dist/cjs',
+      file: 'dist/cjs/index.cjs.js',
       format: 'cjs',
-      sourcemap: true,
-      entryFileNames: '[name].cjs.js'
+      sourcemap: true
     },
     {
-      dir: 'dist/esm',
+      file: 'dist/esm/index.esm.js',
       format: 'esm',
-      sourcemap: true,
-      entryFileNames: '[name].esm.js'
+      sourcemap: true
     }
   ],
   plugins: [resolve(), commonjs(), terser()],

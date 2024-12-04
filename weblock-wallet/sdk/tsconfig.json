@@ -16,7 +16,10 @@
     "paths": {
       "@wefunding-dev/wallet-core": ["../core/dist"],
       "@wefunding-dev/wallet-types": ["../types/dist"]
-    }
+    },
+    "strict": true,
+    "allowJs": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

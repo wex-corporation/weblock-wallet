@@ -1,46 +1,65 @@
-import * as localforage from 'localforage'
+import localforage from 'localforage'
 
-const isBrowser = typeof window !== 'undefined'
+interface Item<T> {
+  value: T
+  expiry?: number | null
+}
 
-export const LocalForage = {
+interface ILocalForage {
+  save<T>(key: string, value: T, expiry?: number | null): Promise<void>
+  get<T>(key: string): Promise<T | null>
+  delete(key: string): Promise<void>
+  removeAll(): Promise<void>
+}
+
+export const LocalForage: ILocalForage = {
   async save<T>(key: string, value: T, expiry?: number | null): Promise<void> {
-    if (!isBrowser) {
-      console.error('LocalForage is not available in this environment.')
-      return
+    try {
+      const item: Item<T> = {
+        value,
+        expiry
+      }
+      await localforage.setItem(key, item)
+    } catch (err) {
+      console.error(`Error saving data for key "${key}":`, err)
     }
-
-    const item = { value, expiry }
-    await localforage.setItem(key, item)
   },
+
   async get<T>(key: string): Promise<T | null> {
-    if (!isBrowser) {
-      console.error('LocalForage is not available in this environment.')
-      return null
-    }
+    try {
+      const item = await localforage.getItem<Item<T>>(key)
 
-    const item = await localforage.getItem<{
-      value: T
-      expiry?: number | null
-    }>(key)
-    if (!item) return null
-    if (item.expiry && Date.now() > item.expiry * 1000) {
-      await localforage.removeItem(key)
+      if (!item) {
+        return null
+      }
+
+      if (item.expiry && Date.now() > item.expiry * 1000) {
+        await localforage.removeItem(key)
+        return null
+      }
+
+      return item.value
+    } catch (err) {
+      console.error(`Error retrieving data for key "${key}":`, err)
       return null
     }
-    return item.value
   },
+
   async delete(key: string): Promise<void> {
-    if (!isBrowser) {
-      console.error('LocalForage is not available in this environment.')
-      return
+    try {
+      await localforage.removeItem(key)
+    } catch (err) {
+      console.error(`Error deleting data for key "${key}":`, err)
     }
-    await localforage.removeItem(key)
   },
-  async clear(): Promise<void> {
-    if (!isBrowser) {
-      console.error('LocalForage is not available in this environment.')
-      return
+
+  async removeAll(): Promise<void> {
+    try {
+      await localforage.clear()
+    } catch (err) {
+      console.error('Error removing all data:', err)
     }
-    await localforage.clear()
   }
 }
+
+export default LocalForage

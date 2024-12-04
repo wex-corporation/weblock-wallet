@@ -2,31 +2,31 @@ import { LocalForage } from './localForage'
 import { ClientOptions, RequestConfig } from '@wefunding-dev/wallet-types'
 
 export interface Client {
-  request<T = any>(
+  request<T = unknown>(
     method: string,
     path: string,
-    data?: any,
+    data?: unknown,
     config?: RequestConfig
   ): Promise<T | null>
 
-  get<T = any>(path: string, config?: RequestConfig): Promise<T | null>
-  post<T = any>(
+  get<T = unknown>(path: string, config?: RequestConfig): Promise<T | null>
+  post<T = unknown>(
     path: string,
-    data: any,
+    data: unknown,
     config?: RequestConfig
   ): Promise<T | null>
-  put<T = any>(
+  put<T = unknown>(
     path: string,
-    data: any,
+    data: unknown,
     config?: RequestConfig
   ): Promise<T | null>
-  delete<T = any>(path: string, config?: RequestConfig): Promise<T | null>
-  patch<T = any>(
+  delete<T = unknown>(path: string, config?: RequestConfig): Promise<T | null>
+  patch<T = unknown>(
     path: string,
-    data: any,
+    data: unknown,
     config?: RequestConfig
   ): Promise<T | null>
-  options<T = any>(path: string, config?: RequestConfig): Promise<T | null>
+  options<T = unknown>(path: string, config?: RequestConfig): Promise<T | null>
   getOrgHost(): string
 }
 
@@ -39,10 +39,10 @@ export class HttpClient {
     this.customHeaders = customHeaders
   }
 
-  async request<T = any>(
+  async request<T = unknown>(
     method: string,
     path: string,
-    data: any = null,
+    data: unknown = null,
     config: RequestConfig = {}
   ): Promise<T | null> {
     const url = new URL(path, this.baseUrl)
@@ -79,45 +79,45 @@ export class HttpClient {
     return null
   }
 
-  get<T = any>(
+  get<T = unknown>(
     path: string,
     config: RequestConfig = { needsAccessToken: true }
   ): Promise<T | null> {
     return this.request('GET', path, null, config)
   }
 
-  post<T = any>(
+  post<T = unknown>(
     path: string,
-    data: any,
+    data: unknown,
     config: RequestConfig = { needsAccessToken: true }
   ): Promise<T | null> {
     return this.request('POST', path, data, config)
   }
 
-  put<T = any>(
+  put<T = unknown>(
     path: string,
-    data: any,
+    data: unknown,
     config: RequestConfig = { needsAccessToken: true }
   ): Promise<T | null> {
     return this.request('PUT', path, data, config)
   }
 
-  delete<T = any>(
+  delete<T = unknown>(
     path: string,
     config: RequestConfig = { needsAccessToken: true }
   ): Promise<T | null> {
     return this.request('DELETE', path, null, config)
   }
 
-  patch<T = any>(
+  patch<T = unknown>(
     path: string,
-    data: any,
+    data: unknown,
     config: RequestConfig = { needsAccessToken: true }
   ): Promise<T | null> {
     return this.request('PATCH', path, data, config)
   }
 
-  options<T = any>(
+  options<T = unknown>(
     path: string,
     config: RequestConfig = { needsAccessToken: true }
   ): Promise<T | null> {
@@ -135,10 +135,10 @@ export class WalletServerHttpClient extends HttpClient {
     this.orgHost = orgHost
   }
 
-  async request<T = any>(
+  async request<T = unknown>(
     method: string,
     path: string,
-    data: any = null,
+    data: unknown = null,
     config: RequestConfig = {}
   ): Promise<T | null> {
     const headers = new Headers(this.customHeaders)

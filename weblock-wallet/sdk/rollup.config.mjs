@@ -4,10 +4,8 @@ import inject from '@rollup/plugin-inject'
 import replace from '@rollup/plugin-replace'
 import terser from '@rollup/plugin-terser'
 
-console.log('[DEBUG] Rollup Config Loaded')
-
 export default {
-  input: 'dist/esm/index.js', // TypeScript 컴파일 후 생성된 ESM 파일
+  input: 'dist/esm/index.js',
   output: [
     {
       dir: 'dist/cjs',
@@ -23,7 +21,10 @@ export default {
     }
   ],
   plugins: [
-    resolve(),
+    resolve({
+      browser: true,
+      preferBuiltins: false
+    }),
     commonjs(),
     replace({
       preventAssignment: true,
@@ -35,18 +36,13 @@ export default {
     }),
     terser()
   ],
-  // 외부 의존성 처리
   external: (id) => {
-    const isExternal = /^@wefunding-dev\//.test(id) || /^[a-z0-9@]/i.test(id)
-    const isInputFile = id === 'dist/esm/index.js'
-    console.log(
-      `[DEBUG] External check: ${id} -> ${isExternal && !isInputFile}`
-    )
-    return isExternal && !isInputFile // input 파일은 external로 처리하지 않음
+    if (id === 'dist/esm/index.js') return false
+    return /^@wefunding-dev\//.test(id) || /^[a-z0-9@]/.test(id)
   },
-  // 경고 처리
-  onwarn(warning, warn) {
-    if (warning.code === 'UNRESOLVED_IMPORT') return // 미해결 import 경고 무시
-    warn(warning) // 기타 경고 출력
+  onwarn: (warning, warn) => {
+    if (warning.code === 'CIRCULAR_DEPENDENCY') return
+    if (warning.code === 'UNRESOLVED_IMPORT') return
+    warn(warning)
   }
 }

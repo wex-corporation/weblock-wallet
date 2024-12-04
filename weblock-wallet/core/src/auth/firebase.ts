@@ -29,6 +29,12 @@ export class Firebase {
     }
   }
 
+  async signInWithPopup(providerId: string) {
+    const provider = new OAuthProvider(providerId)
+    const result = await signInWithPopup(this.auth, provider)
+    return result
+  }
+
   async signOut(): Promise<void> {
     await signOut(this.auth)
   }
