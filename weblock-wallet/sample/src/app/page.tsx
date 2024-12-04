@@ -3,6 +3,7 @@
 import SDKInitializer from '../components/SDKInitializer'
 import LoginControl from '@/components/LoginControl'
 import RequestResponseViewer from '@/components/RequestResponseViewer'
+import Installation from '@/components/Installation'
 
 export default function HomePage() {
   return (
@@ -15,6 +16,18 @@ export default function HomePage() {
         </div>
         <nav className="p-4">
           <div className="space-y-1">
+            <a
+              href="#installation"
+              onClick={(e) => {
+                e.preventDefault()
+                document
+                  .getElementById('installation')
+                  ?.scrollIntoView({ behavior: 'smooth' })
+              }}
+              className="block px-4 py-2 text-sm rounded-md hover:bg-gray-100 transition-colors"
+            >
+              설치하기
+            </a>
             <a
               href="#initialization"
               onClick={(e) => {
@@ -39,7 +52,6 @@ export default function HomePage() {
             >
               인증
             </a>
-            {/* 추가 네비게이션 아이템 */}
           </div>
         </nav>
       </div>
@@ -50,6 +62,9 @@ export default function HomePage() {
           <div className="grid grid-cols-12 gap-8">
             {/* 왼쪽: 실제 기능 */}
             <div className="col-span-7 space-y-8">
+              <section id="installation" className="scroll-mt-8">
+                <Installation />
+              </section>
               <section id="initialization" className="scroll-mt-8">
                 <SDKInitializer />
               </section>
