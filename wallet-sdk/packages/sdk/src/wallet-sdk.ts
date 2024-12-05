@@ -1,4 +1,4 @@
-import { CoreConfig } from "@wallet-sdk/core";
+import { CoreConfig } from '@wallet-sdk/core';
 
 export class WalletSDK {
   constructor(config: CoreConfig) {

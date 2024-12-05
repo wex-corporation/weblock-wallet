@@ -1,4 +1,4 @@
 export interface CoreConfig {
   apiKey: string;
-  environment: "development" | "production";
+  environment: 'development' | 'production';
 }
