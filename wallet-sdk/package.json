@@ -1,0 +1,22 @@
+{
+  "name": "wallet-sdk",
+  "private": true,
+  "engines": {
+    "node": ">=20.17.0",
+    "pnpm": ">=9.11.0"
+  },
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "build": "pnpm -r build",
+    "dev": "pnpm -r dev",
+    "clean": "pnpm -r clean"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-typescript": "^12.1.1",
+    "rollup": "^4.28.0",
+    "rollup-plugin-dts": "^6.1.1",
+    "typescript": "^5.7.2"
+  }
+}

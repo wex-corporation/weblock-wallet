@@ -1,0 +1,23 @@
+{
+  "name": "@wallet-sdk/sdk",
+  "version": "0.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@wallet-sdk/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "rimraf": "^5.0.0"
+  }
+}
