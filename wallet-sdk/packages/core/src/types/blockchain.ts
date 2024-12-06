@@ -27,3 +27,15 @@ export interface RegisterBlockchainRequest {
   explorerUrl?: string;
   isTestnet?: boolean;
 }
+
+export interface Blockchain {
+  id: string;
+  name: string;
+  rpcUrl: string;
+  chainId: number;
+  currencySymbol: string;
+  currencyName: string;
+  currencyDecimals: number;
+  explorerUrl: string;
+  isTestnet: boolean;
+}
