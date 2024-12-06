@@ -1,10 +1,12 @@
-export interface User {
+import { BlockchainDTO } from './blockchain';
+
+export interface UserDTO {
   id: string;
+  orgId: string;
   email: string;
   firebaseId: string;
   provider: string;
-  createdAt: string;
-  updatedAt: string;
+  blockchains: BlockchainDTO[];
 }
 
 export interface UserProfile {
