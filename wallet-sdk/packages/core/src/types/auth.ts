@@ -1,17 +1,18 @@
+import { UserDTO } from './user';
+
 export enum AvailableProviders {
   Google = 'google.com',
 }
 
-export interface AuthCredentials {
+export interface SignInRequest {
   firebaseId: string;
   email: string;
   idToken: string;
   provider: AvailableProviders;
 }
 
-export interface AuthResponse {
+export interface SignInResponse {
   token: string;
   isNewUser: boolean;
-  email: string;
-  photoURL?: string;
+  user: UserDTO;
 }
