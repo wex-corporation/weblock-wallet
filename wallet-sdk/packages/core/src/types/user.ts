@@ -7,6 +7,8 @@ export interface UserDTO {
   firebaseId: string;
   provider: string;
   blockchains: BlockchainDTO[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UserProfile {
