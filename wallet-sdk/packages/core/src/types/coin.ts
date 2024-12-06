@@ -17,3 +17,12 @@ export interface RegisterTokenRequest {
   symbol: string;
   decimals: number;
 }
+
+export interface Coin {
+  id: string;
+  blockchainId: string;
+  contractAddress: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+}
