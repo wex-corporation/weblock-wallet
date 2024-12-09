@@ -1,4 +1,4 @@
-import { CoreError } from '.';
+import { CoreError } from './base';
 
 export class SecretSharingError extends CoreError {
   cause?: Error;

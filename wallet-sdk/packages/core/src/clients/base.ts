@@ -14,8 +14,10 @@ export abstract class BaseApiClient {
   protected readonly storage: SecureStorage;
   protected readonly apiKey: string;
   protected readonly orgHost: string;
+  protected readonly options: ClientOptions;
 
   constructor(options: ClientOptions) {
+    this.options = options;
     this.client = new HttpClient({
       baseURL: options.baseURL,
       timeout: options.timeout,

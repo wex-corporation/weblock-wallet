@@ -1,4 +1,4 @@
-import { CoreError } from '.';
+import { CoreError } from './base';
 
 export class CryptoError extends CoreError {
   cause?: Error;

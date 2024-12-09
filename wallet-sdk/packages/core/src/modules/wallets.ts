@@ -11,19 +11,19 @@ import { RpcApiClient } from '../clients/rpcs';
 export class Wallets {
   private wallet: Wallet | null = null;
   private readonly walletClient: WalletApiClient;
+  private readonly rpcClient: RpcApiClient;
   private readonly storage: SecureStorage;
   private readonly secrets: Secrets;
-  private readonly rpcClient: RpcApiClient;
 
   constructor(
     walletClient: WalletApiClient,
-    storage: SecureStorage,
-    rpcClient: RpcApiClient
+    rpcClient: RpcApiClient,
+    storage: SecureStorage
   ) {
     this.walletClient = walletClient;
+    this.rpcClient = rpcClient;
     this.storage = storage;
     this.secrets = Secrets.getInstance();
-    this.rpcClient = rpcClient;
   }
 
   /**
@@ -252,7 +252,7 @@ export class Wallets {
         ]);
         this.wallet = new Wallet(privateKey);
 
-        // 주소 검증 및 �� 갱신
+        // 주소 검증 및 갱신
         if (
           this.wallet.address.toLowerCase() !== wallet.address.toLowerCase()
         ) {
