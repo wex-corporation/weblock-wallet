@@ -4,34 +4,44 @@ import { RpcApiClient } from './clients/rpcs';
 import { Wallets } from './modules/wallets';
 import { Users } from './modules/users';
 import { SecureStorage } from './utils/storage';
-import { Blockchain } from './types';
-
-interface CoreOptions {
-  baseURL: string;
-  apiKey: string;
-  orgHost: string;
-}
+import { Blockchain, CoreOptions, Environment } from './types';
 
 export class Core {
   private readonly storage = SecureStorage.getInstance();
   private readonly walletClient: WalletApiClient;
   private readonly userClient: UserApiClient;
   private readonly rpcClient: RpcApiClient;
-
   private readonly wallets: Wallets;
   private readonly users: Users;
 
   constructor(options: CoreOptions) {
+    const baseURL = options.baseURL || this.getBaseUrlForEnv(options.env);
+    const clientOptions = {
+      baseURL,
+      apiKey: options.apiKey,
+      orgHost: options.orgHost,
+    };
+
     // 클라이언트 초기화
-    this.walletClient = new WalletApiClient(options);
-    this.userClient = new UserApiClient(options);
-    this.rpcClient = new RpcApiClient(options);
+    this.walletClient = new WalletApiClient(clientOptions);
+    this.userClient = new UserApiClient(clientOptions);
+    this.rpcClient = new RpcApiClient(clientOptions);
 
     // 모듈 초기화
     this.wallets = new Wallets(this.walletClient, this.rpcClient, this.storage);
     this.users = new Users(this.userClient);
 
     console.log('[Core] Initialized successfully');
+  }
+
+  private getBaseUrlForEnv(env: Environment): string {
+    const baseUrls = {
+      local: 'http://localhost:3000',
+      dev: 'https://dev-api.example.com',
+      stage: 'https://stage-api.example.com',
+      prod: 'https://api.example.com',
+    };
+    return baseUrls[env];
   }
 
   // 지갑 관련 메서드

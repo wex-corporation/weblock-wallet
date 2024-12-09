@@ -1,6 +1,6 @@
 // Core & Config
 export { Core } from './core';
-export type { CoreConfig } from './types';
+export type { CoreOptions, Environment } from './types';
 
 // Public Types
 export type { Blockchain, Coin, UserDTO } from './types';
