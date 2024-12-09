@@ -1,7 +1,7 @@
 {
   "name": "@wallet-sdk/sdk",
   "version": "0.1.0",
-  "private": true,
+  "description": "Wallet SDK for DApp integration",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -12,16 +12,30 @@
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "clean": "rimraf dist",
+    "type-check": "tsc --noEmit",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\"",
-    "type-check": "tsc --noEmit"
+    "test": "jest"
   },
   "dependencies": {
     "@wallet-sdk/core": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.2.2",
-    "rimraf": "^5.0.0"
+    "@rollup/plugin-commonjs": "^24.1.0",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-replace": "^6.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.0",
+    "@types/jest": "^29.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "rimraf": "^5.0.0",
+    "rollup": "^3.0.0",
+    "rollup-plugin-polyfill-node": "^0.13.0",
+    "typescript": "^5.0.0"
   }
 }
