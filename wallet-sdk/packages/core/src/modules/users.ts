@@ -22,10 +22,10 @@ export interface RegisterTokenParams {
 }
 
 export class Users {
-  private userClient: UserApiClient;
+  private readonly userClient: UserApiClient;
 
-  constructor(apiConfig: { baseURL: string; apiKey: string; orgHost: string }) {
-    this.userClient = new UserApiClient(apiConfig);
+  constructor(userClient: UserApiClient) {
+    this.userClient = userClient;
   }
 
   // @ts-ignore 타입 이슈는 나중에 해결

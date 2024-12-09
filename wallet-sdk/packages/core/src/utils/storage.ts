@@ -96,4 +96,16 @@ export class SecureStorage {
       });
     }
   }
+
+  async getToken(): Promise<string | null> {
+    return await this.get<string>('token');
+  }
+
+  async setToken(token: string): Promise<void> {
+    await this.set('token', token);
+  }
+
+  async removeToken(): Promise<void> {
+    await this.remove('token');
+  }
 }
