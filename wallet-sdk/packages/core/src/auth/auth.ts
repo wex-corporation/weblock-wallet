@@ -37,7 +37,7 @@ export class Auth {
       });
 
       // 3. JWT 토큰 저장
-      await this.storage.setToken(response.token);
+      await this.setToken(response.token);
 
       return {
         isNewUser: response.isNewUser,
@@ -53,7 +53,7 @@ export class Auth {
   async signOut(): Promise<void> {
     try {
       await this.provider.signOut();
-      await this.storage.removeToken();
+      await this.storage.remove('auth_token');
     } catch (error) {
       console.error('Auth sign-out failed:', error);
       throw error;
@@ -61,6 +61,10 @@ export class Auth {
   }
 
   async getToken(): Promise<string | null> {
-    return this.storage.getToken();
+    return this.storage.get<string>('auth_token');
+  }
+
+  private async setToken(token: string): Promise<void> {
+    await this.storage.set<string>('auth_token', token);
   }
 }
