@@ -1,9 +1,9 @@
 export interface WalletDTO {
   id: string;
-  orgId: string;
-  userId: string;
   address: string;
-  chainId: number;
+  publicKey: string;
+  share1: string;
+  encryptedShare3: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -24,8 +24,10 @@ export enum TransactionStatus {
 }
 
 export interface CreateWalletRequest {
-  blockchainId: string;
-  password: string;
+  address: string;
+  publicKey: string;
+  share1: string;
+  encryptedShare3: string;
 }
 
 export interface GetWalletRequest {

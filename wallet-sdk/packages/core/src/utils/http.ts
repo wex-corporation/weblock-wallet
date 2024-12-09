@@ -45,7 +45,7 @@ export class HttpClient {
 
   private setupAuthInterceptor() {
     this.client.interceptors.request.use(async (config) => {
-      const token = await this.storage.getToken();
+      const token = await this.storage.get<string>('auth_token');
       if (token) {
         config.headers['Authorization'] = `Bearer ${token}`;
       }
