@@ -2,11 +2,19 @@
 export { Core } from './core';
 export type { CoreOptions, Environment } from './types';
 
-// Public Types
-export type { Blockchain, Coin, UserDTO } from './types';
+// Providers Interfaces
+export type { IHttpProvider, HttpConfig } from './providers/interfaces/http';
+export type { ICryptoProvider } from './providers/interfaces/crypto';
+export type { IStorageProvider } from './providers/interfaces/storage';
 
-// Public Errors
-export { CoreError, WalletError } from './errors';
+// Node Providers
+export { NodeHttpProvider } from './providers/node/http';
+export { NodeCryptoProvider } from './providers/node/crypto';
+export { NodeStorageProvider } from './providers/node/storage';
 
-// Public Utils
+// Utils
+export { HttpClient } from './utils/http';
 export { SecureStorage } from './utils/storage';
+
+// Errors
+export { HttpError, NetworkError, TimeoutError } from './errors/http';

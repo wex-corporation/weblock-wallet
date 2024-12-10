@@ -3,6 +3,7 @@ import { FirebaseGoogleProvider } from './providers/firebase/google';
 import { AuthCredentials } from './providers/base';
 import { SecureStorage } from '../utils/storage';
 import { UserApiClient } from '../clients/users';
+import { IHttpProvider } from '../providers/interfaces/http';
 import { AvailableProviders } from '../types/auth';
 
 export class Auth {
@@ -12,11 +13,12 @@ export class Auth {
 
   constructor(
     config: FirebaseConfig,
-    apiConfig: { baseURL: string; apiKey: string; orgHost: string }
+    apiConfig: { baseURL: string; apiKey: string; orgHost: string },
+    httpProvider: IHttpProvider
   ) {
     this.provider = new FirebaseGoogleProvider(config);
     this.storage = SecureStorage.getInstance();
-    this.userClient = new UserApiClient(apiConfig);
+    this.userClient = new UserApiClient(apiConfig, httpProvider);
   }
 
   async signInWithGoogle(): Promise<{
