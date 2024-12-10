@@ -13,4 +13,9 @@ export interface SDKConfig {
    * Organization host URL
    */
   orgHost: string;
+
+  /**
+   * Base URL for the API
+   */
+  baseURL: string;
 }

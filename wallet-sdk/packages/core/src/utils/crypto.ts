@@ -1,10 +1,14 @@
-import * as crypto from 'crypto';
+import { ICryptoProvider } from '../providers/interfaces/crypto';
+import { NodeCryptoProvider } from '../providers/node/crypto';
 import { CryptoError } from '../errors';
 
 export class Crypto {
   private static instance: Crypto;
+  private provider: ICryptoProvider;
 
-  private constructor() {}
+  private constructor() {
+    this.provider = new NodeCryptoProvider();
+  }
 
   static getInstance(): Crypto {
     if (!Crypto.instance) {
@@ -13,14 +17,9 @@ export class Crypto {
     return Crypto.instance;
   }
 
-  /**
-   * Ed25519 키 쌍 생성
-   * @returns {ApiKeyPair} API 키 쌍 (apiKey, secretKey)
-   * @throws {CryptoError} 키 생성 실패시
-   */
   createEdDSAKeyPair(): { apiKey: string; secretKey: string } {
     try {
-      const keyPair = crypto.generateKeyPairSync('ed25519', {
+      const keyPair = this.provider.generateKeyPairSync({
         publicKeyEncoding: {
           type: 'spki',
           format: 'der',

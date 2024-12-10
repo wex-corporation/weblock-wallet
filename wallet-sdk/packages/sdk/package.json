@@ -19,7 +19,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@wallet-sdk/core": "workspace:*"
+    "@wallet-sdk/core": "workspace:*",
+    "crypto-browserify": "^3.12.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^24.1.0",

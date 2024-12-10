@@ -1,24 +1,24 @@
 import { WalletApiClient } from '../clients/wallets';
 import { Secrets } from '../utils/secrets';
-import { SecureStorage } from '../utils/storage';
 import { WalletError } from '../errors';
 import { Wallet } from 'ethers';
 import { generateMnemonic, mnemonicToSeed } from 'bip39';
 import { CreateWalletRequest, WalletDTO } from '../types/wallet';
 import * as crypto from 'crypto';
 import { RpcApiClient } from '../clients/rpcs';
+import { IStorageProvider } from '../providers/interfaces/storage';
 
 export class Wallets {
   private wallet: Wallet | null = null;
   private readonly walletClient: WalletApiClient;
   private readonly rpcClient: RpcApiClient;
-  private readonly storage: SecureStorage;
+  private readonly storage: IStorageProvider;
   private readonly secrets: Secrets;
 
   constructor(
     walletClient: WalletApiClient,
     rpcClient: RpcApiClient,
-    storage: SecureStorage
+    storage: IStorageProvider
   ) {
     this.walletClient = walletClient;
     this.rpcClient = rpcClient;
@@ -33,7 +33,7 @@ export class Wallets {
    */
   async createWallet(userPassword: string): Promise<void> {
     try {
-      const firebaseId = await this.storage.get<string>('firebaseId');
+      const firebaseId = await this.storage.getItem<string>('firebaseId');
       if (!firebaseId) {
         throw new Error('FirebaseId not found. May not be logged in yet');
       }
@@ -57,7 +57,7 @@ export class Wallets {
         userPassword,
         firebaseId
       );
-      await this.storage.set('encryptedShare2', encryptedShare2);
+      await this.storage.setItem('encryptedShare2', encryptedShare2);
 
       // 5. share3를 서버에 암호화해서 저장
       const encryptedShare3 = this.encryptShare(
@@ -109,7 +109,7 @@ export class Wallets {
         throw new Error('Wallet not initialized');
       }
 
-      // RPC를 통해 잔액 조회
+      // RPC�� 통해 잔액 조회
       const response = await this.rpcClient.getBalance(
         chainId,
         this.wallet.address
@@ -201,7 +201,7 @@ export class Wallets {
    */
   async retrieveWallet(userPassword: string): Promise<void> {
     try {
-      const firebaseId = await this.storage.get<string>('firebaseId');
+      const firebaseId = await this.storage.getItem<string>('firebaseId');
       if (!firebaseId) {
         throw new Error('FirebaseId not found. May not be logged in yet');
       }
@@ -213,7 +213,8 @@ export class Wallets {
       }
 
       // 2. 로컬에서 암호화된 share2 가져오기
-      const encryptedShare2 = await this.storage.get<string>('encryptedShare2');
+      const encryptedShare2 =
+        await this.storage.getItem<string>('encryptedShare2');
       if (!encryptedShare2) {
         // share2가 없으면 share3 사용
         const decryptedShare3 = this.decryptShare(
@@ -236,7 +237,7 @@ export class Wallets {
           userPassword,
           firebaseId
         );
-        await this.storage.set('encryptedShare2', encryptedNewShare2);
+        await this.storage.setItem('encryptedShare2', encryptedNewShare2);
       } else {
         // share2 복호화
         const decryptedShare2 = this.decryptShare(
@@ -280,7 +281,7 @@ export class Wallets {
     userPassword: string
   ): Promise<void> {
     try {
-      const firebaseId = await this.storage.get<string>('firebaseId');
+      const firebaseId = await this.storage.getItem<string>('firebaseId');
       if (!firebaseId) {
         throw new Error('FirebaseId not found');
       }
@@ -308,7 +309,7 @@ export class Wallets {
         userPassword,
         firebaseId
       );
-      await this.storage.set('encryptedShare2', encryptedShare2);
+      await this.storage.setItem('encryptedShare2', encryptedShare2);
 
       // 5. share1, share3 서버 업데이트
       const encryptedShare3 = this.encryptShare(

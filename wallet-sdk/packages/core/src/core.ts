@@ -3,33 +3,38 @@ import { UserApiClient } from './clients/users';
 import { RpcApiClient } from './clients/rpcs';
 import { Wallets } from './modules/wallets';
 import { Users } from './modules/users';
-import { SecureStorage } from './utils/storage';
 import { Blockchain, CoreOptions, Environment } from './types';
+import { IHttpProvider } from './providers/interfaces/http';
+import { ICryptoProvider } from './providers/interfaces/crypto';
+import { IStorageProvider } from './providers/interfaces/storage';
 
 export class Core {
-  private readonly storage = SecureStorage.getInstance();
-  private readonly walletClient: WalletApiClient;
-  private readonly userClient: UserApiClient;
-  private readonly rpcClient: RpcApiClient;
   private readonly wallets: Wallets;
   private readonly users: Users;
 
-  constructor(options: CoreOptions) {
+  constructor(
+    private readonly httpProvider: IHttpProvider,
+    private readonly cryptoProvider: ICryptoProvider,
+    private readonly storageProvider: IStorageProvider,
+    options: CoreOptions
+  ) {
     const baseURL = options.baseURL || this.getBaseUrlForEnv(options.env);
+
     const clientOptions = {
       baseURL,
       apiKey: options.apiKey,
       orgHost: options.orgHost,
+      timeout: 30000,
     };
 
     // 클라이언트 초기화
-    this.walletClient = new WalletApiClient(clientOptions);
-    this.userClient = new UserApiClient(clientOptions);
-    this.rpcClient = new RpcApiClient(clientOptions);
+    const walletClient = new WalletApiClient(clientOptions, this.httpProvider);
+    const userClient = new UserApiClient(clientOptions, this.httpProvider);
+    const rpcClient = new RpcApiClient(clientOptions, this.httpProvider);
 
     // 모듈 초기화
-    this.wallets = new Wallets(this.walletClient, this.rpcClient, this.storage);
-    this.users = new Users(this.userClient);
+    this.wallets = new Wallets(walletClient, rpcClient, this.storageProvider);
+    this.users = new Users(userClient);
 
     console.log('[Core] Initialized successfully');
   }

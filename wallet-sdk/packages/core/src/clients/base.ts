@@ -1,5 +1,6 @@
 import { HttpClient } from '../utils/http';
 import { SecureStorage } from '../utils/storage';
+import { IHttpProvider } from '../providers/interfaces/http';
 import {
   ApiResponse,
   ClientOptions,
@@ -10,28 +11,20 @@ import {
 import { HttpError, NetworkError, TimeoutError } from '../errors/http';
 
 export abstract class BaseApiClient {
-  protected readonly client: HttpClient;
+  protected readonly http: HttpClient;
   protected readonly storage: SecureStorage;
   protected readonly apiKey: string;
   protected readonly orgHost: string;
   protected readonly options: ClientOptions;
 
-  constructor(options: ClientOptions) {
+  constructor(options: ClientOptions, httpProvider: IHttpProvider) {
     this.options = options;
-    this.client = new HttpClient({
-      baseURL: options.baseURL,
-      timeout: options.timeout,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Al-Api-Key': options.apiKey,
-        'X-Al-Org-Host': options.orgHost,
-        ...options.headers,
-      },
-    });
-
     this.storage = SecureStorage.getInstance();
     this.apiKey = options.apiKey;
     this.orgHost = options.orgHost;
+
+    // Provider를 HttpClient에 주입
+    this.http = new HttpClient(httpProvider);
   }
 
   /**
@@ -41,6 +34,9 @@ export abstract class BaseApiClient {
     config?: RequestConfig
   ): Promise<Record<string, string>> {
     const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'X-Al-Api-Key': this.apiKey,
+      'X-Al-Org-Host': this.orgHost,
       ...config?.headers,
     };
 
@@ -100,10 +96,10 @@ export abstract class BaseApiClient {
    */
   protected async get<T>(path: string, config?: RequestConfig): Promise<T> {
     const headers = await this.getHeaders(config);
-    const response = await this.client.get<ApiResponse<T>>(
-      this.buildPath(path),
-      { ...config, headers }
-    );
+    const response = await this.http.get<ApiResponse<T>>(this.buildPath(path), {
+      ...config,
+      headers,
+    });
     return this.handleResponse(response);
   }
 
@@ -116,7 +112,7 @@ export abstract class BaseApiClient {
     config?: RequestConfig
   ): Promise<T> {
     const headers = await this.getHeaders(config);
-    const response = await this.client.post<ApiResponse<T>>(
+    const response = await this.http.post<ApiResponse<T>>(
       this.buildPath(path),
       data,
       { ...config, headers }
