@@ -1,12 +1,20 @@
 // Core & Config
 export { Core } from './core';
-export type { CoreConfig } from './types';
+export { defaultConfig } from './config';
 
-// Public Types
-export type { Blockchain, Coin, UserDTO } from './types';
+// Types
+export type { CoreOptions } from './types';
+export type { Blockchain, Coin } from './types';
+export type { UserDTO } from './types/user';
+export type { WalletDTO } from './types/wallet';
 
-// Public Errors
-export { CoreError, WalletError } from './errors';
+// Modules
+export { Wallets } from './modules/wallets';
+export { Users } from './modules/users';
 
-// Public Utils
+// Errors
+export { CoreError } from './errors/base';
+export { WalletError } from './errors/wallet';
+
+// Utils
 export { SecureStorage } from './utils/storage';

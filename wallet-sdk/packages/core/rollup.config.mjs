@@ -1,5 +1,5 @@
 import typescript from '@rollup/plugin-typescript';
-import { nodeResolve } from '@rollup/plugin-node-resolve';
+import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 
@@ -8,25 +8,26 @@ export default {
   output: [
     {
       file: 'dist/index.js',
-      format: 'cjs',
+      format: 'iife',
+      name: 'WalletCore',
       sourcemap: true,
-    },
-    {
-      file: 'dist/index.mjs',
-      format: 'esm',
-      sourcemap: true,
+      globals: {
+        'firebase/app': 'firebase',
+        'firebase/auth': 'firebase.auth',
+        ethers: 'ethers',
+      },
     },
   ],
   plugins: [
     json(),
     typescript({
       tsconfig: './tsconfig.json',
-      declaration: true,
-      declarationMap: true,
-      outputToFilesystem: true,
     }),
-    nodeResolve(),
+    resolve({
+      browser: true,
+      preferBuiltins: false,
+    }),
     commonjs(),
   ],
-  external: ['aes-js'],
+  external: ['firebase/app', 'firebase/auth', 'ethers'],
 };

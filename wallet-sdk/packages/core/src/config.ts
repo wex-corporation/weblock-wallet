@@ -17,19 +17,19 @@ export interface FirebaseConfig {
 
 export const defaultConfig = {
   baseUrls: {
-    local: 'http://localhost:3000',
+    local: 'http://localhost:8080',
     dev: 'https://dev-api.wallet.com',
     stage: 'https://stage-api.wallet.com',
     prod: 'https://api.wallet.com',
   } as const,
 
   firebase: {
-    apiKey: process.env.FIREBASE_API_KEY,
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.FIREBASE_APP_ID,
-    measurementId: process.env.FIREBASE_MEASUREMENT_ID,
+    apiKey: 'AIzaSyDXfrpfLOiDskQEc1PEP9j5HrGCLmtddRI',
+    authDomain: 'rwx-wallet.firebaseapp.com',
+    projectId: 'rwx-wallet',
+    storageBucket: 'rwx-wallet.appspot.com',
+    messagingSenderId: '397943391932',
+    appId: '1:397943391932:web:5545b196b8a027c1c172b9',
+    measurementId: 'G-V5YX6ECWTT',
   } as FirebaseConfig,
 };

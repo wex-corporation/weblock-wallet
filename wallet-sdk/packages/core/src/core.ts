@@ -4,13 +4,8 @@ import { RpcApiClient } from './clients/rpcs';
 import { Wallets } from './modules/wallets';
 import { Users } from './modules/users';
 import { SecureStorage } from './utils/storage';
-import { Blockchain } from './types';
-
-interface CoreOptions {
-  baseURL: string;
-  apiKey: string;
-  orgHost: string;
-}
+import { defaultConfig } from './config';
+import { CoreOptions } from './types';
 
 export class Core {
   private readonly storage = SecureStorage.getInstance();
@@ -21,30 +16,41 @@ export class Core {
   private readonly wallets: Wallets;
   private readonly users: Users;
 
-  constructor(options: CoreOptions) {
-    // 클라이언트 초기화
-    this.walletClient = new WalletApiClient(options);
-    this.userClient = new UserApiClient(options);
-    this.rpcClient = new RpcApiClient(options);
+  public readonly modules: {
+    wallets: Wallets;
+    users: Users;
+  };
 
-    // 모듈 초기화
+  constructor(options: CoreOptions) {
+    const baseURL = options.baseURL || defaultConfig.baseUrls[options.env];
+
+    // Initialize API clients
+    this.walletClient = new WalletApiClient({
+      baseURL,
+      apiKey: options.apiKey,
+      orgHost: options.orgHost,
+    });
+
+    this.userClient = new UserApiClient({
+      baseURL,
+      apiKey: options.apiKey,
+      orgHost: options.orgHost,
+    });
+
+    this.rpcClient = new RpcApiClient({
+      baseURL,
+      apiKey: options.apiKey,
+      orgHost: options.orgHost,
+    });
+
+    // Initialize modules
     this.wallets = new Wallets(this.walletClient, this.rpcClient, this.storage);
     this.users = new Users(this.userClient);
 
-    console.log('[Core] Initialized successfully');
-  }
-
-  // 지갑 관련 메서드
-  async createWallet(password: string): Promise<void> {
-    return this.wallets.createWallet(password);
-  }
-
-  async getBalance(chainId: number): Promise<string> {
-    return this.wallets.getBalance(chainId);
-  }
-
-  // 사용자 관련 메서드
-  async getBlockchains(): Promise<Blockchain[]> {
-    return this.users.getRegisteredBlockchains();
+    // Expose public modules
+    this.modules = {
+      wallets: this.wallets,
+      users: this.users,
+    };
   }
 }
