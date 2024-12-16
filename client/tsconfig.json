@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    // 모듈 & 타겟 설정
+    "target": "es2020", // 최신 브라우저 지원
+    "module": "esnext", // ESM 지원
+    "lib": ["es2020", "dom"], // 브라우저 API 지원
+
+    // 출력 설정
+    "outDir": "./dist", // 빌드 출력 디렉토리
+    "rootDir": "./src", // 소스 루트
+
+    // 선언 파일 생성
+    "declaration": true, // .d.ts 파일 생성
+    "declarationMap": true, // 소스맵 지원
+    "sourceMap": true, // 디버깅 지원
+
+    // 모듈 해석
+    "moduleResolution": "bundler", // 최신 모듈 해석
+    "resolveJsonModule": true,
+
+    // 타입 체크 강화
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+
+    // 경로 별칭
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+
+    // 기타 설정
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+}
