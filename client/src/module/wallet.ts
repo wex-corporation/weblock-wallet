@@ -1,30 +1,18 @@
 // src/module/wallet.ts
-import { SDKOptions, WalletAPI, TransactionRequest } from '../types'
+import { SDKOptions, WalletAPI } from '../types'
 
 export class WalletModule implements WalletAPI {
   constructor(private readonly options: SDKOptions) {}
 
-  async create(): Promise<void> {
+  async create(password: string): Promise<void> {
     throw new Error('Not implemented')
   }
 
-  async connect(): Promise<void> {
-    throw new Error('Not implemented')
-  }
-
-  async disconnect(): Promise<void> {
+  async recover(password: string): Promise<void> {
     throw new Error('Not implemented')
   }
 
   async getAddress(): Promise<string> {
-    throw new Error('Not implemented')
-  }
-
-  async signMessage(_message: string): Promise<string> {
-    throw new Error('Not implemented')
-  }
-
-  async signTransaction(_transaction: TransactionRequest): Promise<string> {
     throw new Error('Not implemented')
   }
 }
