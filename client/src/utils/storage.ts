@@ -17,7 +17,7 @@ const LocalForage: ILocalForage = {
     try {
       const item: Item<T> = {
         value,
-        expiry
+        expiry,
       }
       await localforage.setItem(key, item)
     } catch (err) {
@@ -59,7 +59,7 @@ const LocalForage: ILocalForage = {
     } catch (err) {
       console.error('Error removing all data:', err)
     }
-  }
+  },
 }
 
 export default LocalForage

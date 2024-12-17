@@ -3,7 +3,7 @@
     // 모듈 & 타겟 설정
     "target": "es2020", // 최신 브라우저 지원
     "module": "esnext", // ESM 지원
-    "lib": ["es2020", "dom"], // 브라우저 API 지원
+    "lib": ["es2020", "dom", "dom.Iterable"], // 브라우저 API 지원
 
     // 출력 설정
     "outDir": "./dist", // 빌드 출력 디렉토리

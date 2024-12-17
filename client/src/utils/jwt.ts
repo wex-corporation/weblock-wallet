@@ -25,5 +25,5 @@ export const Jwt: IJwt = {
     } catch (error) {
       throw new Error(`Error parsing JWT: ${error}`)
     }
-  }
+  },
 }

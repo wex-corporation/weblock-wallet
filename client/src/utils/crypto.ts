@@ -28,12 +28,12 @@ export const Crypto: ICrypto = {
     const keyPair = crypto.generateKeyPairSync('ed25519', {
       publicKeyEncoding: {
         type: 'spki',
-        format: 'der'
+        format: 'der',
       },
       privateKeyEncoding: {
         type: 'pkcs8',
-        format: 'pem'
-      }
+        format: 'pem',
+      },
     })
     console.log('time: ' + (Date.now() - now) + 'ms')
 
@@ -43,5 +43,5 @@ export const Crypto: ICrypto = {
     const secretKey = urlEncode(keyPair.privateKey)
 
     return { apiKey, secretKey }
-  }
+  },
 }
