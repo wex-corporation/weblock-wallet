@@ -83,7 +83,7 @@ export interface TokenInfo {
   /** 컨트랙트 주소 */
   address: string
   /** 토큰 잔액 */
-  balance: string
+  balance: string | null
   /** 토큰 소수점 자리수 */
   decimals: number
   /** USD 가치 (옵션) */
@@ -93,6 +93,8 @@ export interface TokenInfo {
     isVerified: boolean
     canTransfer: boolean
   }
+  /** 토큰 총 발행량 */
+  totalSupply?: string
 }
 
 /**
@@ -172,7 +174,9 @@ export interface TransferRequest {
   /** 전송 금액 */
   amount: string
   /** 토큰 타입 */
-  type: 'NATIVE' | 'ERC20' | 'NFT' | 'SECURITY'
+  type: 'NATIVE' | 'ERC20'
+  /** 토큰 심볼 */
+  symbol?: string
 }
 
 /**
@@ -192,6 +196,31 @@ export interface AddNetworkRequest {
   rpcUrl: string
   /** 체인 ID */
   chainId: number
+}
+
+export interface TokenBalanceParams {
+  networkId: string
+  tokenAddress: string
+  walletAddress: string
+}
+
+export interface TokenApprovalParams {
+  networkId: string
+  tokenAddress: string
+  spender: string
+  amount: string
+}
+
+export interface TokenAllowanceParams {
+  networkId: string
+  tokenAddress: string
+  owner: string
+  spender: string
+}
+
+export interface TokenInfoParams {
+  networkId: string
+  tokenAddress: string
 }
 
 export * from './error'

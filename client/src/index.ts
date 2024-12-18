@@ -178,6 +178,43 @@ export class WeBlockSDK {
     }> => {
       return this.assetModule.checkSecurityTokenCompliance(params)
     },
+
+    getTokenBalance: async (params: {
+      networkId: string
+      tokenAddress: string
+      walletAddress: string
+    }): Promise<string> => {
+      return this.assetModule.getTokenBalance(params)
+    },
+
+    approveToken: async (params: {
+      networkId: string
+      tokenAddress: string
+      spender: string
+      amount: string
+    }): Promise<string> => {
+      return this.assetModule.approveToken(params)
+    },
+
+    getAllowance: async (params: {
+      networkId: string
+      tokenAddress: string
+      owner: string
+      spender: string
+    }): Promise<string> => {
+      return this.assetModule.getAllowance(params)
+    },
+
+    getTokenInfo: async (params: {
+      networkId: string
+      tokenAddress: string
+    }): Promise<{
+      name: string
+      symbol: string
+      decimals: number
+    }> => {
+      return this.assetModule.getTokenInfo(params)
+    },
   }
 }
 

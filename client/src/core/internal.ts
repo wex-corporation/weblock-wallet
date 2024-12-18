@@ -1,4 +1,11 @@
-import { SDKOptions } from '../types'
+import {
+  SDKOptions,
+  TokenAllowanceParams,
+  TokenApprovalParams,
+  TokenBalanceParams,
+  TokenInfoParams,
+  TransferRequest,
+} from '../types'
 import { InternalCore } from './types'
 import { AuthService } from './services/auth'
 import { WalletService } from './services/wallet'
@@ -9,12 +16,13 @@ import { UserClient } from '../clients/api/users'
 import { WalletClient } from '../clients/api/wallets'
 import { BlockchainRequest } from '@/clients/types'
 import { RpcClient } from '../clients/api/rpcs'
+import { AssetService } from './services/asset'
 
 export class InternalCoreImpl implements InternalCore {
   private readonly authService: AuthService
   private readonly walletService: WalletService
   private readonly networkService: NetworkService
-
+  private readonly assetService: AssetService
   constructor(private readonly options: SDKOptions) {
     const httpClient = new HttpClient(options)
     const firebase = new FirebaseAuth(options)
@@ -34,6 +42,7 @@ export class InternalCoreImpl implements InternalCore {
       options.orgHost
     )
     this.networkService = new NetworkService(userClient, options.orgHost)
+    this.assetService = new AssetService(rpcClient, options.orgHost)
   }
 
   auth = {
@@ -75,5 +84,42 @@ export class InternalCoreImpl implements InternalCore {
     switchNetwork: (networkId: string) =>
       this.networkService.switchNetwork(networkId),
     getCurrentNetwork: () => this.networkService.getCurrentNetwork(),
+  }
+  asset = {
+    transfer: (params: TransferRequest) => this.assetService.transfer(params),
+
+    addToken: (params: {
+      type: 'ERC20' | 'SECURITY'
+      networkId: string
+      address: string
+      symbol?: string
+      decimals?: number
+      name?: string
+    }) => this.assetService.addToken(params),
+
+    // New ERC20 methods
+    getTokenBalance: (params: TokenBalanceParams) =>
+      this.assetService.getTokenBalance(params),
+
+    approveToken: (params: TokenApprovalParams) =>
+      this.assetService.approveToken(params),
+
+    getAllowance: (params: TokenAllowanceParams) =>
+      this.assetService.getAllowance(params),
+
+    getTokenInfo: (params: TokenInfoParams) =>
+      this.assetService.getTokenInfo(params),
+    addNFTCollection: (params: {
+      networkId: string
+      address: string
+      name?: string
+    }) => this.assetService.addNFTCollection(params),
+    checkSecurityTokenCompliance: (params: {
+      networkId: string
+      tokenAddress: string
+      from: string
+      to: string
+      amount: string
+    }) => this.assetService.checkSecurityTokenCompliance(params),
   }
 }

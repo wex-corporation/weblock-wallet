@@ -1,4 +1,13 @@
-import { SDKOptions, TransferRequest, TransferResponse } from '../types'
+import {
+  SDKOptions,
+  TransferRequest,
+  TransferResponse,
+  TokenBalanceParams,
+  TokenApprovalParams,
+  TokenAllowanceParams,
+  TokenInfoParams,
+  TokenInfo,
+} from '../types'
 import { InternalCore } from '../core/types'
 
 export class AssetModule {
@@ -8,8 +17,7 @@ export class AssetModule {
   ) {}
 
   async transfer(params: TransferRequest): Promise<TransferResponse> {
-    // 임시 구현
-    return { transaction: { hash: '0x...' } } as TransferResponse
+    return this.core.asset.transfer(params)
   }
 
   async addToken(params: {
@@ -20,8 +28,7 @@ export class AssetModule {
     decimals?: number
     name?: string
   }): Promise<void> {
-    // 임시 구현
-    return
+    return this.core.asset.addToken(params)
   }
 
   async addNFTCollection(params: {
@@ -29,8 +36,7 @@ export class AssetModule {
     address: string
     name?: string
   }): Promise<void> {
-    // 임시 구현
-    return
+    return this.core.asset.addNFTCollection(params)
   }
 
   async checkSecurityTokenCompliance(params: {
@@ -43,7 +49,22 @@ export class AssetModule {
     canTransfer: boolean
     reasons?: string[]
   }> {
-    // 임시 구현
-    return { canTransfer: true }
+    return this.core.asset.checkSecurityTokenCompliance(params)
+  }
+
+  async getTokenBalance(params: TokenBalanceParams): Promise<string> {
+    return this.core.asset.getTokenBalance(params)
+  }
+
+  async approveToken(params: TokenApprovalParams): Promise<string> {
+    return this.core.asset.approveToken(params)
+  }
+
+  async getAllowance(params: TokenAllowanceParams): Promise<string> {
+    return this.core.asset.getAllowance(params)
+  }
+
+  async getTokenInfo(params: TokenInfoParams): Promise<TokenInfo> {
+    return this.core.asset.getTokenInfo(params)
   }
 }

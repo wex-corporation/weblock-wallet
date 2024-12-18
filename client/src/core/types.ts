@@ -1,5 +1,15 @@
 import { BlockchainRequest } from '@/clients/types'
-import { WalletInfo, NetworkInfo } from '../types'
+import {
+  WalletInfo,
+  NetworkInfo,
+  TokenAllowanceParams,
+  TokenApprovalParams,
+  TokenBalanceParams,
+  TokenInfo,
+  TokenInfoParams,
+  TransferRequest,
+  TransferResponse,
+} from '../types'
 
 export interface InternalCore {
   auth: {
@@ -43,5 +53,34 @@ export interface InternalCore {
     getCurrentNetwork(): Promise<NetworkInfo | null>
     registerNetwork(params: BlockchainRequest): Promise<void>
     switchNetwork(networkId: string): Promise<void>
+  }
+
+  asset: {
+    transfer: (params: TransferRequest) => Promise<TransferResponse>
+    addToken: (params: {
+      type: 'ERC20' | 'SECURITY'
+      networkId: string
+      address: string
+      symbol?: string
+      decimals?: number
+      name?: string
+    }) => Promise<void>
+    // New ERC20 methods
+    getTokenBalance: (params: TokenBalanceParams) => Promise<string>
+    approveToken: (params: TokenApprovalParams) => Promise<string>
+    getAllowance: (params: TokenAllowanceParams) => Promise<string>
+    getTokenInfo: (params: TokenInfoParams) => Promise<TokenInfo>
+    addNFTCollection: (params: {
+      networkId: string
+      address: string
+      name?: string
+    }) => Promise<void>
+    checkSecurityTokenCompliance: (params: {
+      networkId: string
+      tokenAddress: string
+      from: string
+      to: string
+      amount: string
+    }) => Promise<{ canTransfer: boolean; reasons?: string[] }>
   }
 }
