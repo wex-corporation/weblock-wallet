@@ -12,7 +12,7 @@ interface ILocalForage {
   removeAll(): Promise<void>
 }
 
-const LocalForage: ILocalForage = {
+export const LocalForage: ILocalForage = {
   async save<T>(key: string, value: T, expiry?: number | null): Promise<void> {
     try {
       const item: Item<T> = {
@@ -61,5 +61,3 @@ const LocalForage: ILocalForage = {
     }
   },
 }
-
-export default LocalForage

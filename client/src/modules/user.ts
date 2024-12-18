@@ -1,5 +1,5 @@
 import { SDKOptions, SignInResponse, WalletResponse } from '../types'
-import { InternalCore } from '../types/core'
+import { InternalCore } from '../core/types'
 
 export class UserModule {
   constructor(
@@ -7,22 +7,35 @@ export class UserModule {
     private readonly core: InternalCore
   ) {}
 
-  async signIn(_provider: string): Promise<SignInResponse> {
-    // 임시 구현
-    return {} as SignInResponse
+  async signIn(provider: string): Promise<SignInResponse> {
+    const result = await this.core.auth.signIn(provider)
+
+    if (result.status === 'WALLET_READY') {
+      const walletInfo = await this.core.wallet.getInfo()
+      return {
+        status: 'WALLET_READY',
+        email: result.email,
+        photoURL: result.photoURL,
+        wallet: walletInfo,
+      }
+    }
+
+    return {
+      status: result.status,
+      email: result.email,
+      photoURL: result.photoURL,
+    }
   }
 
-  async createWallet(_password: string): Promise<WalletResponse> {
-    // 임시 구현
-    return {} as WalletResponse
+  async createWallet(password: string): Promise<WalletResponse> {
+    return this.core.wallet.create(password)
   }
 
-  async recoverWallet(_password: string): Promise<WalletResponse> {
-    // 임시 구현
-    return {} as WalletResponse
+  async recoverWallet(password: string): Promise<WalletResponse> {
+    return this.core.wallet.recover(password)
   }
 
   async signOut(): Promise<void> {
-    // 임시 구현
+    return this.core.auth.signOut()
   }
 }
