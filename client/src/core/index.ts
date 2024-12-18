@@ -1,15 +1,15 @@
 // src/core/index.ts
 import { SDKOptions } from '../types'
-import { InternalCore } from './internal'
+import { InternalCoreImpl } from './internal'
 
 export class Core {
-  private readonly internal: InternalCore
+  private readonly internal: InternalCoreImpl
 
   constructor(options: SDKOptions) {
-    this.internal = new InternalCore(options)
+    this.internal = new InternalCoreImpl(options)
   }
 
-  getInternalCore(): InternalCore {
+  getInternalCore(): InternalCoreImpl {
     return this.internal
   }
 }

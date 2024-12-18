@@ -4,7 +4,7 @@ import {
   NetworkInfo,
   SwitchNetworkResponse,
 } from '../types'
-import { InternalCore } from '../types/core'
+import { InternalCore } from '../core/types'
 
 export class WalletModule {
   constructor(
@@ -13,29 +13,28 @@ export class WalletModule {
   ) {}
 
   async getInfo(): Promise<WalletInfo> {
-    // 임시 구현
-    return {} as WalletInfo
+    return this.core.wallet.getInfo()
   }
 
-  async switchNetwork(_networkId: string): Promise<SwitchNetworkResponse> {
-    // 임시 구현
-    return {} as SwitchNetworkResponse
+  async switchNetwork(networkId: string): Promise<SwitchNetworkResponse> {
+    const { network } = await this.core.network.switch(networkId)
+    const assets = await this.core.wallet.getInfo().then((info) => info.assets)
+    return { network, assets }
   }
 
   async getNetworks(): Promise<NetworkInfo[]> {
-    // 임시 구현
-    return []
+    return this.core.network.getNetworks()
   }
 
-  onWalletUpdate(_callback: (wallet: WalletInfo) => void): () => void {
-    // 임시 구현
+  onWalletUpdate(callback: (wallet: WalletInfo) => void): () => void {
+    // 임시 구현: 나중에 이벤트 리스너 추가
     return () => {}
   }
 
   onTransactionUpdate(
-    _callback: (tx: WalletInfo['recentTransactions'][0]) => void
+    callback: (tx: WalletInfo['recentTransactions'][0]) => void
   ): () => void {
-    // 임시 구현
+    // 임시 구현: 나중에 이벤트 리스너 추가
     return () => {}
   }
 }

@@ -1,7 +1,7 @@
 // src/clients/http.ts
 
 import { SDKError, SDKOptions } from '@/types'
-import LocalForage from '@/utils/storage'
+import { LocalForage } from '@/utils/storage'
 
 interface RequestConfig {
   headers?: HeadersInit

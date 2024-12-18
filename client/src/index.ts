@@ -23,11 +23,8 @@ export class WeBlockSDK {
 
   constructor(options: SDKOptions) {
     this.validateOptions(options)
-
-    // Core 초기화
     this.core = new Core(options)
 
-    // 모듈 초기화
     const internalCore = this.core.getInternalCore()
     this.userModule = new UserModule(options, internalCore)
     this.walletModule = new WalletModule(options, internalCore)

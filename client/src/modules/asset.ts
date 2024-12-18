@@ -1,5 +1,5 @@
 import { SDKOptions, TransferRequest, TransferResponse } from '../types'
-import { InternalCore } from '../types/core'
+import { InternalCore } from '../core/types'
 
 export class AssetModule {
   constructor(
@@ -9,7 +9,7 @@ export class AssetModule {
 
   async transfer(params: TransferRequest): Promise<TransferResponse> {
     // 임시 구현
-    return {} as TransferResponse
+    return { transaction: { hash: '0x...' } } as TransferResponse
   }
 
   async addToken(params: {
@@ -21,6 +21,7 @@ export class AssetModule {
     name?: string
   }): Promise<void> {
     // 임시 구현
+    return
   }
 
   async addNFTCollection(params: {
@@ -29,6 +30,7 @@ export class AssetModule {
     name?: string
   }): Promise<void> {
     // 임시 구현
+    return
   }
 
   async checkSecurityTokenCompliance(params: {
