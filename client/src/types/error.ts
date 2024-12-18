@@ -1,7 +1,42 @@
+export enum SDKErrorCode {
+  // CORE 관련 에러
+  NOT_INITIALIZED = 'NOT_INITIALIZED',
+  INVALID_CONFIG = 'INVALID_CONFIG',
+  AUTH_REQUIRED = 'AUTH_REQUIRED',
+  REQUEST_FAILED = 'REQUEST_FAILED',
+
+  // 인증 관련 에러
+  AUTH_FAILED = 'AUTH_FAILED',
+  AUTH_NO_USER = 'AUTH_NO_USER',
+  AUTH_NO_EMAIL = 'AUTH_NO_EMAIL',
+  AUTH_PROVIDER_ERROR = 'AUTH_PROVIDER_ERROR',
+  AUTH_SIGNOUT_FAILED = 'AUTH_SIGNOUT_FAILED',
+
+  // 지갑 관련 에러
+  WALLET_NOT_FOUND = 'WALLET_NOT_FOUND',
+  WALLET_ALREADY_EXISTS = 'WALLET_ALREADY_EXISTS',
+  WALLET_CREATION_FAILED = 'WALLET_CREATION_FAILED',
+  INVALID_PASSWORD = 'INVALID_PASSWORD',
+
+  // 자산 관련 에러
+  ASSET_NOT_FOUND = 'ASSET_NOT_FOUND',
+  INSUFFICIENT_BALANCE = 'INSUFFICIENT_BALANCE',
+  TRANSFER_FAILED = 'TRANSFER_FAILED',
+
+  // 네트워크 관련 에러
+  NETWORK_ERROR = 'NETWORK_ERROR',
+  INVALID_RESPONSE = 'INVALID_RESPONSE',
+  TIMEOUT = 'TIMEOUT',
+
+  // 기타 에러
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+  INVALID_PARAMS = 'INVALID_PARAMS',
+}
+
 export class SDKError extends Error {
   constructor(
     message: string,
-    public readonly code: string,
+    public readonly code: SDKErrorCode,
     public readonly details?: unknown
   ) {
     super(message)

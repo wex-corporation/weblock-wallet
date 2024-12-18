@@ -7,7 +7,7 @@ import {
   UserCredential,
   OAuthProvider,
 } from 'firebase/auth'
-import { SDKError } from '../../types/error'
+import { SDKError, SDKErrorCode } from '../../types/error'
 import { SDKOptions } from '../../types'
 import { getFirebaseConfig } from '../config/firebase'
 
@@ -44,13 +44,12 @@ export class FirebaseAuth {
       if (!user) {
         throw new SDKError(
           'No user returned from Firebase',
-          'AUTH_NO_USER',
-          null
+          SDKErrorCode.AUTH_NO_USER
         )
       }
 
       if (!user.email) {
-        throw new SDKError('User email is required', 'AUTH_NO_EMAIL', null)
+        throw new SDKError('User email is required', SDKErrorCode.AUTH_NO_EMAIL)
       }
 
       const idToken = await user.getIdToken()
@@ -66,7 +65,11 @@ export class FirebaseAuth {
         throw error
       }
 
-      throw new SDKError('Firebase authentication failed', 'AUTH_FAILED', error)
+      throw new SDKError(
+        'Firebase authentication failed',
+        SDKErrorCode.AUTH_PROVIDER_ERROR,
+        error
+      )
     }
   }
 
@@ -74,7 +77,11 @@ export class FirebaseAuth {
     try {
       await this.auth.signOut()
     } catch (error) {
-      throw new SDKError('Failed to sign out', 'AUTH_SIGNOUT_FAILED', error)
+      throw new SDKError(
+        'Failed to sign out',
+        SDKErrorCode.AUTH_SIGNOUT_FAILED,
+        error
+      )
     }
   }
 

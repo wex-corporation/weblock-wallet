@@ -1,6 +1,6 @@
 // src/clients/http.ts
 
-import { SDKError, SDKOptions } from '@/types'
+import { SDKError, SDKOptions, SDKErrorCode } from '@/types'
 import { LocalForage } from '@/utils/storage'
 
 interface RequestConfig {
@@ -45,7 +45,7 @@ export class HttpClient {
     if (needsAccessToken) {
       const token = await LocalForage.get<string>(`${this.orgHost}:accessToken`)
       if (!token) {
-        throw new SDKError('No access token found', 'AUTH_REQUIRED')
+        throw new SDKError('No access token found', SDKErrorCode.AUTH_REQUIRED)
       }
       headers['Authorization'] = `Bearer ${token}`
     }
@@ -79,7 +79,7 @@ export class HttpClient {
     if (!response.ok) {
       throw new SDKError(
         `HTTP error! status: ${response.status}`,
-        'REQUEST_FAILED',
+        SDKErrorCode.REQUEST_FAILED,
         await response.json()
       )
     }

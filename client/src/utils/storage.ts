@@ -12,6 +12,14 @@ interface ILocalForage {
   removeAll(): Promise<void>
 }
 
+// LocalForage 인스턴스 생성
+const storage = localforage.createInstance({
+  name: '@WeBlock-wallet',
+  storeName: 'secure-storage',
+  driver: localforage.INDEXEDDB,
+  description: 'WeBlock Wallet SDK Secure Storage',
+})
+
 export const LocalForage: ILocalForage = {
   async save<T>(key: string, value: T, expiry?: number | null): Promise<void> {
     try {
@@ -19,7 +27,7 @@ export const LocalForage: ILocalForage = {
         value,
         expiry,
       }
-      await localforage.setItem(key, item)
+      await storage.setItem(key, item)
     } catch (err) {
       console.error(`Error saving data for key "${key}":`, err)
     }
@@ -27,14 +35,14 @@ export const LocalForage: ILocalForage = {
 
   async get<T>(key: string): Promise<T | null> {
     try {
-      const item = await localforage.getItem<Item<T>>(key)
+      const item = await storage.getItem<Item<T>>(key)
 
       if (!item) {
         return null
       }
 
       if (item.expiry && Date.now() > item.expiry * 1000) {
-        await localforage.removeItem(key)
+        await storage.removeItem(key)
         return null
       }
 
@@ -47,7 +55,7 @@ export const LocalForage: ILocalForage = {
 
   async delete(key: string): Promise<void> {
     try {
-      await localforage.removeItem(key)
+      await storage.removeItem(key)
     } catch (err) {
       console.error(`Error deleting data for key "${key}":`, err)
     }
@@ -55,7 +63,7 @@ export const LocalForage: ILocalForage = {
 
   async removeAll(): Promise<void> {
     try {
-      await localforage.clear()
+      await storage.clear()
     } catch (err) {
       console.error('Error removing all data:', err)
     }

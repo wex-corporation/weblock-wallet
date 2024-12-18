@@ -10,6 +10,7 @@ import {
 } from './types'
 import { Core } from './core'
 import { UserModule, WalletModule, AssetModule } from './modules'
+import { SDKError, SDKErrorCode } from './types/error'
 
 /**
  * WeBlock Wallet SDK
@@ -20,6 +21,7 @@ export class WeBlockSDK {
   private readonly userModule: UserModule
   private readonly walletModule: WalletModule
   private readonly assetModule: AssetModule
+  private initialized = false
 
   constructor(options: SDKOptions) {
     this.validateOptions(options)
@@ -29,16 +31,34 @@ export class WeBlockSDK {
     this.userModule = new UserModule(options, internalCore)
     this.walletModule = new WalletModule(options, internalCore)
     this.assetModule = new AssetModule(options, internalCore)
+
+    this.initialized = true
+    console.info('WeBlock SDK initialized successfully')
   }
 
   private validateOptions(options: SDKOptions): void {
     const { environment, apiKey, orgHost } = options
 
     if (!['local', 'dev', 'stage', 'prod'].includes(environment)) {
-      throw new Error('Invalid environment')
+      throw new SDKError('Invalid environment', SDKErrorCode.INVALID_CONFIG)
     }
-    if (!apiKey) throw new Error('API key is required')
-    if (!orgHost) throw new Error('Organization host is required')
+    if (!apiKey)
+      throw new SDKError('API key is required', SDKErrorCode.INVALID_CONFIG)
+    if (!orgHost)
+      throw new SDKError(
+        'Organization host is required',
+        SDKErrorCode.INVALID_CONFIG
+      )
+  }
+
+  private ensureInitialized() {
+    if (!this.initialized) {
+      throw new SDKError('SDK is not initialized', SDKErrorCode.NOT_INITIALIZED)
+    }
+  }
+
+  public isInitialized(): boolean {
+    return this.initialized
   }
 
   public readonly user = {
