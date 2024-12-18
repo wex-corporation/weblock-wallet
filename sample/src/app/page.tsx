@@ -3,6 +3,21 @@
 import { WeBlockSDK } from "@weblock-wallet/sdk";
 import { useEffect, useState } from "react";
 
+const getStatusDisplay = (
+  status: "INIT" | "NEW_USER" | "WALLET_READY" | "NEEDS_PASSWORD" | undefined
+) => {
+  switch (status) {
+    case "NEW_USER":
+      return "New User - Create Your Wallet";
+    case "NEEDS_PASSWORD":
+      return "Existing Wallet - Enter Password";
+    case "WALLET_READY":
+      return "Wallet Ready";
+    default:
+      return "Please Sign In";
+  }
+};
+
 export default function Home() {
   const [sdk, setSdk] = useState<WeBlockSDK>();
   const [status, setStatus] = useState<
@@ -26,6 +41,10 @@ export default function Home() {
       console.log("SignIn Response:", result);
       setStatus(result?.status);
       setError(undefined);
+
+      if (result?.wallet) {
+        setWalletAddress(result.wallet.address);
+      }
     } catch (error) {
       console.error("SignIn Error:", error);
       setError(error instanceof Error ? error.message : "Unknown error");
@@ -46,38 +65,64 @@ export default function Home() {
     }
   };
 
+  const handleRetrieveWallet = async (password: string) => {
+    try {
+      console.log("Retrieving wallet with password:", password);
+      const result = await sdk?.user.retrieveWallet(password);
+      console.log("Wallet Retrieved:", result);
+
+      if (result?.wallet) {
+        setWalletAddress(result.wallet.address);
+        setStatus("WALLET_READY");
+      }
+      setError(undefined);
+    } catch (error) {
+      console.error("Wallet Retrieval Error:", error);
+      setError(error instanceof Error ? error.message : "Unknown error");
+    }
+  };
+
   return (
-    <main className="min-h-screen p-8">
-      <h1 className="text-2xl font-bold mb-4">WeBlock SDK Sample</h1>
+    <main className="min-h-screen p-8 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">
+        WeBlock SDK Sample
+      </h1>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
-          Error: {error}
+        <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg border border-red-200">
+          <p className="font-semibold">Error</p>
+          <p className="text-sm">{error}</p>
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-6">
+        {/* Sign In */}
         {!status && (
-          <button
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            onClick={handleSignIn}
-          >
-            Sign in with Google
-          </button>
+          <div className="text-center py-8">
+            <button
+              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              onClick={handleSignIn}
+            >
+              Sign in with Google
+            </button>
+          </div>
         )}
 
+        {/* New User */}
         {status === "NEW_USER" && (
-          <div className="space-y-2">
-            <p className="mb-2">Status: New User</p>
-            <div className="space-x-2">
+          <div className="p-6 bg-white rounded-lg shadow-sm border">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">
+              {getStatusDisplay(status)}
+            </h2>
+            <div className="space-y-3">
               <button
-                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
                 onClick={() => handleCreateWallet(true)}
               >
                 Create Wallet with Password
               </button>
               <button
-                className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                className="w-full px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
                 onClick={() => handleCreateWallet(false)}
               >
                 Create Wallet without Password
@@ -86,16 +131,71 @@ export default function Home() {
           </div>
         )}
 
-        {walletAddress && (
-          <div className="p-4 bg-gray-100 rounded">
-            <h2 className="font-bold mb-2">Wallet Created!</h2>
-            <p className="font-mono break-all">Address: {walletAddress}</p>
+        {/* Password Recovery */}
+        {status === "NEEDS_PASSWORD" && (
+          <div className="p-6 bg-white rounded-lg shadow-sm border">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">
+              {getStatusDisplay(status)}
+            </h2>
+            <div className="space-y-3">
+              <button
+                className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                onClick={() => handleRetrieveWallet("testpassword123")}
+              >
+                Retrieve with Correct Password
+              </button>
+              <button
+                className="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                onClick={() => handleRetrieveWallet("wrongpassword")}
+              >
+                Try Wrong Password
+              </button>
+            </div>
           </div>
         )}
 
+        {/* Wallet Ready */}
+        {status === "WALLET_READY" && (
+          <div className="p-6 bg-white rounded-lg shadow-sm border">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">
+              {getStatusDisplay(status)}
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                View Transactions
+              </button>
+              <button className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
+                Send Token
+              </button>
+            </div>
+            <div className="mt-4">
+              <button
+                className="w-full px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                onClick={() => setStatus("NEEDS_PASSWORD")}
+              >
+                Test Recovery Flow
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Wallet Info */}
+        {walletAddress && (
+          <div className="p-6 bg-white rounded-lg shadow-sm border">
+            <h2 className="text-xl font-semibold mb-2 text-gray-800">
+              Wallet Info
+            </h2>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="text-sm text-gray-600">Address</p>
+              <p className="font-mono text-sm break-all">{walletAddress}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Current Status */}
         {status && (
-          <div className="mt-4 p-4 bg-gray-100 rounded">
-            <p>Current Status: {status}</p>
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
+            Current Status: {getStatusDisplay(status)}
           </div>
         )}
       </div>

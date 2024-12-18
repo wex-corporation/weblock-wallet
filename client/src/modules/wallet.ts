@@ -3,6 +3,7 @@ import {
   WalletInfo,
   NetworkInfo,
   SwitchNetworkResponse,
+  WalletResponse,
 } from '../types'
 import { InternalCore } from '../core/types'
 

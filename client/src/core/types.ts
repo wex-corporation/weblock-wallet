@@ -15,7 +15,7 @@ export interface InternalCore {
   wallet: {
     getInfo(): Promise<WalletInfo>
     create(password: string): Promise<string>
-    recover(password: string): Promise<{ wallet: WalletInfo }>
+    retrieveWallet(password: string): Promise<string>
   }
 
   network: {

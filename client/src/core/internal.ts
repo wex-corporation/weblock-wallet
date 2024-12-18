@@ -43,7 +43,8 @@ export class InternalCoreImpl implements InternalCore {
   wallet = {
     getInfo: () => this.walletService.getInfo(),
     create: (password: string) => this.walletService.create(password),
-    recover: (password: string) => this.walletService.recover(password),
+    retrieveWallet: (password: string) =>
+      this.walletService.retrieveWallet(password),
   }
 
   network = {
