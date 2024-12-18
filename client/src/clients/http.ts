@@ -43,11 +43,13 @@ export class HttpClient {
     }
 
     if (needsAccessToken) {
-      const token = await LocalForage.get<string>(`${this.orgHost}:accessToken`)
-      if (!token) {
+      const accessToken = await LocalForage.get<string>(
+        `${this.orgHost}:accessToken`
+      )
+      if (!accessToken) {
         throw new SDKError('No access token found', SDKErrorCode.AUTH_REQUIRED)
       }
-      headers['Authorization'] = `Bearer ${token}`
+      headers['Authorization'] = `Bearer ${accessToken}`
     }
 
     return headers
@@ -84,7 +86,18 @@ export class HttpClient {
       )
     }
 
-    return response.json()
+    if (
+      response.status === 200 &&
+      response.headers.get('content-length') === '0'
+    ) {
+      return undefined as T
+    }
+
+    try {
+      return await response.json()
+    } catch {
+      return undefined as T
+    }
   }
 
   async get<T>(path: string, config?: RequestConfig): Promise<T> {
