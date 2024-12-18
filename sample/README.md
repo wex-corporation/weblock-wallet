@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WeBlock SDK Sample
 
-## Getting Started
+WeBlock SDK를 테스트하기 위한 샘플 프로젝트입니다.
 
-First, run the development server:
+## 프로젝트 구조
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+.
+├── server/     # 백엔드 서버
+├── client/     # SDK 코어
+└── sample/     # 테스트용 Next.js 프로젝트
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 시작하기
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. 서버 실행
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cd server
+docker-compose down -v --rmi all  # 기존 컨테이너 정리 (필요시)
+./run-wallet-script.sh           # 빌드 및 서버 실행
+```
 
-## Learn More
+### 2. SDK 빌드 및 링크
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+cd client
+npm install
+npm run build
+npm link
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 3. 샘플 프로젝트 실행
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+cd sample
+npm install
+npm link @weblock-wallet/sdk
+npm run dev
+```
 
-## Deploy on Vercel
+## 테스트
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+브라우저에서 http://localhost:3000 접속 후 "Sign in with Google" 버튼을 클릭하여 테스트할 수 있습니다. 콘솔 확인해주세요.
