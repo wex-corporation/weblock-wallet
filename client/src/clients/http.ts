@@ -38,8 +38,8 @@ export class HttpClient {
   private async getHeaders(needsAccessToken = false): Promise<HeadersInit> {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
-      'X-API-Key': this.apiKey,
-      'X-Org-Host': this.orgHost,
+      'X-Al-Api-Key': this.apiKey,
+      'X-Al-Org-Host': this.orgHost,
     }
 
     if (needsAccessToken) {
