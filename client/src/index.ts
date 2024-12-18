@@ -70,8 +70,8 @@ export class WeBlockSDK {
       return this.userModule.createWallet(password)
     },
 
-    recoverWallet: async (password: string): Promise<WalletResponse> => {
-      return this.userModule.recoverWallet(password)
+    retrieveWallet: async (password: string): Promise<WalletResponse> => {
+      return this.userModule.retrieveWallet(password)
     },
 
     signOut: async (): Promise<void> => {

@@ -115,4 +115,93 @@ export class WalletService {
   async recover(password: string) {
     return { wallet: await this.getInfo() }
   }
+
+  async retrieveWallet(password: string): Promise<string> {
+    try {
+      console.log('1. Checking login status...')
+      const firebaseId = await LocalForage.get<string>(
+        `${this.orgHost}:firebaseId`
+      )
+      if (!firebaseId) {
+        throw new SDKError('Not logged in', SDKErrorCode.AUTH_REQUIRED)
+      }
+
+      console.log('2. Getting wallet info from server...')
+      const walletInfo = await this.walletClient.getWallet()
+      console.log('3. Wallet info received:', { address: walletInfo.address })
+
+      console.log('4. Checking for existing share2...')
+      let share2 = await LocalForage.get<string>(`${this.orgHost}:share2`)
+
+      if (!share2) {
+        console.log('5. No share2 found, checking encryptedShare2...')
+        const encryptedShare2 = await LocalForage.get<string>(
+          `${this.orgHost}:encryptedShare2`
+        )
+        if (!password) {
+          throw new SDKError(
+            'Password is required',
+            SDKErrorCode.INVALID_PARAMS
+          )
+        }
+
+        if (encryptedShare2) {
+          console.log('6. Found encryptedShare2, decrypting...')
+          share2 = Crypto.decryptShare(encryptedShare2, password, firebaseId)
+          console.log('7. Saving decrypted share2...')
+          await LocalForage.save(`${this.orgHost}:share2`, share2)
+        } else {
+          console.log('8. No encryptedShare2, recovering using share3...')
+          const share3 = Crypto.decryptShare(
+            walletInfo.encryptedShare3,
+            password,
+            firebaseId
+          )
+          console.log('9. Share3 decrypted, combining with share1...')
+          const privateKey = await Secrets.combine([walletInfo.share1, share3])
+          const wallet = new Wallet(privateKey)
+
+          console.log('10. Generating new shares...')
+          const newShares = await Secrets.split(wallet.privateKey, 3, 2)
+          const [newShare1, newShare2, newShare3] = newShares
+          console.log('11. New shares generated')
+
+          console.log('12. Updating wallet keys on server...')
+          await this.walletClient.updateWalletKey({
+            share1: newShare1,
+            encryptedShare3: Crypto.encryptShare(
+              newShare3,
+              password,
+              firebaseId
+            ),
+          })
+
+          console.log('13. Saving new shares locally...')
+          await LocalForage.save(`${this.orgHost}:share2`, newShare2)
+          await LocalForage.save(
+            `${this.orgHost}:encryptedShare2`,
+            Crypto.encryptShare(newShare2, password, firebaseId)
+          )
+
+          console.log('14. Wallet recovered with share3:', wallet.address)
+          return wallet.address
+        }
+      }
+
+      console.log('15. Combining share1 and share2...')
+      const privateKey = await Secrets.combine([walletInfo.share1, share2])
+      const wallet = new Wallet(privateKey)
+      this.walletAddress = wallet.address
+      console.log('16. Wallet retrieved successfully:', wallet.address)
+      return wallet.address
+    } catch (error) {
+      console.error('Error in retrieveWallet:', error)
+      if (error instanceof SDKError) throw error
+      throw new SDKError(
+        'Failed to retrieve wallet',
+        SDKErrorCode.WALLET_RECOVERY_FAILED,
+        error
+      )
+    }
+  }
 }

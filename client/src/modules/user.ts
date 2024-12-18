@@ -44,8 +44,10 @@ export class UserModule {
     return { wallet: walletInfo }
   }
 
-  async recoverWallet(password: string): Promise<WalletResponse> {
-    return this.core.wallet.recover(password)
+  async retrieveWallet(password: string): Promise<WalletResponse> {
+    const address = await this.core.wallet.retrieveWallet(password)
+    const wallet = await this.core.wallet.getInfo()
+    return { wallet }
   }
 
   async signOut(): Promise<void> {
