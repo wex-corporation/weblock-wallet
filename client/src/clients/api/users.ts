@@ -22,22 +22,32 @@ export class UserClient {
   }
 
   async getUser(): Promise<UserResponse> {
-    return this.client.get(`${this.baseUrl}`)
+    return this.client.get(`${this.baseUrl}`, { needsAccessToken: true })
   }
 
+  /** TODO: Add duplicate chainId validation */
   async registerBlockchain(request: BlockchainRequest): Promise<void> {
-    await this.client.post(`${this.baseUrl}/blockchains`, request)
+    await this.client.post(`${this.baseUrl}/register-blockchain`, request, {
+      needsAccessToken: true,
+    })
   }
 
   async getRegisteredBlockchains(): Promise<BlockchainResponse[]> {
-    return this.client.get(`${this.baseUrl}/blockchains`)
+    return this.client.get(`${this.baseUrl}/blockchains`, {
+      needsAccessToken: true,
+    })
   }
 
   async registerToken(request: TokenRequest): Promise<TokenResponse> {
-    return this.client.post(`${this.baseUrl}/register-token`, request)
+    return this.client.post(`${this.baseUrl}/register-token`, request, {
+      needsAccessToken: true,
+    })
   }
 
   async getRegisteredCoins(blockchainId: string): Promise<TokenResponse[]> {
-    return this.client.get(`${this.baseUrl}/coins?blockchainId=${blockchainId}`)
+    return this.client.get(
+      `${this.baseUrl}/coins?blockchainId=${blockchainId}`,
+      { needsAccessToken: true }
+    )
   }
 }

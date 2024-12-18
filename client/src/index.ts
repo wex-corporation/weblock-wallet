@@ -7,10 +7,12 @@ import {
   SwitchNetworkResponse,
   TransferRequest,
   TransferResponse,
+  AddNetworkRequest,
 } from './types'
 import { Core } from './core'
 import { UserModule, WalletModule, AssetModule } from './modules'
 import { SDKError, SDKErrorCode } from './types/error'
+import { NetworkModule } from './modules/network'
 
 /**
  * WeBlock Wallet SDK
@@ -21,6 +23,7 @@ export class WeBlockSDK {
   private readonly userModule: UserModule
   private readonly walletModule: WalletModule
   private readonly assetModule: AssetModule
+  private readonly networkModule: NetworkModule
   private initialized = false
 
   constructor(options: SDKOptions) {
@@ -31,7 +34,7 @@ export class WeBlockSDK {
     this.userModule = new UserModule(options, internalCore)
     this.walletModule = new WalletModule(options, internalCore)
     this.assetModule = new AssetModule(options, internalCore)
-
+    this.networkModule = new NetworkModule(options, internalCore)
     this.initialized = true
     console.info('WeBlock SDK initialized successfully')
   }
@@ -83,26 +86,23 @@ export class WeBlockSDK {
     getInfo: async (): Promise<WalletInfo> => {
       return this.walletModule.getInfo()
     },
-
-    switchNetwork: async (
-      networkId: string
-    ): Promise<SwitchNetworkResponse> => {
-      return this.walletModule.switchNetwork(networkId)
-    },
-
     onWalletUpdate: (callback: (wallet: WalletInfo) => void): (() => void) => {
       return this.walletModule.onWalletUpdate(callback)
     },
-
     onTransactionUpdate: (
       callback: (tx: WalletInfo['recentTransactions'][0]) => void
     ): (() => void) => {
       return this.walletModule.onTransactionUpdate(callback)
     },
+  }
 
-    getNetworks: async (): Promise<NetworkInfo[]> => {
-      return this.walletModule.getNetworks()
-    },
+  public readonly network = {
+    getAvailableNetworks: () => this.networkModule.getAvailableNetworks(),
+    addNetwork: (request: AddNetworkRequest) =>
+      this.networkModule.addNetwork(request),
+    switchNetwork: (networkId: string) =>
+      this.networkModule.switchNetwork(networkId),
+    getCurrentNetwork: () => this.networkModule.getCurrentNetwork(),
   }
 
   public readonly asset = {

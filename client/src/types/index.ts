@@ -182,4 +182,16 @@ export interface TransferResponse {
   transaction: Transaction
 }
 
+/**
+ * 네트워크 등록 요청
+ */
+export interface AddNetworkRequest {
+  /** 네트워크 이름 (예: "Ethereum Mainnet", "Polygon Mumbai") */
+  name: string
+  /** RPC URL */
+  rpcUrl: string
+  /** 체인 ID */
+  chainId: number
+}
+
 export * from './error'

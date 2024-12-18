@@ -2,15 +2,17 @@ import { SDKOptions } from '../types'
 import { InternalCore } from './types'
 import { AuthService } from './services/auth'
 import { WalletService } from './services/wallet'
+import { NetworkService } from './services/network'
 import { HttpClient } from '../clients/http'
 import { FirebaseAuth } from './auth/firebase'
 import { UserClient } from '../clients/api/users'
 import { WalletClient } from '../clients/api/wallets'
+import { BlockchainRequest } from '@/clients/types'
 
 export class InternalCoreImpl implements InternalCore {
   private readonly authService: AuthService
   private readonly walletService: WalletService
-
+  private readonly networkService: NetworkService
   constructor(private readonly options: SDKOptions) {
     const httpClient = new HttpClient(options)
     const firebase = new FirebaseAuth(options)
@@ -24,6 +26,7 @@ export class InternalCoreImpl implements InternalCore {
       options.orgHost
     )
     this.walletService = new WalletService(walletClient, options.orgHost)
+    this.networkService = new NetworkService(userClient, options.orgHost)
   }
 
   auth = {
@@ -38,6 +41,8 @@ export class InternalCoreImpl implements InternalCore {
     },
     signOut: () => this.authService.signOut(),
     clearNewUserFlag: () => this.authService.clearNewUserFlag(),
+    isLoggedIn: () => this.authService.isLoggedIn(),
+    getAuthInfo: () => this.authService.getAuthInfo(),
   }
 
   wallet = {
@@ -48,9 +53,20 @@ export class InternalCoreImpl implements InternalCore {
   }
 
   network = {
-    switch: async (networkId: string) => ({
-      network: { id: networkId } as any,
-    }),
-    getNetworks: async () => [],
+    getRegisteredNetworks: () => {
+      return this.networkService.getRegisteredNetworks()
+    },
+
+    getCurrentNetwork: () => {
+      return this.networkService.getCurrentNetwork()
+    },
+
+    registerNetwork: (params: BlockchainRequest) => {
+      return this.networkService.registerNetwork(params)
+    },
+
+    switchNetwork: (networkId: string) => {
+      return this.networkService.switchNetwork(networkId)
+    },
   }
 }

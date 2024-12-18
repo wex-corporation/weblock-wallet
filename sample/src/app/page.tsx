@@ -1,6 +1,6 @@
 "use client";
 
-import { WeBlockSDK } from "@weblock-wallet/sdk";
+import { WeBlockSDK, NetworkInfo } from "@weblock-wallet/sdk";
 import { useEffect, useState } from "react";
 
 const getStatusDisplay = (
@@ -18,6 +18,12 @@ const getStatusDisplay = (
   }
 };
 
+const SAMPLE_NETWORK = {
+  name: "Polygon Mumbai",
+  rpcUrl: "https://rpc-mumbai.maticvigil.com",
+  chainId: 80001,
+};
+
 export default function Home() {
   const [sdk, setSdk] = useState<WeBlockSDK>();
   const [status, setStatus] = useState<
@@ -25,6 +31,10 @@ export default function Home() {
   >();
   const [walletAddress, setWalletAddress] = useState<string>();
   const [error, setError] = useState<string>();
+  const [networks, setNetworks] = useState<NetworkInfo[]>([]);
+  const [currentNetwork, setCurrentNetwork] = useState<NetworkInfo | null>(
+    null
+  );
 
   useEffect(() => {
     const sdk = new WeBlockSDK({
@@ -81,6 +91,42 @@ export default function Home() {
       setError(error instanceof Error ? error.message : "Unknown error");
     }
   };
+
+  const handleAddNetwork = async () => {
+    try {
+      await sdk?.network.addNetwork(SAMPLE_NETWORK);
+      // Refresh networks list
+      const networks = await sdk?.network.getAvailableNetworks();
+      setNetworks(networks || []);
+      setError(undefined);
+    } catch (error) {
+      console.error("Add Network Error:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to add network"
+      );
+    }
+  };
+
+  const handleSwitchNetwork = async (networkId: string) => {
+    try {
+      await sdk?.network.switchNetwork(networkId);
+      const current = await sdk?.network.getCurrentNetwork();
+      setCurrentNetwork(current || null);
+      setError(undefined);
+    } catch (error) {
+      console.error("Switch Network Error:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to switch network"
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (status === "WALLET_READY" && sdk) {
+      sdk.network.getAvailableNetworks().then(setNetworks);
+      sdk.network.getCurrentNetwork().then(setCurrentNetwork);
+    }
+  }, [status, sdk]);
 
   return (
     <main className="min-h-screen p-8 max-w-4xl mx-auto">
@@ -196,6 +242,45 @@ export default function Home() {
         {status && (
           <div className="mt-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
             Current Status: {getStatusDisplay(status)}
+          </div>
+        )}
+
+        {/* Network Management (show when wallet is ready) */}
+        {status === "WALLET_READY" && (
+          <div className="mt-6 space-y-6">
+            <div className="p-6 bg-white rounded-lg shadow-sm border">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                Network Management
+              </h2>
+
+              {/* Add Network Button */}
+              <button
+                className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors mb-4"
+                onClick={handleAddNetwork}
+              >
+                Add Mumbai Testnet
+              </button>
+
+              {/* Available Networks */}
+              <div className="space-y-3">
+                <p className="text-sm text-gray-600 font-semibold">
+                  Available Networks:
+                </p>
+                {networks.map((network) => (
+                  <button
+                    key={network.id}
+                    className={`w-full px-4 py-2 rounded-lg transition-colors ${
+                      currentNetwork?.id === network.id
+                        ? "bg-blue-100 text-blue-700 border border-blue-300"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                    onClick={() => handleSwitchNetwork(network.id)}
+                  >
+                    {network.name} ({network.symbol})
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>
