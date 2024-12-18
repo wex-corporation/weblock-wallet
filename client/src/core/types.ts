@@ -1,3 +1,4 @@
+import { BlockchainRequest } from '@/clients/types'
 import { WalletInfo, NetworkInfo } from '../types'
 
 export interface InternalCore {
@@ -9,6 +10,12 @@ export interface InternalCore {
       status: 'WALLET_READY' | 'NEEDS_PASSWORD' | 'NEW_USER'
     }>
     signOut(): Promise<void>
+    isLoggedIn(): Promise<boolean>
+    getAuthInfo(): Promise<{
+      firebaseId?: string
+      accessToken?: string
+      isNewUser?: boolean
+    }>
     clearNewUserFlag(): Promise<void>
   }
 
@@ -19,7 +26,9 @@ export interface InternalCore {
   }
 
   network: {
-    switch(networkId: string): Promise<{ network: NetworkInfo }>
-    getNetworks(): Promise<NetworkInfo[]>
+    getRegisteredNetworks(): Promise<NetworkInfo[]>
+    getCurrentNetwork(): Promise<NetworkInfo | null>
+    registerNetwork(params: BlockchainRequest): Promise<void>
+    switchNetwork(networkId: string): Promise<void>
   }
 }
