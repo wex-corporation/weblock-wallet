@@ -23,6 +23,19 @@ export interface InternalCore {
     getInfo(): Promise<WalletInfo>
     create(password: string): Promise<string>
     retrieveWallet(password: string): Promise<string>
+    getBalance(address: string, chainId: number): Promise<string>
+    getTransactionCount(address: string, chainId: number): Promise<number>
+    getBlockNumber(chainId: number): Promise<number>
+    sendRawTransaction(signedTx: string, chainId: number): Promise<string>
+    getTransactionReceipt(txHash: string, chainId: number): Promise<any>
+    getTransaction(txHash: string, chainId: number): Promise<any>
+    estimateGas(txParams: any, chainId: number): Promise<number>
+    getGasPrice(chainId: number): Promise<string>
+    call(
+      txParams: any,
+      blockParam: string | number,
+      chainId: number
+    ): Promise<string>
   }
 
   network: {

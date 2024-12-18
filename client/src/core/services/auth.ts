@@ -2,6 +2,7 @@ import { FirebaseAuth } from '../auth/firebase'
 import { UserClient } from '../../clients/api/users'
 import { LocalForage } from '../../utils/storage'
 import { WalletClient } from '@/clients/api/wallets'
+import { Jwt } from '../../utils/jwt'
 
 export class AuthService {
   constructor(
@@ -24,9 +25,12 @@ export class AuthService {
     console.log('Server response:', response)
     const { token, isNewUser } = response
 
+    const exp = Jwt.parse(token)?.exp! * 1000
+
+    console.log('Token exp:', exp)
     console.log('isNewUser value:', isNewUser)
     await LocalForage.save(`${this.orgHost}:firebaseId`, credentials.firebaseId)
-    await LocalForage.save(`${this.orgHost}:accessToken`, token)
+    await LocalForage.save(`${this.orgHost}:accessToken`, token, exp)
     await LocalForage.save(`${this.orgHost}:isNewUser`, isNewUser)
 
     const savedIsNewUser = await LocalForage.get(`${this.orgHost}:isNewUser`)
@@ -64,10 +68,12 @@ export class AuthService {
   async signOut(): Promise<void> {
     await this.firebase.signOut()
     await Promise.all([
+      LocalForage.delete(`${this.orgHost}:currentNetwork`),
       LocalForage.delete(`${this.orgHost}:firebaseId`),
       LocalForage.delete(`${this.orgHost}:accessToken`),
       LocalForage.delete(`${this.orgHost}:encryptedShare2`),
       LocalForage.delete(`${this.orgHost}:isNewUser`),
+      LocalForage.delete(`${this.orgHost}:share2`),
     ])
   }
 

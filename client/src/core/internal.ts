@@ -8,16 +8,19 @@ import { FirebaseAuth } from './auth/firebase'
 import { UserClient } from '../clients/api/users'
 import { WalletClient } from '../clients/api/wallets'
 import { BlockchainRequest } from '@/clients/types'
+import { RpcClient } from '../clients/api/rpcs'
 
 export class InternalCoreImpl implements InternalCore {
   private readonly authService: AuthService
   private readonly walletService: WalletService
   private readonly networkService: NetworkService
+
   constructor(private readonly options: SDKOptions) {
     const httpClient = new HttpClient(options)
     const firebase = new FirebaseAuth(options)
     const userClient = new UserClient(httpClient)
     const walletClient = new WalletClient(httpClient)
+    const rpcClient = new RpcClient(httpClient)
 
     this.authService = new AuthService(
       firebase,
@@ -25,24 +28,20 @@ export class InternalCoreImpl implements InternalCore {
       walletClient,
       options.orgHost
     )
-    this.walletService = new WalletService(walletClient, options.orgHost)
+    this.walletService = new WalletService(
+      walletClient,
+      rpcClient,
+      options.orgHost
+    )
     this.networkService = new NetworkService(userClient, options.orgHost)
   }
 
   auth = {
-    signIn: async (provider: string) => {
-      const result = await this.authService.signIn(provider)
-      return {
-        isNewUser: result.isNewUser,
-        email: result.email,
-        photoURL: result.photoURL,
-        status: result.status,
-      }
-    },
+    signIn: (provider: string) => this.authService.signIn(provider),
     signOut: () => this.authService.signOut(),
-    clearNewUserFlag: () => this.authService.clearNewUserFlag(),
     isLoggedIn: () => this.authService.isLoggedIn(),
     getAuthInfo: () => this.authService.getAuthInfo(),
+    clearNewUserFlag: () => this.authService.clearNewUserFlag(),
   }
 
   wallet = {
@@ -50,23 +49,31 @@ export class InternalCoreImpl implements InternalCore {
     create: (password: string) => this.walletService.create(password),
     retrieveWallet: (password: string) =>
       this.walletService.retrieveWallet(password),
+    getBalance: (address: string, chainId: number) =>
+      this.walletService.getBalance(address, chainId),
+    getTransactionCount: (address: string, chainId: number) =>
+      this.walletService.getTransactionCount(address, chainId),
+    getBlockNumber: (chainId: number) =>
+      this.walletService.getBlockNumber(chainId),
+    sendRawTransaction: (signedTx: string, chainId: number) =>
+      this.walletService.sendRawTransaction(signedTx, chainId),
+    getTransactionReceipt: (txHash: string, chainId: number) =>
+      this.walletService.getTransactionReceipt(txHash, chainId),
+    getTransaction: (txHash: string, chainId: number) =>
+      this.walletService.getTransaction(txHash, chainId),
+    estimateGas: (txParams: any, chainId: number) =>
+      this.walletService.estimateGas(txParams, chainId),
+    getGasPrice: (chainId: number) => this.walletService.getGasPrice(chainId),
+    call: (txParams: any, blockParam: string | number, chainId: number) =>
+      this.walletService.call(txParams, blockParam, chainId),
   }
 
   network = {
-    getRegisteredNetworks: () => {
-      return this.networkService.getRegisteredNetworks()
-    },
-
-    getCurrentNetwork: () => {
-      return this.networkService.getCurrentNetwork()
-    },
-
-    registerNetwork: (params: BlockchainRequest) => {
-      return this.networkService.registerNetwork(params)
-    },
-
-    switchNetwork: (networkId: string) => {
-      return this.networkService.switchNetwork(networkId)
-    },
+    getRegisteredNetworks: () => this.networkService.getRegisteredNetworks(),
+    registerNetwork: (params: BlockchainRequest) =>
+      this.networkService.registerNetwork(params),
+    switchNetwork: (networkId: string) =>
+      this.networkService.switchNetwork(networkId),
+    getCurrentNetwork: () => this.networkService.getCurrentNetwork(),
   }
 }

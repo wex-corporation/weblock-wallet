@@ -35,14 +35,24 @@ export default function Home() {
   const [currentNetwork, setCurrentNetwork] = useState<NetworkInfo | null>(
     null
   );
+  const [rpcResults, setRpcResults] = useState<{
+    balance?: string;
+    blockNumber?: number;
+    txCount?: number;
+    gasPrice?: string;
+    estimateGas?: number;
+  }>({});
+  const [rpcLoading, setRpcLoading] = useState<string>("");
 
   useEffect(() => {
-    const sdk = new WeBlockSDK({
-      environment: "local",
-      apiKey: "MCowBQYDK2VwAyEASXmv-39yF5Wx1vX9lPuP7_9qgWVeGXMdAWr-TKalKMw=",
-      orgHost: "http://localhost:3000",
-    });
-    setSdk(sdk);
+    if (typeof window !== "undefined") {
+      const sdk = new WeBlockSDK({
+        environment: "local",
+        apiKey: "MCowBQYDK2VwAyEASXmv-39yF5Wx1vX9lPuP7_9qgWVeGXMdAWr-TKalKMw=",
+        orgHost: "http://localhost:3000",
+      });
+      setSdk(sdk);
+    }
   }, []);
 
   const handleSignIn = async () => {
@@ -127,6 +137,118 @@ export default function Home() {
       sdk.network.getCurrentNetwork().then(setCurrentNetwork);
     }
   }, [status, sdk]);
+
+  // RPC test handlers
+  const handleGetBalance = async () => {
+    if (!walletAddress) return;
+    try {
+      setRpcLoading("balance");
+      const balance = await sdk?.wallet.getBalance(
+        walletAddress,
+        currentNetwork?.chainId || 0
+      );
+      setRpcResults((prev) => ({ ...prev, balance }));
+      setError(undefined);
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Failed to get balance"
+      );
+    } finally {
+      setRpcLoading("");
+    }
+  };
+
+  const handleGetBlockNumber = async () => {
+    try {
+      setRpcLoading("blockNumber");
+      const blockNumber = await sdk?.wallet.getBlockNumber(
+        currentNetwork?.chainId || 0
+      );
+      setRpcResults((prev) => ({ ...prev, blockNumber }));
+      setError(undefined);
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Failed to get block number"
+      );
+    } finally {
+      setRpcLoading("");
+    }
+  };
+
+  const handleGetTransactionCount = async () => {
+    if (!walletAddress) return;
+    try {
+      setRpcLoading("txCount");
+      const txCount = await sdk?.wallet.getTransactionCount(
+        walletAddress,
+        currentNetwork?.chainId || 0
+      );
+      setRpcResults((prev) => ({ ...prev, txCount }));
+      setError(undefined);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to get transaction count"
+      );
+    } finally {
+      setRpcLoading("");
+    }
+  };
+
+  const handleGetGasPrice = async () => {
+    try {
+      setRpcLoading("gasPrice");
+      const gasPrice = await sdk?.wallet.getGasPrice(
+        currentNetwork?.chainId || 0
+      );
+      setRpcResults((prev) => ({ ...prev, gasPrice }));
+      setError(undefined);
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Failed to get gas price"
+      );
+    } finally {
+      setRpcLoading("");
+    }
+  };
+
+  const handleEstimateGas = async () => {
+    if (!walletAddress) return;
+    try {
+      setRpcLoading("estimateGas");
+      const estimateGas = await sdk?.wallet.estimateGas(
+        {
+          from: walletAddress,
+          to: walletAddress,
+          value: "0x0",
+        },
+        currentNetwork?.chainId || 0
+      );
+      setRpcResults((prev) => ({ ...prev, estimateGas }));
+      setError(undefined);
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Failed to estimate gas"
+      );
+    } finally {
+      setRpcLoading("");
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await sdk?.user.signOut();
+      setStatus(undefined);
+      setWalletAddress(undefined);
+      setNetworks([]);
+      setCurrentNetwork(null);
+      setRpcResults({});
+      setError(undefined);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to sign out");
+    }
+  };
 
   return (
     <main className="min-h-screen p-8 max-w-4xl mx-auto">
@@ -281,6 +403,110 @@ export default function Home() {
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* RPC Tests (show when wallet is ready) */}
+        {status === "WALLET_READY" && currentNetwork && (
+          <div className="mt-6">
+            <div className="p-6 bg-white rounded-lg shadow-sm border">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                RPC Tests
+              </h2>
+
+              {/* Basic Info */}
+              <div className="space-y-4 mb-6">
+                <h3 className="text-lg font-medium text-gray-700">
+                  Basic Info
+                </h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <button
+                    className={`px-4 py-2 rounded-lg transition-colors ${
+                      rpcLoading === "balance"
+                        ? "bg-gray-100 text-gray-500"
+                        : "bg-blue-500 text-white hover:bg-blue-600"
+                    }`}
+                    onClick={handleGetBalance}
+                    disabled={rpcLoading === "balance"}
+                  >
+                    Get Balance
+                  </button>
+                  <button
+                    className={`px-4 py-2 rounded-lg transition-colors ${
+                      rpcLoading === "blockNumber"
+                        ? "bg-gray-100 text-gray-500"
+                        : "bg-blue-500 text-white hover:bg-blue-600"
+                    }`}
+                    onClick={handleGetBlockNumber}
+                    disabled={rpcLoading === "blockNumber"}
+                  >
+                    Get Block Number
+                  </button>
+                  <button
+                    className={`px-4 py-2 rounded-lg transition-colors ${
+                      rpcLoading === "txCount"
+                        ? "bg-gray-100 text-gray-500"
+                        : "bg-blue-500 text-white hover:bg-blue-600"
+                    }`}
+                    onClick={handleGetTransactionCount}
+                    disabled={rpcLoading === "txCount"}
+                  >
+                    Get Tx Count
+                  </button>
+                </div>
+              </div>
+
+              {/* Transaction */}
+              <div className="space-y-4 mb-6">
+                <h3 className="text-lg font-medium text-gray-700">
+                  Transaction
+                </h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <button
+                    className={`px-4 py-2 rounded-lg transition-colors ${
+                      rpcLoading === "gasPrice"
+                        ? "bg-gray-100 text-gray-500"
+                        : "bg-blue-500 text-white hover:bg-blue-600"
+                    }`}
+                    onClick={handleGetGasPrice}
+                    disabled={rpcLoading === "gasPrice"}
+                  >
+                    Get Gas Price
+                  </button>
+                  <button
+                    className={`px-4 py-2 rounded-lg transition-colors ${
+                      rpcLoading === "estimateGas"
+                        ? "bg-gray-100 text-gray-500"
+                        : "bg-blue-500 text-white hover:bg-blue-600"
+                    }`}
+                    onClick={handleEstimateGas}
+                    disabled={rpcLoading === "estimateGas"}
+                  >
+                    Estimate Gas
+                  </button>
+                </div>
+              </div>
+
+              {/* Results display */}
+              {Object.entries(rpcResults).map(([key, value]) => (
+                <div key={key} className="bg-gray-50 p-3 rounded-lg mb-2">
+                  <p className="text-sm text-gray-600 capitalize">{key}</p>
+                  <p className="font-mono text-sm break-all">{value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Add Sign Out button when wallet is ready */}
+        {status === "WALLET_READY" && (
+          <div className="mt-6">
+            <button
+              className="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              onClick={handleSignOut}
+            >
+              Sign Out
+            </button>
           </div>
         )}
       </div>

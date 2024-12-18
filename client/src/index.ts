@@ -94,6 +94,43 @@ export class WeBlockSDK {
     ): (() => void) => {
       return this.walletModule.onTransactionUpdate(callback)
     },
+    getBalance: (address: string, chainId: number): Promise<string> => {
+      return this.walletModule.getBalance(address, chainId)
+    },
+    getTransactionCount: (
+      address: string,
+      chainId: number
+    ): Promise<number> => {
+      return this.walletModule.getTransactionCount(address, chainId)
+    },
+    getBlockNumber: (chainId: number): Promise<number> => {
+      return this.walletModule.getBlockNumber(chainId)
+    },
+    sendRawTransaction: (
+      signedTx: string,
+      chainId: number
+    ): Promise<string> => {
+      return this.walletModule.sendRawTransaction(signedTx, chainId)
+    },
+    getTransactionReceipt: (txHash: string, chainId: number): Promise<any> => {
+      return this.walletModule.getTransactionReceipt(txHash, chainId)
+    },
+    getTransaction: (txHash: string, chainId: number): Promise<any> => {
+      return this.walletModule.getTransaction(txHash, chainId)
+    },
+    estimateGas: (txParams: any, chainId: number): Promise<number> => {
+      return this.walletModule.estimateGas(txParams, chainId)
+    },
+    getGasPrice: (chainId: number): Promise<string> => {
+      return this.walletModule.getGasPrice(chainId)
+    },
+    call: (
+      txParams: any,
+      blockParam: string | number,
+      chainId: number
+    ): Promise<string> => {
+      return this.walletModule.call(txParams, blockParam, chainId)
+    },
   }
 
   public readonly network = {

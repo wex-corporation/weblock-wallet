@@ -5,12 +5,16 @@ import { Secrets } from '../../utils/secrets'
 import { Crypto } from '../../utils/crypto'
 import { LocalForage } from '../../utils/storage'
 import { WalletInfo, NetworkInfo, SDKError, SDKErrorCode } from '../../types'
+import { RpcClient } from '../../clients/api/rpcs'
+import { RpcMethod } from '../../clients/types'
+import { Jwt } from '../../utils/jwt'
 
 export class WalletService {
   private walletAddress: string | null = null
 
   constructor(
     private readonly walletClient: WalletClient,
+    private readonly rpcClient: RpcClient,
     private readonly orgHost: string
   ) {}
 
@@ -118,6 +122,15 @@ export class WalletService {
 
   async retrieveWallet(password: string): Promise<string> {
     try {
+      const accessToken = await LocalForage.get<string>(
+        `${this.orgHost}:accessToken`
+      )
+      if (!accessToken) {
+        throw new SDKError('Access token not found', SDKErrorCode.AUTH_REQUIRED)
+      }
+
+      const exp = Jwt.parse(accessToken)?.exp
+
       console.log('1. Checking login status...')
       const firebaseId = await LocalForage.get<string>(
         `${this.orgHost}:firebaseId`
@@ -149,7 +162,7 @@ export class WalletService {
           console.log('6. Found encryptedShare2, decrypting...')
           share2 = Crypto.decryptShare(encryptedShare2, password, firebaseId)
           console.log('7. Saving decrypted share2...')
-          await LocalForage.save(`${this.orgHost}:share2`, share2)
+          await LocalForage.save(`${this.orgHost}:share2`, share2, exp)
         } else {
           console.log('8. No encryptedShare2, recovering using share3...')
           const share3 = Crypto.decryptShare(
@@ -203,5 +216,88 @@ export class WalletService {
         error
       )
     }
+  }
+  async getBalance(address: string, chainId: number): Promise<string> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_GET_BALANCE,
+      params: [address, 'latest'],
+    })
+    return response.result
+  }
+
+  async getTransactionCount(address: string, chainId: number): Promise<number> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_GET_TRANSACTION_COUNT,
+      params: [address, 'latest'],
+    })
+    return parseInt(response.result, 16)
+  }
+
+  async getBlockNumber(chainId: number): Promise<number> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_BLOCK_NUMBER,
+      params: [],
+    })
+    return parseInt(response.result, 16)
+  }
+
+  async sendRawTransaction(signedTx: string, chainId: number): Promise<string> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_SEND_RAW_TRANSACTION,
+      params: [signedTx],
+    })
+    return response.result
+  }
+  async getTransactionReceipt(txHash: string, chainId: number): Promise<any> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_GET_TRANSACTION_RECEIPT,
+      params: [txHash],
+    })
+    return response.result
+  }
+
+  async getTransaction(txHash: string, chainId: number): Promise<any> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_GET_TRANSACTION_BY_HASH,
+      params: [txHash],
+    })
+    return response.result
+  }
+
+  async estimateGas(txParams: any, chainId: number): Promise<number> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_ESTIMATE_GAS,
+      params: [txParams],
+    })
+    return parseInt(response.result, 16)
+  }
+
+  async getGasPrice(chainId: number): Promise<string> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_GAS_PRICE,
+      params: [],
+    })
+    return response.result
+  }
+
+  async call(
+    txParams: any,
+    blockParam: string | number = 'latest',
+    chainId: number
+  ): Promise<string> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_CALL,
+      params: [txParams, blockParam],
+    })
+    return response.result
   }
 }
