@@ -17,7 +17,12 @@ export class InternalCoreImpl implements InternalCore {
     const userClient = new UserClient(httpClient)
     const walletClient = new WalletClient(httpClient)
 
-    this.authService = new AuthService(firebase, userClient, options.orgHost)
+    this.authService = new AuthService(
+      firebase,
+      userClient,
+      walletClient,
+      options.orgHost
+    )
     this.walletService = new WalletService(walletClient, options.orgHost)
   }
 
@@ -28,10 +33,11 @@ export class InternalCoreImpl implements InternalCore {
         isNewUser: result.isNewUser,
         email: result.email,
         photoURL: result.photoURL,
-        status: 'NEW_USER' as const,
+        status: result.status,
       }
     },
     signOut: () => this.authService.signOut(),
+    clearNewUserFlag: () => this.authService.clearNewUserFlag(),
   }
 
   wallet = {

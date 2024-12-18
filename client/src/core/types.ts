@@ -9,11 +9,12 @@ export interface InternalCore {
       status: 'WALLET_READY' | 'NEEDS_PASSWORD' | 'NEW_USER'
     }>
     signOut(): Promise<void>
+    clearNewUserFlag(): Promise<void>
   }
 
   wallet: {
     getInfo(): Promise<WalletInfo>
-    create(password: string): Promise<{ wallet: WalletInfo }>
+    create(password: string): Promise<string>
     recover(password: string): Promise<{ wallet: WalletInfo }>
   }
 

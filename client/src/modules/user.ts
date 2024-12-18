@@ -1,4 +1,10 @@
-import { SDKOptions, SignInResponse, WalletResponse } from '../types'
+import {
+  SDKError,
+  SDKErrorCode,
+  SDKOptions,
+  SignInResponse,
+  WalletResponse,
+} from '../types'
 import { InternalCore } from '../core/types'
 
 export class UserModule {
@@ -28,7 +34,14 @@ export class UserModule {
   }
 
   async createWallet(password: string): Promise<WalletResponse> {
-    return this.core.wallet.create(password)
+    if (!password) {
+      throw new SDKError('Password is required', SDKErrorCode.INVALID_PARAMS)
+    }
+
+    await this.core.wallet.create(password)
+    await this.core.auth.clearNewUserFlag()
+    const walletInfo = await this.core.wallet.getInfo()
+    return { wallet: walletInfo }
   }
 
   async recoverWallet(password: string): Promise<WalletResponse> {

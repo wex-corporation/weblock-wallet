@@ -12,14 +12,16 @@ export class WalletClient {
   constructor(private readonly client: HttpClient) {}
 
   async createWallet(request: CreateWalletRequest): Promise<void> {
-    await this.client.post(this.baseUrl, request)
+    await this.client.post(this.baseUrl, request, { needsAccessToken: true })
   }
 
   async getWallet(): Promise<WalletResponse> {
-    return this.client.get(this.baseUrl)
+    return this.client.get(this.baseUrl, { needsAccessToken: true })
   }
 
   async updateWalletKey(request: UpdateWalletKeyRequest): Promise<void> {
-    await this.client.patch(`${this.baseUrl}/keys`, request)
+    await this.client.patch(`${this.baseUrl}/keys`, request, {
+      needsAccessToken: true,
+    })
   }
 }
