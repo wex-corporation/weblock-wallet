@@ -63,12 +63,52 @@ export class AuthService {
 
   async signOut(): Promise<void> {
     await this.firebase.signOut()
-    await LocalForage.delete(`${this.orgHost}:firebaseId`)
-    await LocalForage.delete(`${this.orgHost}:accessToken`)
-    await LocalForage.delete(`${this.orgHost}:share2`)
+    await Promise.all([
+      LocalForage.delete(`${this.orgHost}:firebaseId`),
+      LocalForage.delete(`${this.orgHost}:accessToken`),
+      LocalForage.delete(`${this.orgHost}:encryptedShare2`),
+      LocalForage.delete(`${this.orgHost}:isNewUser`),
+    ])
   }
 
   async clearNewUserFlag(): Promise<void> {
-    await LocalForage.delete(`${this.orgHost}:isNewUser`)
+    await LocalForage.save(`${this.orgHost}:isNewUser`, false)
+  }
+
+  async isLoggedIn(): Promise<boolean> {
+    try {
+      const [firebaseId, accessToken] = await Promise.all([
+        LocalForage.get<string>(`${this.orgHost}:firebaseId`),
+        LocalForage.get<string>(`${this.orgHost}:accessToken`),
+      ])
+
+      return !!(firebaseId && accessToken)
+    } catch (error) {
+      console.error('Error checking login status:', error)
+      return false
+    }
+  }
+
+  async getAuthInfo(): Promise<{
+    firebaseId?: string
+    accessToken?: string
+    isNewUser?: boolean
+  }> {
+    try {
+      const [firebaseId, accessToken, isNewUser] = await Promise.all([
+        LocalForage.get<string>(`${this.orgHost}:firebaseId`),
+        LocalForage.get<string>(`${this.orgHost}:accessToken`),
+        LocalForage.get<boolean>(`${this.orgHost}:isNewUser`),
+      ])
+
+      return {
+        firebaseId: firebaseId ?? undefined,
+        accessToken: accessToken ?? undefined,
+        isNewUser: isNewUser ?? undefined,
+      }
+    } catch (error) {
+      console.error('Error getting auth info:', error)
+      return {}
+    }
   }
 }
