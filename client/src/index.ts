@@ -1,13 +1,12 @@
 import {
   SDKOptions,
   WalletInfo,
-  NetworkInfo,
   SignInResponse,
   WalletResponse,
-  SwitchNetworkResponse,
   TransferRequest,
   TransferResponse,
   AddNetworkRequest,
+  Transaction,
 } from './types'
 import { Core } from './core'
 import { UserModule, WalletModule, AssetModule } from './modules'
@@ -31,8 +30,8 @@ export class WeBlockSDK {
     this.core = new Core(options)
 
     const internalCore = this.core.getInternalCore()
-    this.userModule = new UserModule(options, internalCore)
     this.walletModule = new WalletModule(options, internalCore)
+    this.userModule = new UserModule(options, internalCore, this.walletModule)
     this.assetModule = new AssetModule(options, internalCore)
     this.networkModule = new NetworkModule(options, internalCore)
     this.initialized = true
@@ -90,9 +89,46 @@ export class WeBlockSDK {
       return this.walletModule.onWalletUpdate(callback)
     },
     onTransactionUpdate: (
-      callback: (tx: WalletInfo['recentTransactions'][0]) => void
+      callback: (tx: Transaction | undefined) => void
     ): (() => void) => {
       return this.walletModule.onTransactionUpdate(callback)
+    },
+    getBalance: (address: string, chainId: number): Promise<string> => {
+      return this.walletModule.getBalance(address, chainId)
+    },
+    getTransactionCount: (
+      address: string,
+      chainId: number
+    ): Promise<number> => {
+      return this.walletModule.getTransactionCount(address, chainId)
+    },
+    getBlockNumber: (chainId: number): Promise<number> => {
+      return this.walletModule.getBlockNumber(chainId)
+    },
+    sendRawTransaction: (
+      signedTx: string,
+      chainId: number
+    ): Promise<string> => {
+      return this.walletModule.sendRawTransaction(signedTx, chainId)
+    },
+    getTransactionReceipt: (txHash: string, chainId: number): Promise<any> => {
+      return this.walletModule.getTransactionReceipt(txHash, chainId)
+    },
+    getTransaction: (txHash: string, chainId: number): Promise<any> => {
+      return this.walletModule.getTransaction(txHash, chainId)
+    },
+    estimateGas: (txParams: any, chainId: number): Promise<number> => {
+      return this.walletModule.estimateGas(txParams, chainId)
+    },
+    getGasPrice: (chainId: number): Promise<string> => {
+      return this.walletModule.getGasPrice(chainId)
+    },
+    call: (
+      txParams: any,
+      blockParam: string | number,
+      chainId: number
+    ): Promise<string> => {
+      return this.walletModule.call(txParams, blockParam, chainId)
     },
   }
 
@@ -140,6 +176,43 @@ export class WeBlockSDK {
       reasons?: string[]
     }> => {
       return this.assetModule.checkSecurityTokenCompliance(params)
+    },
+
+    getTokenBalance: async (params: {
+      networkId: string
+      tokenAddress: string
+      walletAddress: string
+    }): Promise<string> => {
+      return this.assetModule.getTokenBalance(params)
+    },
+
+    approveToken: async (params: {
+      networkId: string
+      tokenAddress: string
+      spender: string
+      amount: string
+    }): Promise<string> => {
+      return this.assetModule.approveToken(params)
+    },
+
+    getAllowance: async (params: {
+      networkId: string
+      tokenAddress: string
+      owner: string
+      spender: string
+    }): Promise<string> => {
+      return this.assetModule.getAllowance(params)
+    },
+
+    getTokenInfo: async (params: {
+      networkId: string
+      tokenAddress: string
+    }): Promise<{
+      name: string
+      symbol: string
+      decimals: number
+    }> => {
+      return this.assetModule.getTokenInfo(params)
     },
   }
 }

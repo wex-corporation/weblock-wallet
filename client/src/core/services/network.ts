@@ -22,6 +22,7 @@ export class NetworkService {
         explorerUrl: network.explorerUrl,
       }))
     } catch (error) {
+      if (error instanceof SDKError) throw error
       throw new SDKError('Failed to get networks', SDKErrorCode.NETWORK_ERROR)
     }
   }
@@ -40,6 +41,7 @@ export class NetworkService {
     try {
       await this.userClient.registerBlockchain(params)
     } catch (error) {
+      if (error instanceof SDKError) throw error
       throw new SDKError(
         'Failed to register network',
         SDKErrorCode.NETWORK_ERROR

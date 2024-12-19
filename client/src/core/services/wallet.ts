@@ -4,14 +4,21 @@ import { WalletClient } from '../../clients/api/wallets'
 import { Secrets } from '../../utils/secrets'
 import { Crypto } from '../../utils/crypto'
 import { LocalForage } from '../../utils/storage'
-import { WalletInfo, NetworkInfo, SDKError, SDKErrorCode } from '../../types'
+import { SDKError, SDKErrorCode } from '../../types'
+import { RpcClient } from '../../clients/api/rpcs'
+import { RpcMethod } from '../../clients/types'
+import { Jwt } from '../../utils/jwt'
+import { NetworkService } from '../../core/services/network'
+import { Transaction, TransactionType, TransactionStatus } from '../../types'
 
 export class WalletService {
   private walletAddress: string | null = null
 
   constructor(
     private readonly walletClient: WalletClient,
-    private readonly orgHost: string
+    private readonly rpcClient: RpcClient,
+    private readonly orgHost: string,
+    private readonly networkService: NetworkService
   ) {}
 
   async create(password: string) {
@@ -92,32 +99,27 @@ export class WalletService {
     }
   }
 
-  async getInfo(): Promise<WalletInfo> {
-    return {
-      address: this.walletAddress || '',
-      network: {
-        current: {} as NetworkInfo,
-        available: [],
-      },
-      assets: {
-        native: {
-          symbol: '',
-          balance: '0',
-          decimals: 18,
-        },
-        tokens: [],
-        nfts: [],
-      },
-      recentTransactions: [],
+  async getAddress(): Promise<string> {
+    if (!this.walletAddress) {
+      throw new SDKError(
+        'No wallet address found',
+        SDKErrorCode.WALLET_NOT_FOUND
+      )
     }
-  }
-
-  async recover(password: string) {
-    return { wallet: await this.getInfo() }
+    return this.walletAddress
   }
 
   async retrieveWallet(password: string): Promise<string> {
     try {
+      const accessToken = await LocalForage.get<string>(
+        `${this.orgHost}:accessToken`
+      )
+      if (!accessToken) {
+        throw new SDKError('Access token not found', SDKErrorCode.AUTH_REQUIRED)
+      }
+
+      const exp = Jwt.parse(accessToken)?.exp
+
       console.log('1. Checking login status...')
       const firebaseId = await LocalForage.get<string>(
         `${this.orgHost}:firebaseId`
@@ -149,7 +151,7 @@ export class WalletService {
           console.log('6. Found encryptedShare2, decrypting...')
           share2 = Crypto.decryptShare(encryptedShare2, password, firebaseId)
           console.log('7. Saving decrypted share2...')
-          await LocalForage.save(`${this.orgHost}:share2`, share2)
+          await LocalForage.save(`${this.orgHost}:share2`, share2, exp)
         } else {
           console.log('8. No encryptedShare2, recovering using share3...')
           const share3 = Crypto.decryptShare(
@@ -184,6 +186,8 @@ export class WalletService {
           )
 
           console.log('14. Wallet recovered with share3:', wallet.address)
+          this.walletAddress = wallet.address
+          console.log('15. Wallet address set:', this.walletAddress)
           return wallet.address
         }
       }
@@ -202,6 +206,138 @@ export class WalletService {
         SDKErrorCode.WALLET_RECOVERY_FAILED,
         error
       )
+    }
+  }
+  async getBalance(address: string, chainId: number): Promise<string> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_GET_BALANCE,
+      params: [address, 'latest'],
+    })
+    return response.result
+  }
+
+  async getTransactionCount(address: string, chainId: number): Promise<number> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_GET_TRANSACTION_COUNT,
+      params: [address, 'latest'],
+    })
+    return parseInt(response.result, 16)
+  }
+
+  async getBlockNumber(chainId: number): Promise<number> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_BLOCK_NUMBER,
+      params: [],
+    })
+    return parseInt(response.result, 16)
+  }
+
+  async sendRawTransaction(signedTx: string, chainId: number): Promise<string> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_SEND_RAW_TRANSACTION,
+      params: [signedTx],
+    })
+    return response.result
+  }
+  async getTransactionReceipt(txHash: string, chainId: number): Promise<any> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_GET_TRANSACTION_RECEIPT,
+      params: [txHash],
+    })
+    return response.result
+  }
+
+  async getTransaction(txHash: string, chainId: number): Promise<any> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_GET_TRANSACTION_BY_HASH,
+      params: [txHash],
+    })
+    return response.result
+  }
+
+  async estimateGas(txParams: any, chainId: number): Promise<number> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_ESTIMATE_GAS,
+      params: [txParams],
+    })
+    return parseInt(response.result, 16)
+  }
+
+  async getGasPrice(chainId: number): Promise<string> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_GAS_PRICE,
+      params: [],
+    })
+    return response.result
+  }
+
+  async call(
+    txParams: any,
+    blockParam: string | number = 'latest',
+    chainId: number
+  ): Promise<string> {
+    const response = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_CALL,
+      params: [txParams, blockParam],
+    })
+    return response.result
+  }
+
+  async getLatestTransaction(
+    address: string,
+    chainId: number
+  ): Promise<Transaction | undefined> {
+    try {
+      // 1. 트랜잭션 카운트 조회
+      const txCount = await this.getTransactionCount(address, chainId)
+      if (txCount === 0) {
+        return undefined
+      }
+
+      // 2. 최근 블록 넘버 조회
+      const blockNumber = await this.getBlockNumber(chainId)
+
+      // 3. 해당 주소의 최근 트랜잭션 조회
+      const response = await this.rpcClient.sendRpc({
+        chainId,
+        method: RpcMethod.ETH_GET_TRANSACTION_BY_BLOCK_NUMBER_AND_INDEX,
+        params: [
+          `0x${blockNumber.toString(16)}`,
+          `0x${(txCount - 1).toString(16)}`,
+        ],
+      })
+
+      if (!response.result) {
+        return undefined
+      }
+
+      const tx = response.result
+      const currentNetwork = await this.networkService.getCurrentNetwork()
+
+      // 4. Transaction 객체로 변환
+      return {
+        hash: tx.hash,
+        type:
+          tx.from.toLowerCase() === address.toLowerCase()
+            ? TransactionType.SEND
+            : TransactionType.RECEIVE,
+        status: TransactionStatus.SUCCESS, // TODO: 실제 상태 확인 필요
+        timestamp: parseInt(tx.timestamp || Date.now().toString()),
+        value: tx.value,
+        symbol: currentNetwork?.symbol || '',
+      }
+    } catch (error) {
+      console.error('Failed to get latest transaction:', error)
+      return undefined
     }
   }
 }
