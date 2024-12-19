@@ -94,6 +94,11 @@ export default function Home() {
       if (result?.wallet) {
         setWalletAddress(result.wallet.address);
         setStatus("WALLET_READY");
+
+        const networks = await sdk?.network.getAvailableNetworks();
+        setNetworks(networks || []);
+        const current = await sdk?.network.getCurrentNetwork();
+        setCurrentNetwork(current || null);
       }
       setError(undefined);
     } catch (error) {
@@ -507,6 +512,134 @@ export default function Home() {
             >
               Sign Out
             </button>
+          </div>
+        )}
+
+        {/* WalletInfo JSON 표시 */}
+        {status === "WALLET_READY" && walletAddress && (
+          <div className="mt-6">
+            <div className="p-6 bg-white rounded-lg shadow-sm border">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                WalletInfo Response
+              </h2>
+              <pre className="bg-gray-50 p-4 rounded-lg overflow-auto text-sm">
+                {JSON.stringify(
+                  {
+                    address: walletAddress,
+                    network: {
+                      current: currentNetwork,
+                      available: networks,
+                    },
+                    assets: {
+                      native: {
+                        symbol: currentNetwork?.symbol || "ETH",
+                        balance: rpcResults.balance || "0",
+                        decimals: 18,
+                      },
+                      tokens: [],
+                      nfts: [],
+                      securities: [],
+                    },
+                    latestTransaction: null,
+                  },
+                  null,
+                  2
+                )}
+              </pre>
+            </div>
+          </div>
+        )}
+
+        {/* 예쁜 UI로 WalletInfo 표시 */}
+        {status === "WALLET_READY" && walletAddress && (
+          <div className="mt-6">
+            <div className="p-6 bg-white rounded-lg shadow-sm border">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                Wallet Dashboard
+              </h2>
+
+              {/* 지갑 주소 및 네트워크 정보 */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4 bg-blue-50 p-4 rounded-lg">
+                  <div>
+                    <p className="text-sm text-blue-600 font-medium">
+                      Wallet Address
+                    </p>
+                    <p className="font-mono text-sm">{walletAddress}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-blue-600 font-medium">
+                      Current Network
+                    </p>
+                    <p className="font-medium">
+                      {currentNetwork?.name || "Not Selected"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 자산 정보 */}
+              <div className="mb-6">
+                <h3 className="text-lg font-medium text-gray-700 mb-3">
+                  Assets
+                </h3>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-green-600 font-medium">
+                        Native Balance
+                      </p>
+                      <p className="text-2xl font-bold text-green-700">
+                        {rpcResults.balance || "0"}{" "}
+                        {currentNetwork?.symbol || "ETH"}
+                      </p>
+                    </div>
+                    <div className="bg-green-100 p-3 rounded-full">
+                      <svg
+                        className="w-6 h-6 text-green-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 네트워크 목록 */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-700 mb-3">
+                  Available Networks
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {networks.map((network) => (
+                    <div
+                      key={network.id}
+                      className={`p-3 rounded-lg border ${
+                        currentNetwork?.id === network.id
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200"
+                      }`}
+                    >
+                      <p className="font-medium">{network.name}</p>
+                      <p className="text-sm text-gray-500">
+                        Chain ID: {network.chainId}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {network.isTestnet ? "Testnet" : "Mainnet"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

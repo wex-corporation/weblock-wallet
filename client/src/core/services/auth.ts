@@ -3,6 +3,7 @@ import { UserClient } from '../../clients/api/users'
 import { LocalForage } from '../../utils/storage'
 import { WalletClient } from '@/clients/api/wallets'
 import { Jwt } from '../../utils/jwt'
+import { SignInStatus } from '@/index'
 
 export class AuthService {
   constructor(
@@ -36,22 +37,20 @@ export class AuthService {
     const savedIsNewUser = await LocalForage.get(`${this.orgHost}:isNewUser`)
     console.log('Saved isNewUser:', savedIsNewUser)
 
-    let status: 'NEW_USER' | 'WALLET_READY' | 'NEEDS_PASSWORD'
+    let status: SignInStatus
     if (isNewUser) {
-      status = 'NEW_USER'
+      status = SignInStatus.NEW_USER
     } else {
-      const walletInfo = await this.walletClient.getWallet()
-      if (!walletInfo) {
-        status = 'NEW_USER'
+      const encryptedShare2 = await LocalForage.get<string>(
+        `${this.orgHost}:encryptedShare2`
+      )
+      if (!encryptedShare2) {
+        status = SignInStatus.NEEDS_PASSWORD
       } else {
-        const encryptedShare2 = await LocalForage.get<string>(
-          `${this.orgHost}:encryptedShare2`
-        )
-        if (encryptedShare2) {
-          status = 'NEEDS_PASSWORD'
-        } else {
-          status = 'WALLET_READY'
-        }
+        const share2 = await LocalForage.get<string>(`${this.orgHost}:share2`)
+        status = share2
+          ? SignInStatus.WALLET_READY
+          : SignInStatus.NEEDS_PASSWORD
       }
     }
 

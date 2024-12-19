@@ -36,12 +36,14 @@ export class InternalCoreImpl implements InternalCore {
       walletClient,
       options.orgHost
     )
+    this.networkService = new NetworkService(userClient, options.orgHost)
     this.walletService = new WalletService(
       walletClient,
       rpcClient,
-      options.orgHost
+      options.orgHost,
+      this.networkService
     )
-    this.networkService = new NetworkService(userClient, options.orgHost)
+
     this.assetService = new AssetService(rpcClient, options.orgHost)
   }
 
@@ -54,7 +56,7 @@ export class InternalCoreImpl implements InternalCore {
   }
 
   wallet = {
-    getInfo: () => this.walletService.getInfo(),
+    getAddress: () => this.walletService.getAddress(),
     create: (password: string) => this.walletService.create(password),
     retrieveWallet: (password: string) =>
       this.walletService.retrieveWallet(password),
@@ -75,6 +77,8 @@ export class InternalCoreImpl implements InternalCore {
     getGasPrice: (chainId: number) => this.walletService.getGasPrice(chainId),
     call: (txParams: any, blockParam: string | number, chainId: number) =>
       this.walletService.call(txParams, blockParam, chainId),
+    getLatestTransaction: (address: string, chainId: number) =>
+      this.walletService.getLatestTransaction(address, chainId),
   }
 
   network = {

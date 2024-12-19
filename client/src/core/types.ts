@@ -1,12 +1,12 @@
 import { BlockchainRequest } from '@/clients/types'
 import {
-  WalletInfo,
   NetworkInfo,
   TokenAllowanceParams,
   TokenApprovalParams,
   TokenBalanceParams,
   TokenInfo,
   TokenInfoParams,
+  Transaction,
   TransferRequest,
   TransferResponse,
 } from '../types'
@@ -30,7 +30,7 @@ export interface InternalCore {
   }
 
   wallet: {
-    getInfo(): Promise<WalletInfo>
+    getAddress(): Promise<string>
     create(password: string): Promise<string>
     retrieveWallet(password: string): Promise<string>
     getBalance(address: string, chainId: number): Promise<string>
@@ -46,6 +46,10 @@ export interface InternalCore {
       blockParam: string | number,
       chainId: number
     ): Promise<string>
+    getLatestTransaction(
+      address: string,
+      chainId: number
+    ): Promise<Transaction | undefined>
   }
 
   network: {

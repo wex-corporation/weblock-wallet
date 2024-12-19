@@ -1,13 +1,12 @@
 import {
   SDKOptions,
   WalletInfo,
-  NetworkInfo,
   SignInResponse,
   WalletResponse,
-  SwitchNetworkResponse,
   TransferRequest,
   TransferResponse,
   AddNetworkRequest,
+  Transaction,
 } from './types'
 import { Core } from './core'
 import { UserModule, WalletModule, AssetModule } from './modules'
@@ -31,8 +30,8 @@ export class WeBlockSDK {
     this.core = new Core(options)
 
     const internalCore = this.core.getInternalCore()
-    this.userModule = new UserModule(options, internalCore)
     this.walletModule = new WalletModule(options, internalCore)
+    this.userModule = new UserModule(options, internalCore, this.walletModule)
     this.assetModule = new AssetModule(options, internalCore)
     this.networkModule = new NetworkModule(options, internalCore)
     this.initialized = true
@@ -90,7 +89,7 @@ export class WeBlockSDK {
       return this.walletModule.onWalletUpdate(callback)
     },
     onTransactionUpdate: (
-      callback: (tx: WalletInfo['recentTransactions'][0]) => void
+      callback: (tx: Transaction | undefined) => void
     ): (() => void) => {
       return this.walletModule.onTransactionUpdate(callback)
     },

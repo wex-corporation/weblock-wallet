@@ -4,12 +4,58 @@
  * SDK 초기화 옵션
  */
 export interface SDKOptions {
-  /** SDK 환경 설정 */
+  /** SDK 환경 설정 (local, dev, stage, prod) */
   environment: 'local' | 'dev' | 'stage' | 'prod'
   /** SDK API 키 */
   apiKey: string
-  /** 조직 호스트 주소 */
+  /** 허용 호스트 */
   orgHost: string
+}
+
+/**
+ * 토큰 타입
+ */
+export enum TokenType {
+  /** ERC20 토큰 */
+  ERC20 = 'ERC20',
+  /** 보안토큰 */
+  SECURITY = 'SECURITY',
+  /** 네이티브 토큰 */
+  NATIVE = 'NATIVE',
+}
+
+/**
+ * 트랜잭션 상태
+ */
+export enum TransactionStatus {
+  /** 처리 중 */
+  PENDING = 'PENDING',
+  /** 성공 */
+  SUCCESS = 'SUCCESS',
+  /** 실패 */
+  FAILED = 'FAILED',
+}
+
+/**
+ * 트랜잭션 타입
+ */
+export enum TransactionType {
+  /** 송금 */
+  SEND = 'SEND',
+  /** 수금 */
+  RECEIVE = 'RECEIVE',
+}
+
+/**
+ * 로그인 상태
+ */
+export enum SignInStatus {
+  /** 신규 사용자 */
+  NEW_USER = 'NEW_USER',
+  /** 지갑 준비됨 */
+  WALLET_READY = 'WALLET_READY',
+  /** 비밀번호 필요 */
+  NEEDS_PASSWORD = 'NEEDS_PASSWORD',
 }
 
 /**
@@ -17,65 +63,27 @@ export interface SDKOptions {
  */
 export interface NetworkInfo {
   /** 네트워크 고유 식별자 */
-  id: string // 'ethereum-mainnet', 'polygon-mainnet'
+  id: string
   /** 네트워크 표시 이름 */
-  name: string // 'Ethereum Mainnet', 'Polygon Mainnet'
+  name: string
   /** 체인 ID */
-  chainId: number // 1, 137
+  chainId: number
   /** 네트워크 기본 토큰 심볼 */
-  symbol: string // 'ETH', 'MATIC'
+  symbol: string
   /** RPC 엔드포인트 */
   rpcUrl: string
   /** 블록 익스플로러 URL */
   explorerUrl: string
   /** 테스트넷 여부 */
   isTestnet: boolean
-  /** 네트워크 아이콘 URL (옵션) */
+  /** 네트워크 아이콘 URL */
   icon?: string
-}
-
-/**
- * 지갑 정보
- */
-export interface WalletInfo {
-  /** 지갑 주소 */
-  address: string
-
-  /** 네트워크 정보 */
-  network: {
-    /** 현재 선택된 네트워크 */
-    current: NetworkInfo
-    /** 사용 가능한 네트워크 목록 */
-    available: NetworkInfo[]
-  }
-
-  /** 자산 정보 */
-  assets: {
-    /** 현재 네트워크의 기본 토큰 정보 */
-    native: {
-      symbol: string
-      balance: string
-      decimals: number
-      usdValue?: string
-    }
-
-    /** 토큰 목록 (ERC20, Security Token) */
-    tokens: TokenInfo[]
-
-    /** NFT 컬렉션 목록 */
-    nfts: NFTCollection[]
-  }
-
-  /** 최근 거래 내역 */
-  recentTransactions: Transaction[]
 }
 
 /**
  * 토큰 정보
  */
 export interface TokenInfo {
-  /** 토큰 타입 */
-  type: 'ERC20' | 'SECURITY'
   /** 토큰 심볼 */
   symbol: string
   /** 토큰 이름 */
@@ -86,19 +94,12 @@ export interface TokenInfo {
   balance: string | null
   /** 토큰 소수점 자리수 */
   decimals: number
-  /** USD 가치 (옵션) */
-  usdValue?: string
-  /** Security 토큰 컴플라이언스 정보 */
-  compliance?: {
-    isVerified: boolean
-    canTransfer: boolean
-  }
   /** 토큰 총 발행량 */
-  totalSupply?: string
+  totalSupply: string
 }
 
 /**
- * NFT 컬렉션 정보
+ * NFT 컬렉션 정보 (TODO: ERC721 구현 시 확장)
  */
 export interface NFTCollection {
   /** 컬렉션 이름 */
@@ -106,12 +107,37 @@ export interface NFTCollection {
   /** 컨트랙트 주소 */
   address: string
   /** 보유 중인 NFT 목록 */
-  tokens: {
+  tokens: Array<{
     /** 토큰 ID */
     tokenId: string
     /** NFT 이미지 URL */
     image?: string
-  }[]
+  }>
+}
+
+/**
+ * 보안토큰 정보 (TODO: ERC3643 구현 시 확장)
+ */
+export interface SecurityTokenInfo {
+  /** 토큰 심볼 */
+  symbol: string
+  /** 토큰 이름 */
+  name: string
+  /** 컨트랙트 주소 */
+  address: string
+  /** 토큰 잔액 */
+  balance: string | null
+  /** 토큰 소수점 자리수 */
+  decimals: number
+  /** 토큰 총 발행량 */
+  totalSupply: string
+  /** 컴플라이언스 정보 */
+  compliance: {
+    /** 검증 여부 */
+    isVerified: boolean
+    /** 전송 가능 여부 */
+    canTransfer: boolean
+  }
 }
 
 /**
@@ -121,9 +147,9 @@ export interface Transaction {
   /** 트랜잭션 해시 */
   hash: string
   /** 트랜잭션 타입 */
-  type: 'send' | 'receive'
+  type: TransactionType
   /** 트랜잭션 상태 */
-  status: 'pending' | 'confirmed' | 'failed'
+  status: TransactionStatus
   /** 트랜잭션 타임스탬프 */
   timestamp: number
   /** 거래 금액 */
@@ -133,11 +159,43 @@ export interface Transaction {
 }
 
 /**
+ * 지갑 정보
+ */
+export interface WalletInfo {
+  /** 지갑 주소 */
+  address: string
+  /** 네트워크 정보 */
+  network: {
+    /** 현재 선택된 네트워크 */
+    current: NetworkInfo | null
+    /** 사용 가능한 네트워크 목록 */
+    available: NetworkInfo[]
+  }
+  /** 자산 정보 */
+  assets: {
+    /** 현재 네트워크의 기본 토큰 정보 */
+    native: {
+      symbol: string
+      balance: string
+      decimals: number
+    }
+    /** ERC20 토큰 목록 */
+    tokens: TokenInfo[]
+    /** NFT 컬렉션 목록 (TODO) */
+    nfts: NFTCollection[]
+    /** 보안토큰 목록 (TODO) */
+    securities: SecurityTokenInfo[]
+  }
+  /** 최근 트랜잭션 */
+  latestTransaction?: Transaction
+}
+
+/**
  * 로그인 응답
  */
 export interface SignInResponse {
   /** 로그인 상태 */
-  status: 'NEW_USER' | 'WALLET_READY' | 'NEEDS_PASSWORD'
+  status: SignInStatus
   /** 사용자 이메일 */
   email: string
   /** 프로필 이미지 URL */
@@ -150,6 +208,7 @@ export interface SignInResponse {
  * 지갑 생성/복구 응답
  */
 export interface WalletResponse {
+  /** 지갑 정보 */
   wallet: WalletInfo
 }
 

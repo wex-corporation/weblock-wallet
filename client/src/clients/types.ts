@@ -119,4 +119,5 @@ export enum RpcMethod {
   ETH_GAS_PRICE = 'eth_gasPrice',
   ETH_BLOCK_NUMBER = 'eth_blockNumber',
   NET_VERSION = 'net_version',
+  ETH_GET_TRANSACTION_BY_BLOCK_NUMBER_AND_INDEX = 'ETH_GET_TRANSACTION_BY_BLOCK_NUMBER_AND_INDEX',
 }

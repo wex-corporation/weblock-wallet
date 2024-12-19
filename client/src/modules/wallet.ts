@@ -1,10 +1,4 @@
-import {
-  SDKOptions,
-  WalletInfo,
-  NetworkInfo,
-  SwitchNetworkResponse,
-  WalletResponse,
-} from '../types'
+import { SDKOptions, WalletInfo, SDKError, SDKErrorCode } from '../types'
 import { InternalCore } from '../core/types'
 
 export class WalletModule {
@@ -14,7 +8,98 @@ export class WalletModule {
   ) {}
 
   async getInfo(): Promise<WalletInfo> {
-    return this.core.wallet.getInfo()
+    try {
+      // 1. 로그인 상태 확인
+      console.log('1. 로그인 상태 확인 시작')
+      const isLoggedIn = await this.core.auth.isLoggedIn()
+      console.log('로그인 상태:', isLoggedIn)
+
+      if (!isLoggedIn) {
+        throw new SDKError('로그인이 필요합니다', SDKErrorCode.NOT_LOGGED_IN)
+      }
+
+      // 2. 지갑 주소 조회
+      console.log('2. 지갑 주소 조회 시작')
+      const address = await this.core.wallet.getAddress()
+      console.log('지갑 주소:', address)
+
+      if (!address) {
+        throw new SDKError(
+          '지갑 주소를 찾을 수 없습니다',
+          SDKErrorCode.WALLET_NOT_FOUND
+        )
+      }
+
+      // 3. 네트워크 정보 조회
+      console.log('3. 네트워크 정보 조회 시작')
+      const [currentNetwork, availableNetworks] = await Promise.all([
+        this.core.network.getCurrentNetwork(),
+        this.core.network.getRegisteredNetworks(),
+      ])
+      console.log('현재 네트워크:', currentNetwork)
+      console.log('사용 가능한 네트워크:', availableNetworks)
+
+      // 현재 네트워크가 없으면 기본 네트워크로 설정
+      if (!currentNetwork) {
+        const defaultNetwork =
+          availableNetworks.find((n) => !n.isTestnet) || availableNetworks[0]
+        await this.core.network.switchNetwork(defaultNetwork.id)
+        console.log('기본 네트워크로 설정:', defaultNetwork.name)
+      }
+
+      const network = await this.core.network.getCurrentNetwork()
+      if (!network) {
+        throw new SDKError(
+          '네트워크 전환 실패',
+          SDKErrorCode.NETWORK_SWITCH_FAILED
+        )
+      }
+
+      // 4. 네이티브 토큰 잔액 조회
+      console.log('4. 잔액 조회 시작')
+      const nativeBalance = await this.core.wallet.getBalance(
+        address,
+        network.chainId
+      )
+      console.log('네이티브 토큰 잔액:', nativeBalance)
+
+      // 5. 최근 트랜잭션 조회
+      console.log('5. 최근 트랜잭션 조회 시작')
+      const latestTransaction = await this.core.wallet.getLatestTransaction(
+        address,
+        network.chainId
+      )
+      console.log('최근 트랜잭션:', latestTransaction)
+
+      const walletInfo: WalletInfo = {
+        address,
+        network: {
+          current: network,
+          available: availableNetworks,
+        },
+        assets: {
+          native: {
+            symbol: network.symbol,
+            balance: nativeBalance,
+            decimals: 18,
+          },
+          tokens: [],
+          nfts: [],
+          securities: [],
+        },
+        latestTransaction,
+      }
+
+      console.log('6. 최종 지갑 정보:', walletInfo)
+      return walletInfo
+    } catch (error) {
+      console.error('지갑 정보 조회 중 에러 발생:', error)
+      throw new SDKError(
+        '지갑 정보 조회 실패',
+        SDKErrorCode.WALLET_RETRIEVAL_FAILED,
+        error
+      )
+    }
   }
   async getBalance(address: string, chainId: number): Promise<string> {
     return this.core.wallet.getBalance(address, chainId)
@@ -56,13 +141,13 @@ export class WalletModule {
     return this.core.wallet.call(txParams, blockParam, chainId)
   }
 
-  onWalletUpdate(callback: (wallet: WalletInfo) => void): () => void {
+  onWalletUpdate(_callback: (wallet: WalletInfo) => void): () => void {
     // 임시 구현: 나중에 이벤트 리스너 추가
     return () => {}
   }
 
   onTransactionUpdate(
-    callback: (tx: WalletInfo['recentTransactions'][0]) => void
+    _callback: (tx: WalletInfo['latestTransaction']) => void
   ): () => void {
     // 임시 구현: 나중에 이벤트 리스너 추가
     return () => {}

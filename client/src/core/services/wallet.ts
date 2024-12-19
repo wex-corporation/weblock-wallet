@@ -4,10 +4,12 @@ import { WalletClient } from '../../clients/api/wallets'
 import { Secrets } from '../../utils/secrets'
 import { Crypto } from '../../utils/crypto'
 import { LocalForage } from '../../utils/storage'
-import { WalletInfo, NetworkInfo, SDKError, SDKErrorCode } from '../../types'
+import { SDKError, SDKErrorCode } from '../../types'
 import { RpcClient } from '../../clients/api/rpcs'
 import { RpcMethod } from '../../clients/types'
 import { Jwt } from '../../utils/jwt'
+import { NetworkService } from '../../core/services/network'
+import { Transaction, TransactionType, TransactionStatus } from '../../types'
 
 export class WalletService {
   private walletAddress: string | null = null
@@ -15,7 +17,8 @@ export class WalletService {
   constructor(
     private readonly walletClient: WalletClient,
     private readonly rpcClient: RpcClient,
-    private readonly orgHost: string
+    private readonly orgHost: string,
+    private readonly networkService: NetworkService
   ) {}
 
   async create(password: string) {
@@ -96,28 +99,14 @@ export class WalletService {
     }
   }
 
-  async getInfo(): Promise<WalletInfo> {
-    return {
-      address: this.walletAddress || '',
-      network: {
-        current: {} as NetworkInfo,
-        available: [],
-      },
-      assets: {
-        native: {
-          symbol: '',
-          balance: '0',
-          decimals: 18,
-        },
-        tokens: [],
-        nfts: [],
-      },
-      recentTransactions: [],
+  async getAddress(): Promise<string> {
+    if (!this.walletAddress) {
+      throw new SDKError(
+        'No wallet address found',
+        SDKErrorCode.WALLET_NOT_FOUND
+      )
     }
-  }
-
-  async recover(password: string) {
-    return { wallet: await this.getInfo() }
+    return this.walletAddress
   }
 
   async retrieveWallet(password: string): Promise<string> {
@@ -197,6 +186,8 @@ export class WalletService {
           )
 
           console.log('14. Wallet recovered with share3:', wallet.address)
+          this.walletAddress = wallet.address
+          console.log('15. Wallet address set:', this.walletAddress)
           return wallet.address
         }
       }
@@ -299,5 +290,54 @@ export class WalletService {
       params: [txParams, blockParam],
     })
     return response.result
+  }
+
+  async getLatestTransaction(
+    address: string,
+    chainId: number
+  ): Promise<Transaction | undefined> {
+    try {
+      // 1. 트랜잭션 카운트 조회
+      const txCount = await this.getTransactionCount(address, chainId)
+      if (txCount === 0) {
+        return undefined
+      }
+
+      // 2. 최근 블록 넘버 조회
+      const blockNumber = await this.getBlockNumber(chainId)
+
+      // 3. 해당 주소의 최근 트랜잭션 조회
+      const response = await this.rpcClient.sendRpc({
+        chainId,
+        method: RpcMethod.ETH_GET_TRANSACTION_BY_BLOCK_NUMBER_AND_INDEX,
+        params: [
+          `0x${blockNumber.toString(16)}`,
+          `0x${(txCount - 1).toString(16)}`,
+        ],
+      })
+
+      if (!response.result) {
+        return undefined
+      }
+
+      const tx = response.result
+      const currentNetwork = await this.networkService.getCurrentNetwork()
+
+      // 4. Transaction 객체로 변환
+      return {
+        hash: tx.hash,
+        type:
+          tx.from.toLowerCase() === address.toLowerCase()
+            ? TransactionType.SEND
+            : TransactionType.RECEIVE,
+        status: TransactionStatus.SUCCESS, // TODO: 실제 상태 확인 필요
+        timestamp: parseInt(tx.timestamp || Date.now().toString()),
+        value: tx.value,
+        symbol: currentNetwork?.symbol || '',
+      }
+    } catch (error) {
+      console.error('Failed to get latest transaction:', error)
+      return undefined
+    }
   }
 }
