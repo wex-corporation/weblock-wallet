@@ -8,12 +8,13 @@ on:
 
 jobs:
   publish:
-    # PR이 머지됐을 때만 실행
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # 전체 히스토리 가져오기
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -32,24 +33,18 @@ jobs:
         working-directory: ./client
         run: npm run build
 
-      - name: Version bump
+      - name: Version bump and publish
         working-directory: ./client
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Actions"
 
-          # 현재 배포된 최신 버전 확인
-          CURRENT_VERSION=$(npm view @wefunding-dev/wallet version || echo "0.0.0")
-          echo "Current published version: $CURRENT_VERSION"
-
-          # package.json 버전 업데이트 및 태그 생성
-          npm version patch -m "Bump version to %s [skip ci]"
+          # 버전 업데이트 및 배포
+          npm version patch
+          npm publish
 
           # 변경사항 푸시
           git push origin HEAD:develop --follow-tags
-
-      - name: Publish
-        working-directory: ./client
-        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
