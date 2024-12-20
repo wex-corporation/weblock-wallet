@@ -6,6 +6,10 @@ on:
     branches:
       - develop
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   publish:
     if: github.event.pull_request.merged == true
@@ -14,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # 전체 히스토리 가져오기
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -33,18 +37,25 @@ jobs:
         working-directory: ./client
         run: npm run build
 
-      - name: Version bump and publish
+      - name: Update version
+        working-directory: ./client
+        run: |
+          # package.json의 버전을 패치 버전으로 증가
+          npm version patch --no-git-tag-version
+          echo "New version: $(node -p "require('./package.json').version")"
+
+      - name: Publish package
+        working-directory: ./client
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+
+      - name: Commit and push changes
         working-directory: ./client
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Actions"
 
-          # 버전 업데이트 및 배포
-          npm version patch
-          npm publish
-
-          # 변경사항 푸시
-          git push origin HEAD:develop --follow-tags
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git add package.json
+          git commit -m "chore: bump version [skip ci]"
+          git push origin HEAD:develop
