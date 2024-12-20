@@ -73,6 +73,7 @@ export class AuthService {
       LocalForage.delete(`${this.orgHost}:encryptedShare2`),
       LocalForage.delete(`${this.orgHost}:isNewUser`),
       LocalForage.delete(`${this.orgHost}:share2`),
+      LocalForage.delete(`${this.orgHost}:walletAddress`),
     ])
   }
 

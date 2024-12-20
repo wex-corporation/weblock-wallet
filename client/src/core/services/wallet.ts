@@ -100,13 +100,28 @@ export class WalletService {
   }
 
   async getAddress(): Promise<string> {
-    if (!this.walletAddress) {
+    try {
+      // 1. 먼저 저장된 주소가 있는지 확인
+      const savedAddress = await LocalForage.get<string>('walletAddress')
+      if (savedAddress) return savedAddress
+
+      // 2. 없다면 서버에서 조회 시도
+      const walletInfo = await this.walletClient.getWallet()
+      if (walletInfo?.address) {
+        await LocalForage.save('walletAddress', walletInfo.address)
+        return walletInfo.address
+      }
+
+      // 3. 그래도 없다면 에러
+      throw new SDKError('wallet not found', SDKErrorCode.WALLET_NOT_FOUND)
+    } catch (error) {
+      if (error instanceof SDKError) throw error
       throw new SDKError(
-        'No wallet address found',
-        SDKErrorCode.WALLET_NOT_FOUND
+        'Failed to get wallet address',
+        SDKErrorCode.WALLET_RECOVERY_FAILED,
+        error
       )
     }
-    return this.walletAddress
   }
 
   async retrieveWallet(password: string): Promise<string> {
