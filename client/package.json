@@ -1,7 +1,16 @@
 {
-  "name": "@weblock-wallet/sdk",
+  "name": "@wefunding-dev/wallet",
   "version": "0.0.1",
   "description": "WeBlock Wallet SDK for Web3 wallet integration",
+  "private": false,
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wefunding-dev/rwx-wallet.git"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

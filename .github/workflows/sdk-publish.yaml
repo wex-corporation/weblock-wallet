@@ -1,0 +1,46 @@
+name: SDK Publish Package
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - develop
+
+jobs:
+  publish:
+    # PR이 머지됐을 때만 실행
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@wefunding-dev"
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+
+      - name: Build
+        working-directory: ./client
+        run: npm run build
+
+      - name: Version bump
+        working-directory: ./client
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
+          npm version patch -m "Bump version to %s [skip ci]"
+
+      - name: Publish
+        working-directory: ./client
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
