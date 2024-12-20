@@ -1,6 +1,5 @@
 "use client";
-
-import { WeBlockSDK, NetworkInfo } from "@weblock-wallet/sdk";
+import { WeBlockSDK, NetworkInfo } from "@wefunding-dev/wallet";
 import { useEffect, useState } from "react";
 
 const getStatusDisplay = (
