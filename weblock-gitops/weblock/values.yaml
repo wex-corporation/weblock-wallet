@@ -1,7 +1,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-name: weblock-wallet
+name: wallet
 namespace: prod
 env: prod
 image:
