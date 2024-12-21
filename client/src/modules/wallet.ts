@@ -1,4 +1,10 @@
-import { SDKOptions, WalletInfo, SDKError, SDKErrorCode } from '../types'
+import {
+  SDKOptions,
+  WalletInfo,
+  SDKError,
+  SDKErrorCode,
+  TokenBalance,
+} from '../types'
 import { InternalCore } from '../core/types'
 
 export class WalletModule {
@@ -101,7 +107,7 @@ export class WalletModule {
       )
     }
   }
-  async getBalance(address: string, chainId: number): Promise<string> {
+  async getBalance(address: string, chainId: number): Promise<TokenBalance> {
     return this.core.wallet.getBalance(address, chainId)
   }
 

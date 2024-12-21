@@ -3,6 +3,7 @@ import {
   NetworkInfo,
   TokenAllowanceParams,
   TokenApprovalParams,
+  TokenBalance,
   TokenBalanceParams,
   TokenInfo,
   TokenInfoParams,
@@ -33,7 +34,7 @@ export interface InternalCore {
     getAddress(): Promise<string>
     create(password: string): Promise<string>
     retrieveWallet(password: string): Promise<string>
-    getBalance(address: string, chainId: number): Promise<string>
+    getBalance(address: string, chainId: number): Promise<TokenBalance>
     getTransactionCount(address: string, chainId: number): Promise<number>
     getBlockNumber(chainId: number): Promise<number>
     sendRawTransaction(signedTx: string, chainId: number): Promise<string>

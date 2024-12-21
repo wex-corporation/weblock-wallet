@@ -78,6 +78,22 @@ export interface NetworkInfo {
   isTestnet: boolean
   /** 네트워크 아이콘 URL */
   icon?: string
+  /** 네트워크 기본 토큰 소수점 자리수 */
+  decimals: number
+}
+
+/**
+ * 토큰 잔액 정보
+ */
+export interface TokenBalance {
+  /** 원본 값 (Wei) */
+  raw: string
+  /** 변환된 값 */
+  formatted: string
+  /** 소수점 자리수 */
+  decimals: number
+  /** 토큰 심볼 */
+  symbol: string
 }
 
 /**
@@ -91,11 +107,11 @@ export interface TokenInfo {
   /** 컨트랙트 주소 */
   address: string
   /** 토큰 잔액 */
-  balance: string | null
+  balance: TokenBalance
   /** 토큰 소수점 자리수 */
   decimals: number
   /** 토큰 총 발행량 */
-  totalSupply: string
+  totalSupply: TokenBalance
 }
 
 /**
@@ -176,14 +192,14 @@ export interface WalletInfo {
     /** 현재 네트워크의 기본 토큰 정보 */
     native: {
       symbol: string
-      balance: string
+      balance: TokenBalance
       decimals: number
     }
     /** ERC20 토큰 목록 */
     tokens: TokenInfo[]
-    /** NFT 컬렉션 목록 (TODO) */
+    /** NFT 컬렉션 목록 */
     nfts: NFTCollection[]
-    /** 보안토큰 목록 (TODO) */
+    /** 보안토큰 목록 */
     securities: SecurityTokenInfo[]
   }
   /** 최근 트랜잭션 */
