@@ -7,6 +7,7 @@ import {
   TransferResponse,
   AddNetworkRequest,
   Transaction,
+  TokenBalance,
 } from './types'
 import { Core } from './core'
 import { UserModule, WalletModule, AssetModule } from './modules'
@@ -93,7 +94,7 @@ export class WeBlockSDK {
     ): (() => void) => {
       return this.walletModule.onTransactionUpdate(callback)
     },
-    getBalance: (address: string, chainId: number): Promise<string> => {
+    getBalance: (address: string, chainId: number): Promise<TokenBalance> => {
       return this.walletModule.getBalance(address, chainId)
     },
     getTransactionCount: (
@@ -219,3 +220,5 @@ export class WeBlockSDK {
 
 export default WeBlockSDK
 export * from './types'
+export { TokenAmount, DECIMALS } from './utils/numbers'
+export type { TokenBalance } from './types'

@@ -4,12 +4,14 @@ import { WalletClient } from '../../clients/api/wallets'
 import { Secrets } from '../../utils/secrets'
 import { Crypto } from '../../utils/crypto'
 import { LocalForage } from '../../utils/storage'
-import { SDKError, SDKErrorCode } from '../../types'
+import { SDKError, SDKErrorCode, TokenBalance } from '../../types'
 import { RpcClient } from '../../clients/api/rpcs'
 import { RpcMethod } from '../../clients/types'
 import { Jwt } from '../../utils/jwt'
 import { NetworkService } from '../../core/services/network'
 import { Transaction, TransactionType, TransactionStatus } from '../../types'
+import { TokenAmount } from '../../utils/numbers'
+import { DECIMALS } from '../../utils/numbers'
 
 export class WalletService {
   private walletAddress: string | null = null
@@ -223,13 +225,22 @@ export class WalletService {
       )
     }
   }
-  async getBalance(address: string, chainId: number): Promise<string> {
+  async getBalance(address: string, chainId: number): Promise<TokenBalance> {
     const response = await this.rpcClient.sendRpc({
       chainId,
       method: RpcMethod.ETH_GET_BALANCE,
       params: [address, 'latest'],
     })
-    return response.result
+
+    const network = await this.networkService.getCurrentNetwork()
+    const decimals = network?.decimals || DECIMALS.ETH
+
+    return {
+      raw: response.result,
+      formatted: TokenAmount.format(response.result, decimals),
+      decimals,
+      symbol: network?.symbol || 'ETH',
+    }
   }
 
   async getTransactionCount(address: string, chainId: number): Promise<number> {
