@@ -120,3 +120,4 @@ spring:
     activate:
       on-profile: docker-compose
 
+
