@@ -1,16 +1,6 @@
-FROM gradle:8.3-jdk17 as build
+FROM amazoncorretto:17-al2023-headless
 
-WORKDIR /workspace
-
-COPY server/ .
-RUN cd wallet
-# RUN gradle spotlessApply
-RUN gradle clean build
-RUN gradle build
-
-FROM openjdk:17-jdk-slim
-
-COPY --from=build /workspace/wallet/build/libs/wallet-0.0.1.jar wallet-0.0.1-SNAPSHOT.jar
+COPY /server/wallet/build/libs/wallet-0.0.1.jar wallet-0.0.1-SNAPSHOT.jar
 COPY ./entrypoint.sh ./entrypoint.sh
 
 RUN chmod +x ./entrypoint.sh

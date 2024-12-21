@@ -1,0 +1,104 @@
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+name: weblock-wallet
+namespace: prod
+env: prod
+image:
+  repository: 864981744671.dkr.ecr.ap-northeast-2.amazonaws.com/weblock
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "634b04a-12394946316"
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+serviceAccount:
+  create: true
+  annotations: {}
+  name: "wallet"
+podAnnotations: {}
+podSecurityContext: {}
+# fsGroup: 2000
+
+securityContext: {}
+# capabilities:
+#   drop:
+#   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+containers:
+  port: 8080
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  # kubernetes.io/ingress.class: nginx
+  # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: "*"
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+resources: {}
+# We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you do want to specify resources, uncomment the following
+# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+# limits:
+#   cpu: 1
+#   memory: 2Gi
+# requests:
+#   cpu: 1
+#   memory: 2Gi
+
+replicaCount: 1
+strategy:
+  type: RollingUpdate
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  # targetMemoryUtilizationPercentage: 60
+healthcheck:
+  path: "/api/actuator/health"
+  initialDelaySeconds: 60
+  timeoutSeconds: 10
+  failureThreshold: 5
+nodeSelector: {}
+tolerations: []
+affinity: {}
+host:
+  name: api-wallet.weblock.land
+istio:
+  gateway:
+    port:
+      name: http2
+      number: 80
+      protocol: HTTP
+  app: istio-ingress
+  istio: ingress
+outlierDetection:
+  baseEjectionTime: 30s
+  consecutive5xxErrors: 3
+  interval: 20s
+  maxEjectionPercent: 100
+  minHealthPercent: 0
+  # 20초 이내에 3번 연속 5xx가 발생하면 해당 서비스들 모든 pods로 트래픽을 30초동안 전달하지않도록 한다.
+pdb:
+  minAvailable: 1
+connectionPool:
+  tcp:
+    connectTimeout: 3s
+timeout: 30s
+AuthorizationPolicy:
+  create: false
+secretsManager: "weblock-wallet"
