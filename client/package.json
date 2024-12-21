@@ -36,7 +36,8 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,md}\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "publish:npm": "node scripts/prepare-npm.js && npm publish --access public && git restore package.json"
   },
   "dependencies": {
     "@noble/ed25519": "^2.1.0",
