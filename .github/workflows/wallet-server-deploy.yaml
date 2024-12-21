@@ -87,7 +87,7 @@ jobs:
         run: |
           cd server
           chmod +x ./gradlew
-          ./gradlew -x test --no-daemon --parallel
+          ./gradlew build -x test --no-daemon --parallel
 
       - name: Build and push
         uses: docker/build-push-action@v6
