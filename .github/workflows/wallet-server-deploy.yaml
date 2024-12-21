@@ -15,7 +15,7 @@ jobs:
     runs-on:
       - ubuntu-latest
     env:
-      DEPLOY_GITOPS_REPO: "wefunding-dev/weblock-backend"
+      DEPLOY_GITOPS_REPO: "wefunding-dev/rwx-wallet"
       ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
       ECR_REPOSITORY: weblock
       AWS_REGION: ap-northeast-2
