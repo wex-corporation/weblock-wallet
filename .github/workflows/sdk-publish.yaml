@@ -1,0 +1,61 @@
+name: SDK Publish Package
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - develop
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  publish:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@wefunding-dev"
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+
+      - name: Build
+        working-directory: ./client
+        run: npm run build
+
+      - name: Update version
+        working-directory: ./client
+        run: |
+          # package.json의 버전을 패치 버전으로 증가
+          npm version patch --no-git-tag-version
+          echo "New version: $(node -p "require('./package.json').version")"
+
+      - name: Publish package
+        working-directory: ./client
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+
+      - name: Commit and push changes
+        working-directory: ./client
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
+
+          git add package.json
+          git commit -m "chore: bump version [skip ci]"
+          git push origin HEAD:develop
