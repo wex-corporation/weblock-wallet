@@ -45,6 +45,7 @@ Thumbs.db
 *.js
 *.js.map
 *.d.ts
+!scripts/*.js
 
 # Environment files
 .env
