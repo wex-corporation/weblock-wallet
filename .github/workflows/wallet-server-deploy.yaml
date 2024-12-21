@@ -85,7 +85,7 @@ jobs:
       
       - name: Build with Gradle
         run: |
-          cd server/wallet
+          cd server
           chmod +x ./gradlew
           ./gradlew -x test --no-daemon --parallel
 
