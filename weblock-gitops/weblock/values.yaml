@@ -2,7 +2,7 @@
 # Declare variables to be passed into your templates.
 
 name: wallet
-namespace: prod
+namespace: wallet
 env: prod
 image:
   repository: 864981744671.dkr.ecr.ap-northeast-2.amazonaws.com/weblock
