@@ -82,7 +82,7 @@ istio:
   gateway:
     port:
       name: http2
-      number: 80
+      number: 443
       protocol: HTTP
   app: istio-ingress
   istio: ingress
