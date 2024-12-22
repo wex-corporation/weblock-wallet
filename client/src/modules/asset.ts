@@ -20,6 +20,14 @@ export class AssetModule {
     return this.core.asset.transfer(params)
   }
 
+  on(event: string, listener: (...args: any[]) => void): void {
+    this.core.asset.on(event, listener)
+  }
+
+  off(event: string, listener: (...args: any[]) => void): void {
+    this.core.asset.off(event, listener)
+  }
+
   async addToken(params: {
     type: 'ERC20' | 'SECURITY'
     networkId: string

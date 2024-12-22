@@ -215,6 +215,13 @@ export class WeBlockSDK {
     // }> => {
     //   return this.assetModule.getTokenInfo(params)
     // },
+
+    on: (event: string, listener: (...args: any[]) => void): void => {
+      this.assetModule.on(event, listener)
+    },
+    off: (event: string, listener: (...args: any[]) => void): void => {
+      this.assetModule.off(event, listener)
+    },
   }
 }
 

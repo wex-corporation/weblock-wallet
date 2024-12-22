@@ -70,7 +70,6 @@ export interface InternalCore {
       decimals?: number
       name?: string
     }) => Promise<void>
-    // New ERC20 methods
     getTokenBalance: (params: TokenBalanceParams) => Promise<string>
     approveToken: (params: TokenApprovalParams) => Promise<string>
     getAllowance: (params: TokenAllowanceParams) => Promise<string>
@@ -87,5 +86,7 @@ export interface InternalCore {
     //   to: string
     //   amount: string
     // }) => Promise<{ canTransfer: boolean; reasons?: string[] }>
+    on(event: string, listener: (...args: any[]) => void): void
+    off(event: string, listener: (...args: any[]) => void): void
   }
 }
