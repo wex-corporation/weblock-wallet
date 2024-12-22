@@ -1,4 +1,4 @@
-import { WeBlockSDK, WalletInfo, SDKError } from "@leeddolddol/wallet";
+import { WeBlockSDK, WalletInfo, SDKError } from "@wefunding-dev/wallet";
 import { createContext, useContext, useState, ReactNode } from "react";
 
 interface WalletContextType {

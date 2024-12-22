@@ -1,12 +1,20 @@
 import { useState } from "react";
 import { useWallet } from "../contexts/WalletContext";
+import {
+  TransactionStatus,
+  TransactionStatusEvent,
+} from "@wefunding-dev/wallet";
 
 export function TransactionForm() {
   const { sdk, walletInfo, isConnected } = useWallet();
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
+  const [txStatus, setTxStatus] = useState<{
+    hash: string;
+    status: TransactionStatus;
+    error?: string;
+  } | null>(null);
 
   if (!isConnected || !walletInfo) {
     return null;
@@ -26,10 +34,35 @@ export function TransactionForm() {
         symbol: walletInfo.assets.native.symbol,
       });
 
-      setTxHash(response.transaction.hash);
+      // 초기 트랜잭션 상태 설정
+      setTxStatus({
+        hash: response.transaction.hash,
+        status: TransactionStatus.PENDING,
+      });
+
+      // 트랜잭션 상태 추적
+      sdk.asset.on(
+        "transactionStatusChanged",
+        (event: TransactionStatusEvent) => {
+          if (event.hash === response.transaction.hash) {
+            setTxStatus({
+              hash: event.hash,
+              status: event.status,
+              error: event.error,
+            });
+            if (event.status !== TransactionStatus.PENDING) {
+              setLoading(false);
+            }
+          }
+        }
+      );
     } catch (error) {
       console.error("Transfer failed:", error);
-    } finally {
+      setTxStatus({
+        hash: "",
+        status: TransactionStatus.FAILED,
+        error: error instanceof Error ? error.message : "Transfer failed",
+      });
       setLoading(false);
     }
   };
@@ -62,9 +95,15 @@ export function TransactionForm() {
         {loading ? "Sending..." : "Send"}
       </button>
 
-      {txHash && (
+      {txStatus && (
         <div className="text-sm">
-          Transaction Hash: <span className="font-mono">{txHash}</span>
+          <div>
+            Transaction Hash: <span className="font-mono">{txStatus.hash}</span>
+          </div>
+          <div>Status: {txStatus.status}</div>
+          {txStatus.error && (
+            <div className="text-red-500">Error: {txStatus.error}</div>
+          )}
         </div>
       )}
     </div>

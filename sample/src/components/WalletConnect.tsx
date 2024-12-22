@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useWallet } from "../contexts/WalletContext";
-import { SignInStatus } from "@leeddolddol/wallet";
+import { SignInStatus } from "@wefunding-dev/wallet";
 
 export function WalletConnect() {
   const {
