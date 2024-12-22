@@ -22,7 +22,8 @@ export function WalletInfo() {
       <div>
         <h3 className="font-bold">Balance</h3>
         <p>
-          {walletInfo.assets.native.balance} {walletInfo.assets.native.symbol}
+          {walletInfo.assets.native.balance?.toString() || "0"}{" "}
+          {walletInfo.assets.native.symbol}
         </p>
       </div>
 
@@ -32,7 +33,7 @@ export function WalletInfo() {
           <ul>
             {walletInfo.assets.tokens.map((token) => (
               <li key={token.address}>
-                {token.balance} {token.symbol}
+                {token.balance?.toString() || "0"} {token.symbol}
               </li>
             ))}
           </ul>

@@ -130,5 +130,9 @@ export class InternalCoreImpl implements InternalCore {
     //   to: string
     //   amount: string
     // }) => this.assetService.checkSecurityTokenCompliance(params),
+    on: (event: string, listener: (...args: any[]) => void) =>
+      this.assetService.on(event, listener),
+    off: (event: string, listener: (...args: any[]) => void) =>
+      this.assetService.off(event, listener),
   }
 }
