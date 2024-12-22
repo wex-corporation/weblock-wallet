@@ -44,7 +44,12 @@ export class InternalCoreImpl implements InternalCore {
       this.networkService
     )
 
-    this.assetService = new AssetService(rpcClient, options.orgHost)
+    this.assetService = new AssetService(
+      rpcClient,
+      this.walletService,
+      this.networkService,
+      options.orgHost
+    )
   }
 
   auth = {
@@ -111,19 +116,19 @@ export class InternalCoreImpl implements InternalCore {
     getAllowance: (params: TokenAllowanceParams) =>
       this.assetService.getAllowance(params),
 
-    getTokenInfo: (params: TokenInfoParams) =>
-      this.assetService.getTokenInfo(params),
+    // getTokenInfo: (params: TokenInfoParams) =>
+    //   this.assetService.getTokenInfo(params),
     addNFTCollection: (params: {
       networkId: string
       address: string
       name?: string
     }) => this.assetService.addNFTCollection(params),
-    checkSecurityTokenCompliance: (params: {
-      networkId: string
-      tokenAddress: string
-      from: string
-      to: string
-      amount: string
-    }) => this.assetService.checkSecurityTokenCompliance(params),
+    // checkSecurityTokenCompliance: (params: {
+    //   networkId: string
+    //   tokenAddress: string
+    //   from: string
+    //   to: string
+    //   amount: string
+    // }) => this.assetService.checkSecurityTokenCompliance(params),
   }
 }

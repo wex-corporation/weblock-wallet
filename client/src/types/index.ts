@@ -298,4 +298,42 @@ export interface TokenInfoParams {
   tokenAddress: string
 }
 
+export interface SendTransactionParams {
+  to: string
+  value: string
+  data?: string
+  chainId: number
+  gasLimit?: string
+  gasPrice?: string
+  nonce?: number
+}
+
+export interface TransactionReceipt {
+  transactionHash: string
+  transactionIndex: string
+  blockHash: string
+  blockNumber: string
+  from: string
+  to: string
+  cumulativeGasUsed: string
+  gasUsed: string
+  contractAddress: string | null
+  logs: Array<Log>
+  status: string // '0x1' for success, '0x0' for failure
+  logsBloom: string
+  effectiveGasPrice?: string
+}
+
+interface Log {
+  address: string
+  topics: string[]
+  data: string
+  blockNumber: string
+  transactionHash: string
+  transactionIndex: string
+  blockHash: string
+  logIndex: string
+  removed: boolean
+}
+
 export * from './error'
