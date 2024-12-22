@@ -18,8 +18,9 @@ export class NetworkService {
         rpcUrl: network.rpcUrl,
         chainId: network.chainId,
         isTestnet: network.isTestnet,
-        symbol: network.currencySymbol,
-        explorerUrl: network.explorerUrl,
+        symbol: network.currencySymbol || '',
+        explorerUrl: network.explorerUrl || '',
+        decimals: network.currencyDecimals || 18,
       }))
     } catch (error) {
       if (error instanceof SDKError) throw error

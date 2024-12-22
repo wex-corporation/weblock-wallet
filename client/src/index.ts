@@ -166,18 +166,18 @@ export class WeBlockSDK {
       return this.assetModule.addNFTCollection(params)
     },
 
-    checkSecurityTokenCompliance: async (params: {
-      networkId: string
-      tokenAddress: string
-      from: string
-      to: string
-      amount: string
-    }): Promise<{
-      canTransfer: boolean
-      reasons?: string[]
-    }> => {
-      return this.assetModule.checkSecurityTokenCompliance(params)
-    },
+    // checkSecurityTokenCompliance: async (params: {
+    //   networkId: string
+    //   tokenAddress: string
+    //   from: string
+    //   to: string
+    //   amount: string
+    // }): Promise<{
+    //   canTransfer: boolean
+    //   reasons?: string[]
+    // }> => {
+    //   return this.assetModule.checkSecurityTokenCompliance(params)
+    // },
 
     getTokenBalance: async (params: {
       networkId: string
@@ -205,16 +205,16 @@ export class WeBlockSDK {
       return this.assetModule.getAllowance(params)
     },
 
-    getTokenInfo: async (params: {
-      networkId: string
-      tokenAddress: string
-    }): Promise<{
-      name: string
-      symbol: string
-      decimals: number
-    }> => {
-      return this.assetModule.getTokenInfo(params)
-    },
+    // getTokenInfo: async (params: {
+    //   networkId: string
+    //   tokenAddress: string
+    // }): Promise<{
+    //   name: string
+    //   symbol: string
+    //   decimals: number
+    // }> => {
+    //   return this.assetModule.getTokenInfo(params)
+    // },
   }
 }
 

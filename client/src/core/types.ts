@@ -74,18 +74,18 @@ export interface InternalCore {
     getTokenBalance: (params: TokenBalanceParams) => Promise<string>
     approveToken: (params: TokenApprovalParams) => Promise<string>
     getAllowance: (params: TokenAllowanceParams) => Promise<string>
-    getTokenInfo: (params: TokenInfoParams) => Promise<TokenInfo>
+    // getTokenInfo: (params: TokenInfoParams) => Promise<TokenInfo>
     addNFTCollection: (params: {
       networkId: string
       address: string
       name?: string
     }) => Promise<void>
-    checkSecurityTokenCompliance: (params: {
-      networkId: string
-      tokenAddress: string
-      from: string
-      to: string
-      amount: string
-    }) => Promise<{ canTransfer: boolean; reasons?: string[] }>
+    // checkSecurityTokenCompliance: (params: {
+    //   networkId: string
+    //   tokenAddress: string
+    //   from: string
+    //   to: string
+    //   amount: string
+    // }) => Promise<{ canTransfer: boolean; reasons?: string[] }>
   }
 }
