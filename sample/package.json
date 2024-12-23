@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@leeddolddol/wallet": "^0.1.0",
     "@wefunding-dev/wallet": "^0.1.12",
     "next": "15.1.1",
     "react": "^19.0.0",
