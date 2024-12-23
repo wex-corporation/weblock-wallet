@@ -25,11 +25,11 @@ export class HttpClient {
       case 'local':
         return 'http://localhost:8080'
       case 'dev':
-        return 'https://dev.api.example.com'
+        return 'https://api-wallet.weblock.land'
       case 'stage':
         return 'https://stage.api.example.com'
       case 'prod':
-        return 'https://api.example.com'
+        return 'https://api-wallet.weblock.land'
       default:
         throw new Error('Invalid environment')
     }
