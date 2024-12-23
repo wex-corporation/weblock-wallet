@@ -340,31 +340,18 @@ export class WalletService {
     chainId: number
   ): Promise<Transaction | undefined> {
     try {
-      const blockNumber = await this.rpcClient.sendRpc({
+      // 단순히 nonce 값으로 최근 트랜잭션 여부만 확인
+      const nonce = await this.rpcClient.sendRpc({
         chainId,
-        method: RpcMethod.ETH_BLOCK_NUMBER,
-        params: [],
+        method: RpcMethod.ETH_GET_TRANSACTION_COUNT,
+        params: [address, 'latest'],
       })
 
-      const response = await this.rpcClient.sendRpc({
-        chainId,
-        method: RpcMethod.ETH_GET_LOGS,
-        params: [
-          {
-            fromBlock: parseInt(blockNumber.result, 16) - 100,
-            toBlock: 'latest',
-            address: [address],
-          },
-        ],
-      })
-
-      if (!response.result || response.result.length === 0) {
+      if (!nonce.result || nonce.result === '0x0') {
         return undefined
       }
-
-      const latestLog = response.result[response.result.length - 1]
       return {
-        hash: latestLog.transactionHash,
+        hash: '',
         status: TransactionStatus.SUCCESS,
         timestamp: Date.now(),
         value: '0',
