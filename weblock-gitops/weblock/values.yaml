@@ -7,7 +7,7 @@ env: prod
 image:
   repository: 864981744671.dkr.ecr.ap-northeast-2.amazonaws.com/weblock
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "fa23fd3-12460493244"
+  tag: "80c6939-12464652421"
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
@@ -69,7 +69,7 @@ autoscaling:
   targetCPUUtilizationPercentage: 70
   # targetMemoryUtilizationPercentage: 60
 healthcheck:
-  path: "/api/actuator/health"
+  path: "/actuator/health"
   initialDelaySeconds: 60
   timeoutSeconds: 10
   failureThreshold: 5

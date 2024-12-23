@@ -17,8 +17,8 @@ app:
   name: weblock-wallet
   auth:
     # EdDSA-ed25519 PrivateKey base64url encoded
-    secret-key: D2298273D66FC14C4BC3E3E4F7A72BEBAAB05895242F6C50ADD1AEC3AE4423E5
-    public-key: MCowBQYDK2VwAyEAa-TJ-rXBwz5JW5pXMrqPSUHOTzUKC7HVafU5dR_XJdw=
+    secret-key: MC4CAQAwBQYDK2VwBCIEIECoDobSjKJOiQvLVUdsjXIv7LdT9bh0S011y_Tp2Rkj
+    public-key: MCowBQYDK2VwAyEAmzzEyhFkjZxi8mJK0lZQD_dSN71HjBEA9nWXA-rh79s
   encryptor:
     # AES Key: openssl rand -hex 32 | xxd -r -p | base64
     secret-key: rYZWqLrayup0sk2t/bOANi4m4P3PlBOiDqKaY1f9jhI=
@@ -58,7 +58,7 @@ management:
 spring:
   config:
     activate:
-      on-profile: local
+      on-profile: prod
   r2dbc:
     url: r2dbc:postgresql://weblock-wallet.cficaug2arwh.ap-northeast-2.rds.amazonaws.com:5432/weblockwallet
     username: root
@@ -81,8 +81,8 @@ app:
   auth:
     # EdDSA-ed25519 PrivateKey base64url encoded
     # publicKey: MCowBQYDK2VwAyEAa-TJ-rXBwz5JW5pXMrqPSUHOTzUKC7HVafU5dR_XJdw=
-    secret-key: D2298273D66FC14C4BC3E3E4F7A72BEBAAB05895242F6C50ADD1AEC3AE4423E5
-    public-key: MCowBQYDK2VwAyEAa-TJ-rXBwz5JW5pXMrqPSUHOTzUKC7HVafU5dR_XJdw=
+    secret-key: MC4CAQAwBQYDK2VwBCIEIECoDobSjKJOiQvLVUdsjXIv7LdT9bh0S011y_Tp2Rkj
+    public-key: MCowBQYDK2VwAyEAmzzEyhFkjZxi8mJK0lZQD_dSN71HjBEA9nWXA-rh79s
   encryptor:
     # AES Key: openssl rand -hex 32 | xxd -r -p | base64
     secret-key: sYP932c7ry4OPY4rybZoC62DZaUuVQwhNQHKP1QXGyI=
@@ -90,13 +90,13 @@ logging:
   level:
     root: info
     org.springframework: debug
-    com.altech: debug
+    com.wefunding: debug
   file:
     name: application.log
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-  path: ./logs
+    path: ./logs
 
 ---
 spring:
