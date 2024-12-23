@@ -69,7 +69,7 @@ autoscaling:
   targetCPUUtilizationPercentage: 70
   # targetMemoryUtilizationPercentage: 60
 healthcheck:
-  path: "/api/actuator/health"
+  path: "/actuator/health"
   initialDelaySeconds: 60
   timeoutSeconds: 10
   failureThreshold: 5
