@@ -5,20 +5,20 @@ plugins {
 gradlePlugin {
     plugins {
         BasePluginDependency {
-            id = "com.alwallet.gradle.BasePluginDependency"
-            implementationClass = "com.alwallet.gradle.BasePluginDependency"
+            id = "com.wefunding.gradle.BasePluginDependency"
+            implementationClass = "com.wefunding.gradle.BasePluginDependency"
         }
         WebPluginDependency {
-            id = "com.alwallet.gradle.WebPluginDependency"
-            implementationClass = "com.alwallet.gradle.WebPluginDependency"
+            id = "com.wefunding.gradle.WebPluginDependency"
+            implementationClass = "com.wefunding.gradle.WebPluginDependency"
         }
         Web3PluginDependency {
-            id = "com.alwallet.gradle.Web3PluginDependency"
-            implementationClass = "com.alwallet.gradle.Web3PluginDependency"
+            id = "com.wefunding.gradle.Web3PluginDependency"
+            implementationClass = "com.wefunding.gradle.Web3PluginDependency"
         }
         DBPluginDependency {
-            id = "com.alwallet.gradle.DBPluginDependency"
-            implementationClass = "com.alwallet.gradle.DBPluginDependency"
+            id = "com.wefunding.gradle.DBPluginDependency"
+            implementationClass = "com.wefunding.gradle.DBPluginDependency"
         }
     }
 }
