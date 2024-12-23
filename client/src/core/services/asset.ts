@@ -22,6 +22,15 @@ import { WalletService } from './wallet'
 import { NetworkService } from './network'
 import { EventEmitter } from 'events'
 import { setTimeout } from 'timers'
+import { UserClient } from '@/clients/api/users'
+import { TokenAmount } from '../../utils/numbers'
+
+export interface TokenMetadata {
+  address: string
+  name: string
+  symbol: string
+  decimals: number
+}
 
 export class AssetService extends EventEmitter {
   private readonly erc20Interface: Interface
@@ -30,10 +39,119 @@ export class AssetService extends EventEmitter {
     private readonly rpcClient: RpcClient,
     private readonly walletService: WalletService,
     private readonly networkService: NetworkService,
+    private readonly userClient: UserClient,
     private readonly orgHost: string
   ) {
     super()
     this.erc20Interface = new Interface(ERC20_ABI)
+  }
+
+  async getTokenInfo(params: TokenInfoParams): Promise<TokenMetadata> {
+    try {
+      const [name, symbol, decimals] = await Promise.all([
+        this.callTokenMethod(params.tokenAddress, params.networkId, 'name'),
+        this.callTokenMethod(params.tokenAddress, params.networkId, 'symbol'),
+        this.callTokenMethod(params.tokenAddress, params.networkId, 'decimals'),
+      ])
+
+      return {
+        address: params.tokenAddress,
+        name: this.decodeResult(name, 'name'),
+        symbol: this.decodeResult(symbol, 'symbol'),
+        decimals: Number(this.decodeResult(decimals, 'decimals')),
+      }
+    } catch (error) {
+      throw new SDKError(
+        'Failed to get token info',
+        SDKErrorCode.REQUEST_FAILED,
+        error
+      )
+    }
+  }
+
+  async registerToken(params: {
+    networkId: string
+    tokenAddress: string
+  }): Promise<void> {
+    try {
+      const tokenInfo = await this.getTokenInfo({
+        networkId: params.networkId,
+        tokenAddress: params.tokenAddress,
+      })
+
+      await this.userClient.registerToken({
+        blockchainId: params.networkId,
+        contractAddress: params.tokenAddress,
+        name: tokenInfo.name,
+        symbol: tokenInfo.symbol,
+        decimals: tokenInfo.decimals,
+      })
+    } catch (error) {
+      if (error instanceof SDKError) {
+        throw error
+      }
+      throw new SDKError(
+        'Failed to register token',
+        SDKErrorCode.REQUEST_FAILED,
+        error
+      )
+    }
+  }
+
+  async getTokenFullInfo(params: {
+    networkId: string
+    tokenAddress: string
+    walletAddress: string
+  }): Promise<TokenInfo> {
+    try {
+      const metadata = await this.getTokenInfo({
+        networkId: params.networkId,
+        tokenAddress: params.tokenAddress,
+      })
+
+      const balanceWei = await this.getTokenBalance({
+        networkId: params.networkId,
+        tokenAddress: params.tokenAddress,
+        walletAddress: params.walletAddress,
+      })
+
+      // TokenBalance 형태로 구성
+      const balance: TokenBalance = {
+        raw: balanceWei,
+        formatted: TokenAmount.fromWei(balanceWei, metadata.decimals),
+        decimals: metadata.decimals,
+        symbol: metadata.symbol,
+      }
+
+      // totalSupply도 TokenBalance 형태로 필요
+      const totalSupplyWei = await this.callTokenMethod(
+        params.tokenAddress,
+        params.networkId,
+        'totalSupply'
+      )
+
+      const totalSupply: TokenBalance = {
+        raw: totalSupplyWei,
+        formatted: TokenAmount.fromWei(totalSupplyWei, metadata.decimals),
+        decimals: metadata.decimals,
+        symbol: metadata.symbol,
+      }
+
+      return {
+        address: metadata.address,
+        name: metadata.name,
+        symbol: metadata.symbol,
+        decimals: metadata.decimals,
+        balance,
+        totalSupply,
+      }
+    } catch (error) {
+      throw new SDKError(
+        'Failed to get token full info',
+        SDKErrorCode.REQUEST_FAILED,
+        error
+      )
+    }
   }
 
   async transfer(params: TransferRequest): Promise<TransferResponse> {
@@ -263,37 +381,6 @@ export class AssetService extends EventEmitter {
       )
     }
   }
-
-  // async getTokenInfo(params: TokenInfoParams): Promise<TokenInfo> {
-  //   try {
-  //     const [name, symbol, decimals, totalSupply] = await Promise.all([
-  //       this.callTokenMethod(params.tokenAddress, params.networkId, 'name'),
-  //       this.callTokenMethod(params.tokenAddress, params.networkId, 'symbol'),
-  //       this.callTokenMethod(params.tokenAddress, params.networkId, 'decimals'),
-  //       this.callTokenMethod(
-  //         params.tokenAddress,
-  //         params.networkId,
-  //         'totalSupply'
-  //       ),
-  //     ])
-
-  //     return {
-  //       address: params.tokenAddress,
-  //       name: this.decodeResult(name, 'name'),
-  //       symbol: this.decodeResult(symbol, 'symbol'),
-  //       decimals: Number(this.decodeResult(decimals, 'decimals')),
-  //       totalSupply: this.decodeResult(totalSupply, 'totalSupply'),
-  //       type: 'ERC20' as const,
-  //       balance: null as TokenBalance,
-  //     }
-  //   } catch (error) {
-  //     throw new SDKError(
-  //       'Failed to get token info',
-  //       SDKErrorCode.REQUEST_FAILED,
-  //       error
-  //     )
-  //   }
-  // }
 
   private async callTokenMethod(
     tokenAddress: string,

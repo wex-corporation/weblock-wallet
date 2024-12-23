@@ -48,6 +48,7 @@ export class InternalCoreImpl implements InternalCore {
       rpcClient,
       this.walletService,
       this.networkService,
+      userClient,
       options.orgHost
     )
   }
@@ -134,5 +135,16 @@ export class InternalCoreImpl implements InternalCore {
       this.assetService.on(event, listener),
     off: (event: string, listener: (...args: any[]) => void) =>
       this.assetService.off(event, listener),
+    getTokenInfo: (params: TokenInfoParams) =>
+      this.assetService.getTokenInfo(params),
+
+    registerToken: (params: { networkId: string; tokenAddress: string }) =>
+      this.assetService.registerToken(params),
+
+    getTokenFullInfo: (params: {
+      networkId: string
+      tokenAddress: string
+      walletAddress: string
+    }) => this.assetService.getTokenFullInfo(params),
   }
 }
