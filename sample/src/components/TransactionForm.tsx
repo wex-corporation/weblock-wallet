@@ -9,6 +9,15 @@ interface TransactionStatusEvent {
   timestamp: number;
 }
 
+interface TransactionResult {
+  hash: string;
+  status: TransactionStatus;
+  error?: string;
+  gasUsed?: string;
+  gasPrice?: string;
+  totalGasCost?: string;
+}
+
 export function TransactionForm() {
   const { sdk, walletInfo, isConnected } = useWallet();
   const [to, setTo] = useState("");
@@ -20,11 +29,7 @@ export function TransactionForm() {
     total: string;
   } | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [txStatus, setTxStatus] = useState<{
-    hash: string;
-    status: TransactionStatus;
-    error?: string;
-  } | null>(null);
+  const [txResult, setTxResult] = useState<TransactionResult | null>(null);
 
   if (!isConnected || !walletInfo) {
     return null;
@@ -57,7 +62,7 @@ export function TransactionForm() {
       setShowConfirm(true);
     } catch (error) {
       console.error("Gas estimation failed:", error);
-      setTxStatus({
+      setTxResult({
         hash: "",
         status: TransactionStatus.FAILED,
         error: error instanceof Error ? error.message : "Gas estimation failed",
@@ -84,7 +89,7 @@ export function TransactionForm() {
         gasPrice: TokenAmount.toWei(estimatedGas.price.replace(" Gwei", ""), 9),
       });
 
-      setTxStatus({
+      setTxResult({
         hash: response.transaction.hash,
         status: TransactionStatus.PENDING,
       });
@@ -94,11 +99,7 @@ export function TransactionForm() {
         "transactionStatusChanged",
         (event: TransactionStatusEvent) => {
           if (event.hash === response.transaction.hash) {
-            setTxStatus({
-              hash: event.hash,
-              status: event.status,
-              error: event.error,
-            });
+            handleTransactionResult(event.hash, event.status, event.error);
             if (event.status !== TransactionStatus.PENDING) {
               setLoading(false);
             }
@@ -107,7 +108,7 @@ export function TransactionForm() {
       );
     } catch (error) {
       console.error("Transfer failed:", error);
-      setTxStatus({
+      setTxResult({
         hash: "",
         status: TransactionStatus.FAILED,
         error: error instanceof Error ? error.message : "Transfer failed",
@@ -119,7 +120,44 @@ export function TransactionForm() {
   const resetForm = () => {
     setShowConfirm(false);
     setEstimatedGas(null);
-    setTxStatus(null);
+    setTxResult(null);
+  };
+
+  // 트랜잭션 결과 처리 함수
+  const handleTransactionResult = async (
+    hash: string,
+    status: TransactionStatus,
+    error?: string
+  ) => {
+    try {
+      if (status === TransactionStatus.SUCCESS) {
+        // 트랜잭션 영수증 조회
+        const receipt = await sdk.wallet.getTransactionReceipt(
+          hash,
+          walletInfo.network.current?.chainId || 0
+        );
+
+        const gasUsed = receipt.gasUsed;
+        const gasPrice = receipt.effectiveGasPrice;
+        const totalGasCost = TokenAmount.fromWei(
+          (BigInt(gasUsed) * BigInt(gasPrice)).toString(),
+          18
+        );
+
+        setTxResult({
+          hash,
+          status,
+          gasUsed: TokenAmount.fromWei(gasUsed, 0),
+          gasPrice: TokenAmount.fromWei(gasPrice, 9) + " Gwei",
+          totalGasCost,
+        });
+      } else {
+        setTxResult({ hash, status, error });
+      }
+    } catch (err) {
+      console.error("Failed to get transaction details:", err);
+      setTxResult({ hash, status, error });
+    }
   };
 
   return (
@@ -209,27 +247,37 @@ export function TransactionForm() {
         </div>
       )}
 
-      {txStatus && (
-        <div className="text-sm space-y-1">
+      {txResult && (
+        <div className="text-sm space-y-1 mt-4 p-3 bg-gray-50 rounded">
           <div>
-            Transaction Hash: <span className="font-mono">{txStatus.hash}</span>
+            Transaction Hash: <span className="font-mono">{txResult.hash}</span>
           </div>
           <div>
             Status:{" "}
             <span
               className={
-                txStatus.status === TransactionStatus.SUCCESS
+                txResult.status === TransactionStatus.SUCCESS
                   ? "text-green-500"
-                  : txStatus.status === TransactionStatus.FAILED
+                  : txResult.status === TransactionStatus.FAILED
                   ? "text-red-500"
                   : "text-yellow-500"
               }
             >
-              {txStatus.status}
+              {txResult.status}
             </span>
           </div>
-          {txStatus.error && (
-            <div className="text-red-500">Error: {txStatus.error}</div>
+          {txResult.status === TransactionStatus.SUCCESS && (
+            <>
+              <div>Gas Used: {txResult.gasUsed}</div>
+              <div>Gas Price: {txResult.gasPrice}</div>
+              <div>
+                Total Gas Cost: {txResult.totalGasCost}{" "}
+                {walletInfo.assets.native.symbol}
+              </div>
+            </>
+          )}
+          {txResult.error && (
+            <div className="text-red-500">Error: {txResult.error}</div>
           )}
         </div>
       )}

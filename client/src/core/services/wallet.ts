@@ -9,6 +9,8 @@ import {
   SDKErrorCode,
   SendTransactionParams,
   TokenBalance,
+  Transaction,
+  TransactionStatus,
 } from '../../types'
 import { RpcClient } from '../../clients/api/rpcs'
 import { RpcMethod } from '../../clients/types'
@@ -333,16 +335,17 @@ export class WalletService {
     return response.result
   }
 
-  async getLatestTransaction(address: string, chainId: number) {
+  async getLatestTransaction(
+    address: string,
+    chainId: number
+  ): Promise<Transaction | undefined> {
     try {
-      // 1. 현재 블록 번호 조회
       const blockNumber = await this.rpcClient.sendRpc({
         chainId,
         method: RpcMethod.ETH_BLOCK_NUMBER,
         params: [],
       })
 
-      // 2. 해당 주소의 트랜잭션 조회 (최신 100개 블록 내에서)
       const response = await this.rpcClient.sendRpc({
         chainId,
         method: RpcMethod.ETH_GET_LOGS,
@@ -356,19 +359,19 @@ export class WalletService {
       })
 
       if (!response.result || response.result.length === 0) {
-        return null
+        return undefined
       }
 
-      // 3. 가장 최근 트랜잭션 반환
       const latestLog = response.result[response.result.length - 1]
       return {
         hash: latestLog.transactionHash,
-        blockNumber: parseInt(latestLog.blockNumber, 16),
-        timestamp: Date.now(), // 블록 타임스탬프가 필요하다면 별도로 조회
-      }
+        status: TransactionStatus.SUCCESS,
+        timestamp: Date.now(),
+        value: '0',
+      } as Transaction
     } catch (error) {
       console.error('Failed to get latest transaction:', error)
-      return null
+      return undefined
     }
   }
 
