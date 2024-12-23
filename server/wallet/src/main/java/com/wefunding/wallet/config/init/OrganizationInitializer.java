@@ -32,7 +32,8 @@ public class OrganizationInitializer implements CommandLineRunner {
         .switchIfEmpty(
             Mono.defer(
                 () -> {
-                  Organization organization = Organization.create("WeBlockWallet", WEBLOCKWALLET_API_KEY);
+                  Organization organization =
+                      Organization.create("WeBlockWallet", WEBLOCKWALLET_API_KEY);
                   organization.setAllowedHosts(
                       List.of(
                           "http://localhost:3000",
