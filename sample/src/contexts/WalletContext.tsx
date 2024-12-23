@@ -1,5 +1,13 @@
 import { WeBlockSDK, WalletInfo, SDKError } from "@wefunding-dev/wallet";
 import { createContext, useContext, useState, ReactNode } from "react";
+import { TokenInfo } from "@wefunding-dev/wallet";
+
+interface TokenMetadata {
+  address: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+}
 
 interface WalletContextType {
   sdk: WeBlockSDK;
@@ -13,6 +21,12 @@ interface WalletContextType {
   isLoggedIn: boolean;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
+  addToken: (address: string) => Promise<void>;
+  refreshTokens: () => Promise<void>;
+  getTokenInfo: (address: string) => Promise<TokenMetadata>;
+  isTokenLoading: boolean;
+  tokenError: string | null;
+  clearTokenError: () => void;
 }
 
 // Context 생성 추가
@@ -32,6 +46,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [tokenError, setTokenError] = useState<string | null>(null);
+  const [isTokenLoading, setIsTokenLoading] = useState(false);
 
   const createWallet = async (password: string) => {
     try {
@@ -107,6 +123,67 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const getTokenInfo = async (address: string): Promise<TokenMetadata> => {
+    if (!walletInfo?.network.current) {
+      throw new Error("Network not selected");
+    }
+    return sdk.asset.getTokenInfo({
+      networkId: walletInfo.network.current.chainId.toString(),
+      tokenAddress: address,
+    });
+  };
+
+  const addToken = async (address: string) => {
+    if (!walletInfo?.network.current) return;
+    try {
+      setIsTokenLoading(true);
+      await sdk.asset.registerToken({
+        networkId: walletInfo.network.current.chainId.toString(),
+        tokenAddress: address,
+      });
+      await refreshTokens();
+    } catch (err) {
+      setTokenError(
+        err instanceof SDKError ? err.message : "Failed to add token"
+      );
+      throw err;
+    } finally {
+      setIsTokenLoading(false);
+    }
+  };
+
+  const refreshTokens = async () => {
+    if (!walletInfo?.network.current || !walletInfo.address) return;
+    try {
+      setIsTokenLoading(true);
+      const tokensWithInfo = await sdk.asset.getRegisteredTokens(
+        walletInfo.network.current.chainId.toString()
+      );
+      setWalletInfo((prev) =>
+        prev
+          ? {
+              ...prev,
+              assets: {
+                ...prev.assets,
+                tokens: tokensWithInfo,
+              },
+            }
+          : null
+      );
+    } catch (err) {
+      setTokenError(
+        err instanceof SDKError ? err.message : "Failed to refresh tokens"
+      );
+      throw err;
+    } finally {
+      setIsTokenLoading(false);
+    }
+  };
+
+  const clearTokenError = () => {
+    setTokenError(null);
+  };
+
   return (
     <WalletContext.Provider
       value={{
@@ -121,16 +198,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         isLoggedIn,
         signIn,
         signOut,
+        addToken,
+        refreshTokens,
+        getTokenInfo,
+        isTokenLoading,
+        tokenError,
+        clearTokenError,
       }}
     >
       {children}
     </WalletContext.Provider>
   );
 }
-
-// useWallet 훅 추가
-export const useWallet = () => {
-  const context = useContext(WalletContext);
-  if (!context) throw new Error("useWallet must be used within WalletProvider");
-  return context;
-};
