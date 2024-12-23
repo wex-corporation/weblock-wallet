@@ -22,18 +22,19 @@ export function WalletInfo() {
       <div>
         <h3 className="font-bold">Balance</h3>
         <p>
-          {walletInfo.assets.native.balance?.toString() || "0"}{" "}
-          {walletInfo.assets.native.symbol}
+          {walletInfo.assets.native.balance?.formatted || "0"}{" "}
+          {walletInfo.assets.native.balance?.symbol}
         </p>
       </div>
 
       {walletInfo.assets.tokens.length > 0 && (
         <div>
           <h3 className="font-bold">Tokens</h3>
-          <ul>
+          <ul className="space-y-2">
             {walletInfo.assets.tokens.map((token) => (
-              <li key={token.address}>
-                {token.balance?.toString() || "0"} {token.symbol}
+              <li key={token.address} className="flex justify-between">
+                <span>{token.symbol}</span>
+                <span>{token.balance?.formatted || "0"}</span>
               </li>
             ))}
           </ul>
