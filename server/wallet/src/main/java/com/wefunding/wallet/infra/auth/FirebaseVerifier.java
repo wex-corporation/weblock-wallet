@@ -1,7 +1,7 @@
 package com.wefunding.wallet.infra.auth;
 
-import com.wefunding.core.exceptions.BadRequestException;
 import com.google.firebase.auth.FirebaseAuth;
+import com.wefunding.core.exceptions.BadRequestException;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
