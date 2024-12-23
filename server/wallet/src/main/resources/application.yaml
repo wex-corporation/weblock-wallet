@@ -14,29 +14,29 @@ app:
   cors:
     allowed-origins: http://localhost:3000,http://localhost:3001
 
-  name: al-wallet
+  name: weblock-wallet
   auth:
     # EdDSA-ed25519 PrivateKey base64url encoded
-    secret-key: ${AUTH_SECRET_KEY}
-    public-key: ${AUTH_PUBLIC_KEY}
+    secret-key: D2298273D66FC14C4BC3E3E4F7A72BEBAAB05895242F6C50ADD1AEC3AE4423E5
+    public-key: MCowBQYDK2VwAyEAa-TJ-rXBwz5JW5pXMrqPSUHOTzUKC7HVafU5dR_XJdw=
   encryptor:
     # AES Key: openssl rand -hex 32 | xxd -r -p | base64
-    secret-key: ${DB_SECRET_KEY}
+    secret-key: rYZWqLrayup0sk2t/bOANi4m4P3PlBOiDqKaY1f9jhI=
 
 spring:
   main:
     web-application-type: reactive
   r2dbc:
-    url: r2dbc:postgresql://${DB_HOST}/alwallet
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: r2dbc:postgresql://weblock-wallet.cficaug2arwh.ap-northeast-2.rds.amazonaws.com:5432/weblockwallet
+    username: "root"
+    password: "0KY{7ec)q_[:$ROZ"
     pool:
       initial-size: 15
       max-size: 60
   liquibase:
-    url: jdbc:postgresql://${DB_HOST}/alwallet
-    user: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://weblock-wallet.cficaug2arwh.ap-northeast-2.rds.amazonaws.com:5432/weblockwallet
+    user: "root"
+    password: "0KY{7ec)q_[:$ROZ"
     change-log: classpath:db/masterChangeLog.yaml
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -55,39 +55,37 @@ management:
         include: health
 
 ---
-app:
-  auth:
-    # EdDSA-ed25519 PrivateKey base64url encoded
-    # publicKey: MCowBQYDK2VwAyEAa-TJ-rXBwz5JW5pXMrqPSUHOTzUKC7HVafU5dR_XJdw=
-    secret-key: MC4CAQAwBQYDK2VwBCIEIA2F9RfGhEkaf6-zD19jC0IPKWKPV_95OpLTN8hdHzHy
-    public-key: MCowBQYDK2VwAyEAa-TJ-rXBwz5JW5pXMrqPSUHOTzUKC7HVafU5dR_XJdw=
-  encryptor:
-    # AES Key: openssl rand -hex 32 | xxd -r -p | base64
-    secret-key: sYP932c7ry4OPY4rybZoC62DZaUuVQwhNQHKP1QXGyI=
-
 spring:
-  r2dbc:
-    url: r2dbc:postgresql://localhost:5432/alwallet
-    username: alwallet
-    password: wdpdldpfwlrkqw13
-  liquibase:
-    url: jdbc:postgresql://localhost:5432/alwallet
-    user: alwallet
-    password: alwallet
-    change-log: classpath:db/masterChangeLog.yaml
   config:
     activate:
       on-profile: local
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/weblockwallet
+    username: weblockwallet
+    password: wdpdldpfwlrkqw13
+  liquibase:
+    url: jdbc:postgresql://localhost:5432/weblockwallet
+    user: weblockwallet
+    password: weblockwallet
+    change-log: classpath:db/masterChangeLog.yaml
   main:
     web-application-type: reactive
   cloud:
     gcp:
-      project-id: rwx-wallet
+      project-id: weblock-wallet
       credentials:
         encoded-key: ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiAicnd4LXdhbGxldCIsCiAgInByaXZhdGVfa2V5X2lkIjogImM3OTc0YTllZDhjOTUzMjNjZWUzMTRlM2EwZjNkODRmZmMxMTY5NzQiLAogICJwcml2YXRlX2tleSI6ICItLS0tLUJFR0lOIFBSSVZBVEUgS0VZLS0tLS1cbk1JSUV2QUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktZd2dnU2lBZ0VBQW9JQkFRQ2wzMWRoOUozTnFhanNcbjJKb3RPbEVhQ0w4M1h5ODVNU1RoMU1xR1h4WEFuQVU3T1RGMllkMnZONFljTDFnWjVsWS9IbXZCUWdyK3UwRVFcbkJhTEo4TFdFc09RTk1GK2syeklBa0lWdTh1cjBJbGRRNDU2ZE5TbTQ0SmJjbGszMkxhQjh1Z1R5UkZLZWx2YU1cbkhnb2grQm9pYXVaZ3FTSDJPZkFXek9zUXpWNm9jZHhkZ3pTQWx4UHNTVVBPSTM5b2Q3bG51cFlrYlN2YXY0a1NcbmNwQWUxVzUrZGtaWTR4VGJjdmdyeUNPNVNQdHRpRjdwTEd2K0c2bmVFNFRoN2VHZ1l2d1NiMXJtZUkrTkhZZW9cblNNVDUvQTk1RFpOSW9GTmYvVHRkbGZxOHNwM3h4VElvZElyQjEwQld2c25zemt4bmtBN1Y1enNtMWpZWWJSRG1cbklXS3pzTEVmQWdNQkFBRUNnZ0VBQ0Z4ZW5XaGs1a2tuTUhFTStUc0tyeFpDTHNkVWVRbFR0c3Y5bzhWNS93T2VcblFrbGF1clJEdjdzSWkwK05OcktZSmV4VTAxUDFGWVdML1FQQ0hFRG9idnpNWlNneHBzbHdGc2t5R2pkZkxBeFBcbjRzNFprNlEzWGx6ZTZxSlJybjJVUmxVdnBLUWxZNUZ3QzVZRUNyeEs4MWY0ZTVtZUVtdzFtaFBRS3cwL0JUWVhcbjg0NGI5cVdVOGZBTnU4WGRWUUw1L0ZYYU41cG5WKzA0UlRxc3RsZGF1cUYxN1JoYTdUeG9aNHpjK250cU45VndcbjJrSU9qOGNDdmRxMjNXU3NDY1IxTk9wTURYSHZCUFp4aENyRFJFdDd1d2ZESGZqaXM5V1pmbGdqQ1daWVA5dEhcbnJYSEg1Zm5VdlpPZ2UyaFpHaTdManFnTXVVUFZMN2V6ci9aYWhCbXY0UUtCZ1FEa3FISTVPQUwvNG4zSWxZNlBcblBJeUZDSEE3endyVjdodzRIY0k5NTUxU3ZTM1dVVHlObS92S2hDVldtTDloaVE1VG8vNWdzY29iVjRzTDN6TDFcbjljdEVDVFpmcWFleTBlOGxDZTNhOXhpYzQrZENSblQvNms4YTU0c0NXeHcxdGVHUmxVYW4rK0FKcUJyRDNoeDFcblI3bEZYQVBjelNDVi9WUmFxUzhYTVEyQmtRS0JnUUM1dFBBSllDd2tNZFJQY3dPTU5oL1RFeitkbUg1MGpsL3hcbkJ3OCtJS1d1cEZUUExzdU4zZU5FT1pJdEdpN3dTL0hZbElydDRNV2ErMWlhRzh3WFd3TXRQakRVMGMrQ1FVWjJcbi84cll1YWlnVDloN3pvcVFEVnpldzdEL3U1UEV1Nk9QQ1NPVlU4WHV3L0JxSWdrTHMvVUgwMGx5blU0R1g1Q29cbjMyL05JRE92cndLQmdIZEZhamR3Z1JnS2c0UUNoeGN1QlRwTFdZZkpDcVRtakMrMVRpSE9VK0RacnpRd3NiNUlcbkZBSGlCanZ5ZHptZ0xTbnh5L21TSTVNNWlkMEtjdUdiY1lpdXFYOGkxc2ZPKzhnOU1xWFo2Q3ZHTVZYL3ZIM1Zcbk1hZ2VDUU9VbE5Wclp4cnlXNlc2RzNYT0N4QUtKcHdDYXFERVMzdDhRRGdjcVVpVklXd2VlU1lSQW9HQUNHa0JcblZldGRGR2FOVHV2T2hWTU9MZWo1UUpIZmFEZnFjR2Y1Y0w3WndnYi9NRUxXUlI1L1pGK1hGeVBRYkdHRUdtTGZcbng5WWVITjYxTElXRndLa0dnODRGT0I0b1g2WEZJeTZDYVQ0L1BNTmc4bnB3SEFYKzVyZkdGRTdTYWw1MUVjMUFcbkowc2I4Nnc3L3hKN2htUW4vS3E4OE12ZTlMcnZPamFrUVkzcnlWRUNnWUF6Wmp4RllQMlo1YzZnVmpEZmF6U3lcbmRpVXJjdkRWcDZXc24yL2E0bXVucE9xdHFhVWJnVnRSTHI3VnVOOU9uUUJLSEFQTllEL1VrdDhoRnhDYnBoK2JcbnF2YVlMaWpoOXZFVEkyY2lQaEFyaGh5MWdRaSszOWZjQ1NRTEFvMEw4THhSaVk1UGJWNlI5cW82Y2RyK3ltbUpcbnA5bmI0ZFF4SzJxR1JFU2lHcGZ2NUE9PVxuLS0tLS1FTkQgUFJJVkFURSBLRVktLS0tLVxuIiwKICAiY2xpZW50X2VtYWlsIjogImZpcmViYXNlLWFkbWluc2RrLXVsYWZoQHJ3eC13YWxsZXQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLAogICJjbGllbnRfaWQiOiAiMTA3Mzg0OTE3MTA0ODUwMTYzNjQ3IiwKICAiYXV0aF91cmkiOiAiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tL28vb2F1dGgyL2F1dGgiLAogICJ0b2tlbl91cmkiOiAiaHR0cHM6Ly9vYXV0aDIuZ29vZ2xlYXBpcy5jb20vdG9rZW4iLAogICJhdXRoX3Byb3ZpZGVyX3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vb2F1dGgyL3YxL2NlcnRzIiwKICAiY2xpZW50X3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vcm9ib3QvdjEvbWV0YWRhdGEveDUwOS9maXJlYmFzZS1hZG1pbnNkay11bGFmaCU0MHJ3eC13YWxsZXQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLAogICJ1bml2ZXJzZV9kb21haW4iOiAiZ29vZ2xlYXBpcy5jb20iCn0K
       logging:
         enabled: true
-
+app:
+  auth:
+    # EdDSA-ed25519 PrivateKey base64url encoded
+    # publicKey: MCowBQYDK2VwAyEAa-TJ-rXBwz5JW5pXMrqPSUHOTzUKC7HVafU5dR_XJdw=
+    secret-key: D2298273D66FC14C4BC3E3E4F7A72BEBAAB05895242F6C50ADD1AEC3AE4423E5
+    public-key: MCowBQYDK2VwAyEAa-TJ-rXBwz5JW5pXMrqPSUHOTzUKC7HVafU5dR_XJdw=
+  encryptor:
+    # AES Key: openssl rand -hex 32 | xxd -r -p | base64
+    secret-key: sYP932c7ry4OPY4rybZoC62DZaUuVQwhNQHKP1QXGyI=
 logging:
   level:
     root: info
@@ -107,18 +105,15 @@ spring:
       on-profile: dev
 ---
 spring:
-  r2dbc:
-    url: r2dbc:postgresql://postgres:5432/alwallet
-    username: alwallet
-    password: alwallet
-  liquibase:
-    url: jdbc:postgresql://postgres:5432/alwallet
-    user: alwallet
-    password: alwallet
-    change-log: classpath:db/masterChangeLog.yaml
   config:
     activate:
       on-profile: docker-compose
-
-
-
+  r2dbc:
+    url: r2dbc:postgresql://postgres:5432/weblockwallet
+    username: weblockwallet
+    password: weblockwallet
+  liquibase:
+    url: jdbc:postgresql://postgres:5432/weblockwallet
+    user: weblockwallet
+    password: weblockwallet
+    change-log: classpath:db/masterChangeLog.yaml
