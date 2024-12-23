@@ -1,5 +1,6 @@
 package com.wefunding.wallet.api.user;
 
+import com.google.firebase.auth.FirebaseAuthException;
 import com.wefunding.core.domain.blockchain.Blockchain;
 import com.wefunding.core.domain.blockchain.BlockchainRepository;
 import com.wefunding.core.domain.blockchain.UserBlockchains;
@@ -24,7 +25,6 @@ import com.wefunding.wallet.api.user.dto.SignInResponse;
 import com.wefunding.wallet.api.user.dto.UserDTO;
 import com.wefunding.wallet.config.AttributeStorage;
 import com.wefunding.wallet.infra.auth.FirebaseVerifier;
-import com.google.firebase.auth.FirebaseAuthException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
