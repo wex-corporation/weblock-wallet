@@ -13,7 +13,6 @@ import {
 import { RpcClient } from '../../clients/api/rpcs'
 import { RpcMethod } from '../../clients/types'
 import { NetworkService } from '../../core/services/network'
-import { Transaction, TransactionType, TransactionStatus } from '../../types'
 import { TokenAmount } from '../../utils/numbers'
 import { DECIMALS } from '../../utils/numbers'
 
@@ -334,52 +333,42 @@ export class WalletService {
     return response.result
   }
 
-  async getLatestTransaction(
-    address: string,
-    chainId: number
-  ): Promise<Transaction | undefined> {
+  async getLatestTransaction(address: string, chainId: number) {
     try {
-      // 1. 트랜잭션 카운트 조회
-      const txCount = await this.getTransactionCount(address, chainId)
-      if (txCount === 0) {
-        return undefined
-      }
+      // 1. 현재 블록 번호 조회
+      const blockNumber = await this.rpcClient.sendRpc({
+        chainId,
+        method: RpcMethod.ETH_BLOCK_NUMBER,
+        params: [],
+      })
 
-      // 2. 최근 블록 넘버 조회
-      const blockNumber = await this.getBlockNumber(chainId)
-
-      // 3. 해당 주소의 최근 트랜잭션 조회
+      // 2. 해당 주소의 트랜잭션 조회 (최신 100개 블록 내에서)
       const response = await this.rpcClient.sendRpc({
         chainId,
-        method: RpcMethod.ETH_GET_TRANSACTION_BY_BLOCK_NUMBER_AND_INDEX,
+        method: RpcMethod.ETH_GET_LOGS,
         params: [
-          `0x${blockNumber.toString(16)}`,
-          `0x${(txCount - 1).toString(16)}`,
+          {
+            fromBlock: parseInt(blockNumber.result, 16) - 100,
+            toBlock: 'latest',
+            address: [address],
+          },
         ],
       })
 
-      if (!response.result) {
-        return undefined
+      if (!response.result || response.result.length === 0) {
+        return null
       }
 
-      const tx = response.result
-      const currentNetwork = await this.networkService.getCurrentNetwork()
-
-      // 4. Transaction 객체로 변환
+      // 3. 가장 최근 트랜잭션 반환
+      const latestLog = response.result[response.result.length - 1]
       return {
-        hash: tx.hash,
-        type:
-          tx.from.toLowerCase() === address.toLowerCase()
-            ? TransactionType.SEND
-            : TransactionType.RECEIVE,
-        status: TransactionStatus.SUCCESS,
-        timestamp: parseInt(tx.timestamp || Date.now().toString()),
-        value: tx.value,
-        symbol: currentNetwork?.symbol || '',
+        hash: latestLog.transactionHash,
+        blockNumber: parseInt(latestLog.blockNumber, 16),
+        timestamp: Date.now(), // 블록 타임스탬프가 필요하다면 별도로 조회
       }
     } catch (error) {
       console.error('Failed to get latest transaction:', error)
-      return undefined
+      return null
     }
   }
 
