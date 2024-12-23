@@ -117,3 +117,8 @@ spring:
     user: weblockwallet
     password: weblockwallet
     change-log: classpath:db/masterChangeLog.yaml
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
