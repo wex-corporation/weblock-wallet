@@ -3,6 +3,7 @@ import {
   NetworkInfo,
   TokenAllowanceParams,
   TokenApprovalParams,
+  TokenBalance,
   TokenBalanceParams,
   TokenInfo,
   TokenInfoParams,
@@ -33,7 +34,7 @@ export interface InternalCore {
     getAddress(): Promise<string>
     create(password: string): Promise<string>
     retrieveWallet(password: string): Promise<string>
-    getBalance(address: string, chainId: number): Promise<string>
+    getBalance(address: string, chainId: number): Promise<TokenBalance>
     getTransactionCount(address: string, chainId: number): Promise<number>
     getBlockNumber(chainId: number): Promise<number>
     sendRawTransaction(signedTx: string, chainId: number): Promise<string>
@@ -69,22 +70,23 @@ export interface InternalCore {
       decimals?: number
       name?: string
     }) => Promise<void>
-    // New ERC20 methods
     getTokenBalance: (params: TokenBalanceParams) => Promise<string>
     approveToken: (params: TokenApprovalParams) => Promise<string>
     getAllowance: (params: TokenAllowanceParams) => Promise<string>
-    getTokenInfo: (params: TokenInfoParams) => Promise<TokenInfo>
+    // getTokenInfo: (params: TokenInfoParams) => Promise<TokenInfo>
     addNFTCollection: (params: {
       networkId: string
       address: string
       name?: string
     }) => Promise<void>
-    checkSecurityTokenCompliance: (params: {
-      networkId: string
-      tokenAddress: string
-      from: string
-      to: string
-      amount: string
-    }) => Promise<{ canTransfer: boolean; reasons?: string[] }>
+    // checkSecurityTokenCompliance: (params: {
+    //   networkId: string
+    //   tokenAddress: string
+    //   from: string
+    //   to: string
+    //   amount: string
+    // }) => Promise<{ canTransfer: boolean; reasons?: string[] }>
+    on(event: string, listener: (...args: any[]) => void): void
+    off(event: string, listener: (...args: any[]) => void): void
   }
 }

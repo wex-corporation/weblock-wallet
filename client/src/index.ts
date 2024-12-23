@@ -7,6 +7,7 @@ import {
   TransferResponse,
   AddNetworkRequest,
   Transaction,
+  TokenBalance,
 } from './types'
 import { Core } from './core'
 import { UserModule, WalletModule, AssetModule } from './modules'
@@ -93,7 +94,7 @@ export class WeBlockSDK {
     ): (() => void) => {
       return this.walletModule.onTransactionUpdate(callback)
     },
-    getBalance: (address: string, chainId: number): Promise<string> => {
+    getBalance: (address: string, chainId: number): Promise<TokenBalance> => {
       return this.walletModule.getBalance(address, chainId)
     },
     getTransactionCount: (
@@ -165,18 +166,18 @@ export class WeBlockSDK {
       return this.assetModule.addNFTCollection(params)
     },
 
-    checkSecurityTokenCompliance: async (params: {
-      networkId: string
-      tokenAddress: string
-      from: string
-      to: string
-      amount: string
-    }): Promise<{
-      canTransfer: boolean
-      reasons?: string[]
-    }> => {
-      return this.assetModule.checkSecurityTokenCompliance(params)
-    },
+    // checkSecurityTokenCompliance: async (params: {
+    //   networkId: string
+    //   tokenAddress: string
+    //   from: string
+    //   to: string
+    //   amount: string
+    // }): Promise<{
+    //   canTransfer: boolean
+    //   reasons?: string[]
+    // }> => {
+    //   return this.assetModule.checkSecurityTokenCompliance(params)
+    // },
 
     getTokenBalance: async (params: {
       networkId: string
@@ -204,18 +205,27 @@ export class WeBlockSDK {
       return this.assetModule.getAllowance(params)
     },
 
-    getTokenInfo: async (params: {
-      networkId: string
-      tokenAddress: string
-    }): Promise<{
-      name: string
-      symbol: string
-      decimals: number
-    }> => {
-      return this.assetModule.getTokenInfo(params)
+    // getTokenInfo: async (params: {
+    //   networkId: string
+    //   tokenAddress: string
+    // }): Promise<{
+    //   name: string
+    //   symbol: string
+    //   decimals: number
+    // }> => {
+    //   return this.assetModule.getTokenInfo(params)
+    // },
+
+    on: (event: string, listener: (...args: any[]) => void): void => {
+      this.assetModule.on(event, listener)
+    },
+    off: (event: string, listener: (...args: any[]) => void): void => {
+      this.assetModule.off(event, listener)
     },
   }
 }
 
 export default WeBlockSDK
 export * from './types'
+export { TokenAmount, DECIMALS } from './utils/numbers'
+export type { TokenBalance } from './types'

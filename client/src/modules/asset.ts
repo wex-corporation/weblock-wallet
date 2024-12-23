@@ -20,6 +20,14 @@ export class AssetModule {
     return this.core.asset.transfer(params)
   }
 
+  on(event: string, listener: (...args: any[]) => void): void {
+    this.core.asset.on(event, listener)
+  }
+
+  off(event: string, listener: (...args: any[]) => void): void {
+    this.core.asset.off(event, listener)
+  }
+
   async addToken(params: {
     type: 'ERC20' | 'SECURITY'
     networkId: string
@@ -39,18 +47,18 @@ export class AssetModule {
     return this.core.asset.addNFTCollection(params)
   }
 
-  async checkSecurityTokenCompliance(params: {
-    networkId: string
-    tokenAddress: string
-    from: string
-    to: string
-    amount: string
-  }): Promise<{
-    canTransfer: boolean
-    reasons?: string[]
-  }> {
-    return this.core.asset.checkSecurityTokenCompliance(params)
-  }
+  // async checkSecurityTokenCompliance(params: {
+  //   networkId: string
+  //   tokenAddress: string
+  //   from: string
+  //   to: string
+  //   amount: string
+  // }): Promise<{
+  //   canTransfer: boolean
+  //   reasons?: string[]
+  // }> {
+  //   return this.core.asset.checkSecurityTokenCompliance(params)
+  // }
 
   async getTokenBalance(params: TokenBalanceParams): Promise<string> {
     return this.core.asset.getTokenBalance(params)
@@ -64,7 +72,7 @@ export class AssetModule {
     return this.core.asset.getAllowance(params)
   }
 
-  async getTokenInfo(params: TokenInfoParams): Promise<TokenInfo> {
-    return this.core.asset.getTokenInfo(params)
-  }
+  // async getTokenInfo(params: TokenInfoParams): Promise<TokenInfo> {
+  //   return this.core.asset.getTokenInfo(params)
+  // }
 }

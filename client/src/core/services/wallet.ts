@@ -4,12 +4,18 @@ import { WalletClient } from '../../clients/api/wallets'
 import { Secrets } from '../../utils/secrets'
 import { Crypto } from '../../utils/crypto'
 import { LocalForage } from '../../utils/storage'
-import { SDKError, SDKErrorCode } from '../../types'
+import {
+  SDKError,
+  SDKErrorCode,
+  SendTransactionParams,
+  TokenBalance,
+} from '../../types'
 import { RpcClient } from '../../clients/api/rpcs'
 import { RpcMethod } from '../../clients/types'
-import { Jwt } from '../../utils/jwt'
 import { NetworkService } from '../../core/services/network'
 import { Transaction, TransactionType, TransactionStatus } from '../../types'
+import { TokenAmount } from '../../utils/numbers'
+import { DECIMALS } from '../../utils/numbers'
 
 export class WalletService {
   private walletAddress: string | null = null
@@ -20,6 +26,43 @@ export class WalletService {
     private readonly orgHost: string,
     private readonly networkService: NetworkService
   ) {}
+
+  async getAddress(): Promise<string> {
+    try {
+      // 메모리에 있으면 반환
+      if (this.walletAddress) {
+        return this.walletAddress
+      }
+
+      // LocalForage에서 조회
+      const savedAddress = await LocalForage.get<string>(
+        `${this.orgHost}:walletAddress`
+      )
+      if (savedAddress) {
+        this.walletAddress = savedAddress
+        return savedAddress
+      }
+
+      // 서버에서 조회
+      const walletInfo = await this.walletClient.getWallet()
+      if (walletInfo?.address) {
+        this.walletAddress = walletInfo.address
+        await LocalForage.save(
+          `${this.orgHost}:walletAddress`,
+          walletInfo.address
+        )
+        return walletInfo.address
+      }
+
+      throw new SDKError('Wallet not found', SDKErrorCode.WALLET_NOT_FOUND)
+    } catch (error) {
+      throw new SDKError(
+        'Failed to get wallet address',
+        SDKErrorCode.WALLET_NOT_FOUND,
+        error
+      )
+    }
+  }
 
   async create(password: string) {
     try {
@@ -86,7 +129,8 @@ export class WalletService {
       console.log('11. Wallet created on server')
 
       this.walletAddress = wallet.address
-      console.log('12. Final wallet address:', this.walletAddress)
+      await LocalForage.save(`${this.orgHost}:walletAddress`, wallet.address)
+
       return wallet.address
     } catch (error) {
       console.error('Error in create wallet:', error)
@@ -94,31 +138,6 @@ export class WalletService {
       throw new SDKError(
         'Failed to create wallet',
         SDKErrorCode.WALLET_CREATION_FAILED,
-        error
-      )
-    }
-  }
-
-  async getAddress(): Promise<string> {
-    try {
-      // 1. 먼저 저장된 주소가 있는지 확인
-      const savedAddress = await LocalForage.get<string>('walletAddress')
-      if (savedAddress) return savedAddress
-
-      // 2. 없다면 서버에서 조회 시도
-      const walletInfo = await this.walletClient.getWallet()
-      if (walletInfo?.address) {
-        await LocalForage.save('walletAddress', walletInfo.address)
-        return walletInfo.address
-      }
-
-      // 3. 그래도 없다면 에러
-      throw new SDKError('wallet not found', SDKErrorCode.WALLET_NOT_FOUND)
-    } catch (error) {
-      if (error instanceof SDKError) throw error
-      throw new SDKError(
-        'Failed to get wallet address',
-        SDKErrorCode.WALLET_RECOVERY_FAILED,
         error
       )
     }
@@ -133,8 +152,6 @@ export class WalletService {
         throw new SDKError('Access token not found', SDKErrorCode.AUTH_REQUIRED)
       }
 
-      const exp = Jwt.parse(accessToken)?.exp
-
       console.log('1. Checking login status...')
       const firebaseId = await LocalForage.get<string>(
         `${this.orgHost}:firebaseId`
@@ -147,26 +164,15 @@ export class WalletService {
       const walletInfo = await this.walletClient.getWallet()
       console.log('3. Wallet info received:', { address: walletInfo.address })
 
-      console.log('4. Checking for existing share2...')
       let share2 = await LocalForage.get<string>(`${this.orgHost}:share2`)
 
       if (!share2) {
-        console.log('5. No share2 found, checking encryptedShare2...')
         const encryptedShare2 = await LocalForage.get<string>(
           `${this.orgHost}:encryptedShare2`
         )
-        if (!password) {
-          throw new SDKError(
-            'Password is required',
-            SDKErrorCode.INVALID_PARAMS
-          )
-        }
-
         if (encryptedShare2) {
-          console.log('6. Found encryptedShare2, decrypting...')
           share2 = Crypto.decryptShare(encryptedShare2, password, firebaseId)
-          console.log('7. Saving decrypted share2...')
-          await LocalForage.save(`${this.orgHost}:share2`, share2, exp)
+          await LocalForage.save(`${this.orgHost}:share2`, share2)
         } else {
           console.log('8. No encryptedShare2, recovering using share3...')
           const share3 = Crypto.decryptShare(
@@ -211,9 +217,12 @@ export class WalletService {
       const privateKey = await Secrets.combine([walletInfo.share1, share2])
       const wallet = new Wallet(privateKey)
       this.walletAddress = wallet.address
-      console.log('16. Wallet retrieved successfully:', wallet.address)
+      await LocalForage.save(`${this.orgHost}:walletAddress`, wallet.address)
+      await LocalForage.delete(`${this.orgHost}:share2`)
       return wallet.address
     } catch (error) {
+      this.walletAddress = null
+      await LocalForage.delete(`${this.orgHost}:share2`)
       console.error('Error in retrieveWallet:', error)
       if (error instanceof SDKError) throw error
       throw new SDKError(
@@ -223,13 +232,30 @@ export class WalletService {
       )
     }
   }
-  async getBalance(address: string, chainId: number): Promise<string> {
+
+  async clearWalletState(): Promise<void> {
+    this.walletAddress = null
+    await LocalForage.delete(`${this.orgHost}:walletAddress`)
+    await LocalForage.delete(`${this.orgHost}:share2`)
+    await LocalForage.delete(`${this.orgHost}:encryptedShare2`)
+  }
+
+  async getBalance(address: string, chainId: number): Promise<TokenBalance> {
     const response = await this.rpcClient.sendRpc({
       chainId,
       method: RpcMethod.ETH_GET_BALANCE,
       params: [address, 'latest'],
     })
-    return response.result
+
+    const network = await this.networkService.getCurrentNetwork()
+    const decimals = network?.decimals || DECIMALS.ETH
+
+    return {
+      raw: response.result,
+      formatted: TokenAmount.format(response.result, decimals),
+      decimals,
+      symbol: network?.symbol || 'ETH',
+    }
   }
 
   async getTransactionCount(address: string, chainId: number): Promise<number> {
@@ -258,6 +284,7 @@ export class WalletService {
     })
     return response.result
   }
+
   async getTransactionReceipt(txHash: string, chainId: number): Promise<any> {
     const response = await this.rpcClient.sendRpc({
       chainId,
@@ -345,7 +372,7 @@ export class WalletService {
           tx.from.toLowerCase() === address.toLowerCase()
             ? TransactionType.SEND
             : TransactionType.RECEIVE,
-        status: TransactionStatus.SUCCESS, // TODO: 실제 상태 확인 필요
+        status: TransactionStatus.SUCCESS,
         timestamp: parseInt(tx.timestamp || Date.now().toString()),
         value: tx.value,
         symbol: currentNetwork?.symbol || '',
@@ -353,6 +380,57 @@ export class WalletService {
     } catch (error) {
       console.error('Failed to get latest transaction:', error)
       return undefined
+    }
+  }
+
+  async sendTransaction(params: SendTransactionParams): Promise<string> {
+    try {
+      const from = await this.getAddress()
+      if (!from) {
+        throw new SDKError('Wallet not found', SDKErrorCode.WALLET_NOT_FOUND)
+      }
+
+      // 1. Share 복구 및 private key 생성
+      const [share1, share2] = await Promise.all([
+        this.walletClient.getWallet().then((wallet) => wallet.share1),
+        LocalForage.get<string>(`${this.orgHost}:share2`),
+      ])
+
+      if (!share1 || !share2) {
+        throw new SDKError(
+          'Wallet shares not found',
+          SDKErrorCode.WALLET_NOT_FOUND
+        )
+      }
+
+      const privateKey = await Secrets.combine([share1, share2])
+      const wallet = new Wallet(privateKey)
+
+      // 2. 트랜잭션 파라미터 준비
+      const nonce =
+        params.nonce ?? (await this.getTransactionCount(from, params.chainId))
+      const gasPrice =
+        params.gasPrice ?? (await this.getGasPrice(params.chainId))
+
+      // 3. 트랜잭션 서명
+      const signedTx = await wallet.signTransaction({
+        to: params.to,
+        value: params.value,
+        data: params.data || '0x',
+        chainId: params.chainId,
+        nonce,
+        gasPrice,
+        gasLimit: params.gasLimit,
+      })
+
+      // 4. 서명된 트랜잭션 전송
+      return this.sendRawTransaction(signedTx, params.chainId)
+    } catch (error) {
+      throw new SDKError(
+        'Transaction failed',
+        SDKErrorCode.TRANSACTION_FAILED,
+        error
+      )
     }
   }
 }

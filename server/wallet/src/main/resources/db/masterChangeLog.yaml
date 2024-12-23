@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: create-extensions
-      author: lukek4159
+      author: oscar
       changes:
         - sql: CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
   - include:
