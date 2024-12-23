@@ -29,7 +29,7 @@ export class HttpClient {
       case 'stage':
         return 'https://stage.api.example.com'
       case 'prod':
-        return 'https://api.example.com'
+        return 'https://api-wallet.weblock.land'
       default:
         throw new Error('Invalid environment')
     }
