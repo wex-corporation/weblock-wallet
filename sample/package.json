@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@leeddolddol/wallet": "^0.1.0",
+    "@wefunding-dev/wallet": "^0.1.10",
     "next": "15.1.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

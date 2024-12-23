@@ -189,7 +189,7 @@ export interface WalletInfo {
   }
   /** 자산 정보 */
   assets: {
-    /** 현재 네트워크의 기본 토큰 정보 */
+    /** 현재 네트워크의 ��본 토큰 정보 */
     native: {
       symbol: string
       balance: TokenBalance
@@ -334,6 +334,13 @@ interface Log {
   blockHash: string
   logIndex: string
   removed: boolean
+}
+
+export interface TransactionStatusEvent {
+  hash: string
+  status: TransactionStatus
+  error?: string
+  timestamp: number
 }
 
 export * from './error'
