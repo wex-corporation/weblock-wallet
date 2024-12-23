@@ -9,6 +9,7 @@ import {
   TokenInfo,
 } from '../types'
 import { InternalCore } from '../core/types'
+import { TokenMetadata } from '@/core/services/asset'
 
 export class AssetModule {
   constructor(
@@ -18,14 +19,6 @@ export class AssetModule {
 
   async transfer(params: TransferRequest): Promise<TransferResponse> {
     return this.core.asset.transfer(params)
-  }
-
-  on(event: string, listener: (...args: any[]) => void): void {
-    this.core.asset.on(event, listener)
-  }
-
-  off(event: string, listener: (...args: any[]) => void): void {
-    this.core.asset.off(event, listener)
   }
 
   async addToken(params: {
@@ -72,7 +65,30 @@ export class AssetModule {
     return this.core.asset.getAllowance(params)
   }
 
-  // async getTokenInfo(params: TokenInfoParams): Promise<TokenInfo> {
-  //   return this.core.asset.getTokenInfo(params)
-  // }
+  async getTokenInfo(params: TokenInfoParams): Promise<TokenMetadata> {
+    return this.core.asset.getTokenInfo(params)
+  }
+
+  async registerToken(params: {
+    networkId: string
+    tokenAddress: string
+  }): Promise<void> {
+    return this.core.asset.registerToken(params)
+  }
+
+  async getTokenFullInfo(params: {
+    networkId: string
+    tokenAddress: string
+    walletAddress: string
+  }): Promise<TokenInfo> {
+    return this.core.asset.getTokenFullInfo(params)
+  }
+
+  on(event: string, listener: (...args: any[]) => void): void {
+    this.core.asset.on(event, listener)
+  }
+
+  off(event: string, listener: (...args: any[]) => void): void {
+    this.core.asset.off(event, listener)
+  }
 }
