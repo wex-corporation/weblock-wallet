@@ -28,14 +28,14 @@ spring:
     web-application-type: reactive
   r2dbc:
     url: r2dbc:postgresql://weblock-wallet.cficaug2arwh.ap-northeast-2.rds.amazonaws.com:5432/weblockwallet
-    username: "root"
+    username: root
     password: "0KY{7ec)q_[:$ROZ"
     pool:
       initial-size: 15
       max-size: 60
   liquibase:
     url: jdbc:postgresql://weblock-wallet.cficaug2arwh.ap-northeast-2.rds.amazonaws.com:5432/weblockwallet
-    user: "root"
+    user: root
     password: "0KY{7ec)q_[:$ROZ"
     change-log: classpath:db/masterChangeLog.yaml
   datasource:
@@ -60,13 +60,13 @@ spring:
     activate:
       on-profile: local
   r2dbc:
-    url: r2dbc:postgresql://localhost:5432/weblockwallet
-    username: weblockwallet
-    password: wdpdldpfwlrkqw13
+    url: r2dbc:postgresql://weblock-wallet.cficaug2arwh.ap-northeast-2.rds.amazonaws.com:5432/weblockwallet
+    username: root
+    password: "0KY{7ec)q_[:$ROZ"
   liquibase:
-    url: jdbc:postgresql://localhost:5432/weblockwallet
-    user: weblockwallet
-    password: weblockwallet
+    url: jdbc:postgresql://weblock-wallet.cficaug2arwh.ap-northeast-2.rds.amazonaws.com:5432/weblockwallet
+    user: root
+    password: "0KY{7ec)q_[:$ROZ"
     change-log: classpath:db/masterChangeLog.yaml
   main:
     web-application-type: reactive
@@ -105,20 +105,15 @@ spring:
       on-profile: dev
 ---
 spring:
+  r2dbc:
+    url: r2dbc:postgresql://weblock-wallet.cficaug2arwh.ap-northeast-2.rds.amazonaws.com:5432/weblockwallet
+    username: root
+    password: "0KY{7ec)q_[:$ROZ"
+  liquibase:
+    url: jdbc:postgresql://weblock-wallet.cficaug2arwh.ap-northeast-2.rds.amazonaws.com:5432/weblockwallet
+    user: root
+    password: "0KY{7ec)q_[:$ROZ"
+    change-log: classpath:db/masterChangeLog.yaml
   config:
     activate:
       on-profile: docker-compose
-  r2dbc:
-    url: r2dbc:postgresql://postgres:5432/weblockwallet
-    username: weblockwallet
-    password: weblockwallet
-  liquibase:
-    url: jdbc:postgresql://postgres:5432/weblockwallet
-    user: weblockwallet
-    password: weblockwallet
-    change-log: classpath:db/masterChangeLog.yaml
----
-spring:
-  config:
-    activate:
-      on-profile: prod

@@ -37,7 +37,8 @@ export class AssetService extends EventEmitter {
   }
 
   async transfer(params: TransferRequest): Promise<TransferResponse> {
-    const { networkId, to, amount, type, tokenAddress } = params
+    const { networkId, to, amount, type, tokenAddress, gasLimit, gasPrice } =
+      params
 
     try {
       // 1. 네트워크 확인
@@ -61,6 +62,8 @@ export class AssetService extends EventEmitter {
           to,
           value: amount,
           chainId: network.chainId,
+          gasLimit: gasLimit,
+          gasPrice: gasPrice,
         })
       } else if (type === 'ERC20') {
         if (!tokenAddress) {
