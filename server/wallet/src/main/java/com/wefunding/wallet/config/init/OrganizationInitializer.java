@@ -19,10 +19,10 @@ public class OrganizationInitializer implements CommandLineRunner {
 
   // EdDSA-ed25519 PrivateKey base64url encoded
   private static final String WEBLOCKWALLET_SECRET_KEY =
-      "MC4CAQAwBQYDK2VwBCIEIIF55IVEtJGEMF0CA9KgStGUEuhHfvbgzTFo3v9ieWQt";
+      "MC4CAQAwBQYDK2VwBCIEIECoDobSjKJOiQvLVUdsjXIv7LdT9bh0S011y_Tp2Rkj";
   // EdDSA-ed25519 PublicKey base64url encoded
   private static final String WEBLOCKWALLET_API_KEY =
-      "MCowBQYDK2VwAyEASXmv-39yF5Wx1vX9lPuP7_9qgWVeGXMdAWr-TKalKMw=";
+      "MCowBQYDK2VwAyEAmzzEyhFkjZxi8mJK0lZQD_dSN71HjBEA9nWXA-rh79s";
   private final OrganizationRepository organizationRepository;
 
   @Override
@@ -38,7 +38,7 @@ public class OrganizationInitializer implements CommandLineRunner {
                       List.of(
                           "http://localhost:3000",
                           "http://localhost:3333",
-                          "https://app.alwallet.io"));
+                          "https://api-wallet.weblock.land"));
                   return this.organizationRepository.save(organization);
                 }))
         .block();
