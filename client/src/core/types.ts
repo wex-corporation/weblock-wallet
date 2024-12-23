@@ -11,6 +11,7 @@ import {
   TransferRequest,
   TransferResponse,
 } from '../types'
+import { TokenMetadata } from './services/asset'
 
 export interface InternalCore {
   auth: {
@@ -88,5 +89,20 @@ export interface InternalCore {
     // }) => Promise<{ canTransfer: boolean; reasons?: string[] }>
     on(event: string, listener: (...args: any[]) => void): void
     off(event: string, listener: (...args: any[]) => void): void
+    // 토큰 정보 조회
+    getTokenInfo(params: TokenInfoParams): Promise<TokenMetadata>
+
+    // 토큰 등록
+    registerToken(params: {
+      networkId: string
+      tokenAddress: string
+    }): Promise<void>
+
+    // 토큰 전체 정보 조회
+    getTokenFullInfo(params: {
+      networkId: string
+      tokenAddress: string
+      walletAddress: string
+    }): Promise<TokenInfo>
   }
 }
