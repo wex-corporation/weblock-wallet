@@ -1,6 +1,6 @@
 {
   "name": "@wefunding-dev/wallet",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "WeBlock Wallet SDK for Web3 wallet integration",
   "private": false,
   "publishConfig": {
