@@ -252,6 +252,10 @@ export interface TransferRequest {
   type: 'NATIVE' | 'ERC20'
   /** 토큰 심볼 */
   symbol?: string
+  /** 가스 제한 */
+  gasLimit?: string
+  /** 가스 가격 */
+  gasPrice?: string
 }
 
 /**
