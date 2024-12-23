@@ -5,9 +5,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: "alwallet"
-      POSTGRES_PASSWORD: "alwallet"
-      POSTGRES_DB: "alwallet"
+      POSTGRES_USER: "weblockwallet"
+      POSTGRES_PASSWORD: "weblockwallet"
+      POSTGRES_DB: "weblockwallet"
     logging:
       driver: "json-file"
       options:
@@ -28,7 +28,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=local,docker-compose
+      - SPRING_PROFILES_ACTIVE=prod
     logging:
       driver: "json-file"
       options:
