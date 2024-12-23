@@ -9,11 +9,12 @@ import {
   SDKErrorCode,
   SendTransactionParams,
   TokenBalance,
+  Transaction,
+  TransactionStatus,
 } from '../../types'
 import { RpcClient } from '../../clients/api/rpcs'
 import { RpcMethod } from '../../clients/types'
 import { NetworkService } from '../../core/services/network'
-import { Transaction, TransactionType, TransactionStatus } from '../../types'
 import { TokenAmount } from '../../utils/numbers'
 import { DECIMALS } from '../../utils/numbers'
 
@@ -339,44 +340,22 @@ export class WalletService {
     chainId: number
   ): Promise<Transaction | undefined> {
     try {
-      // 1. 트랜잭션 카운트 조회
-      const txCount = await this.getTransactionCount(address, chainId)
-      if (txCount === 0) {
-        return undefined
-      }
-
-      // 2. 최근 블록 넘버 조회
-      const blockNumber = await this.getBlockNumber(chainId)
-
-      // 3. 해당 주소의 최근 트랜잭션 조회
-      const response = await this.rpcClient.sendRpc({
+      // 단순히 nonce 값으로 최근 트랜잭션 여부만 확인
+      const nonce = await this.rpcClient.sendRpc({
         chainId,
-        method: RpcMethod.ETH_GET_TRANSACTION_BY_BLOCK_NUMBER_AND_INDEX,
-        params: [
-          `0x${blockNumber.toString(16)}`,
-          `0x${(txCount - 1).toString(16)}`,
-        ],
+        method: RpcMethod.ETH_GET_TRANSACTION_COUNT,
+        params: [address, 'latest'],
       })
 
-      if (!response.result) {
+      if (!nonce.result || nonce.result === '0x0') {
         return undefined
       }
-
-      const tx = response.result
-      const currentNetwork = await this.networkService.getCurrentNetwork()
-
-      // 4. Transaction 객체로 변환
       return {
-        hash: tx.hash,
-        type:
-          tx.from.toLowerCase() === address.toLowerCase()
-            ? TransactionType.SEND
-            : TransactionType.RECEIVE,
+        hash: '',
         status: TransactionStatus.SUCCESS,
-        timestamp: parseInt(tx.timestamp || Date.now().toString()),
-        value: tx.value,
-        symbol: currentNetwork?.symbol || '',
-      }
+        timestamp: Date.now(),
+        value: '0',
+      } as Transaction
     } catch (error) {
       console.error('Failed to get latest transaction:', error)
       return undefined

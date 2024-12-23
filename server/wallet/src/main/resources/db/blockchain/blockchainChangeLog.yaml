@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: create-blockchains-table
-      author: lukek4159
+      author: oscar
       changes:
         - createTable:
             tableName: blockchains

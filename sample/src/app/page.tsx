@@ -1,52 +1,33 @@
 "use client";
 
 import { WalletProvider } from "../contexts/WalletContext";
-import { SignIn } from "../components/SignIn";
-import { WalletConnect } from "../components/WalletConnect";
-import { WalletInfo } from "../components/WalletInfo";
-import { TransactionForm } from "../components/TransactionForm";
+import { WalletInfo } from "@/components/WalletInfo";
+import { WalletConnect } from "@/components/WalletConnect";
+import { TransactionForm } from "@/components/TransactionForm";
+import { SignIn } from "@/components/SignIn";
+import { SignOut } from "@/components/SignOut";
+import { NetworkSelector } from "@/components/NetworkSelector";
 
 export default function Home() {
   return (
     <WalletProvider>
-      <div className="space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold">WeBlock Wallet SDK Demo</h1>
-          <p className="text-gray-600 mt-2">
-            Experience Web3 wallet integration
-          </p>
-        </div>
+      <main className="container mx-auto p-4 space-y-4">
+        <h1 className="text-2xl font-bold mb-8">WeBlock SDK Sample</h1>
 
-        <div className="space-y-6">
-          {/* 로그인 섹션 */}
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">
-              1. Connect with Google
-            </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
             <SignIn />
-          </div>
-
-          {/* 지갑 생성/복구 섹션 */}
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">2. Setup Your Wallet</h2>
             <WalletConnect />
-          </div>
-
-          {/* 지갑 정보 섹션 */}
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">
-              3. Wallet Information
-            </h2>
             <WalletInfo />
+            <NetworkSelector />
           </div>
 
-          {/* 트랜잭션 섹션 */}
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">4. Send Transaction</h2>
+          <div className="space-y-4">
             <TransactionForm />
+            <SignOut />
           </div>
         </div>
-      </div>
+      </main>
     </WalletProvider>
   );
 }
