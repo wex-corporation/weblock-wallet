@@ -8,11 +8,14 @@ import {
   AddNetworkRequest,
   Transaction,
   TokenBalance,
+  TokenInfo,
+  TokenInfoParams,
 } from './types'
 import { Core } from './core'
 import { UserModule, WalletModule, AssetModule } from './modules'
 import { SDKError, SDKErrorCode } from './types/error'
 import { NetworkModule } from './modules/network'
+import { TokenMetadata } from './core/services/asset'
 
 /**
  * WeBlock Wallet SDK
@@ -222,6 +225,25 @@ export class WeBlockSDK {
     off: (event: string, listener: (...args: any[]) => void): void => {
       this.assetModule.off(event, listener)
     },
+
+    getTokenInfo: async (params: TokenInfoParams): Promise<TokenMetadata> => {
+      return this.assetModule.getTokenInfo(params)
+    },
+
+    registerToken: async (params: {
+      networkId: string
+      tokenAddress: string
+    }): Promise<void> => {
+      return this.assetModule.registerToken(params)
+    },
+
+    getTokenFullInfo: async (params: {
+      networkId: string
+      tokenAddress: string
+      walletAddress: string
+    }): Promise<TokenInfo> => {
+      return this.assetModule.getTokenFullInfo(params)
+    },
   }
 }
 
@@ -229,3 +251,4 @@ export default WeBlockSDK
 export * from './types'
 export { TokenAmount, DECIMALS } from './utils/numbers'
 export type { TokenBalance } from './types'
+export type { TokenMetadata } from './core/services/asset'
