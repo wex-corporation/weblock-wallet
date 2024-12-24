@@ -68,6 +68,11 @@ public class UserValidationExcludeFilter extends ExcludeUrlFilter {
         .findByApiKey(apiKeyHeader)
         .flatMap(
             org -> {
+              log.info(
+                  "1 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {} || {}",
+                  org.getAllowedHosts(),
+                  orgHostHeader);
+
               if (!org.getAllowedHosts().contains(orgHostHeader)) {
                 return Mono.error(new AuthorizationException(ErrorCode.NOT_ALLOWED_HOST));
               }
@@ -85,6 +90,10 @@ public class UserValidationExcludeFilter extends ExcludeUrlFilter {
                                         "User not registered on org id '%s'", org.getId()),
                                     ErrorCode.USER_NOT_FOUND));
                           }
+                          log.info(
+                              "2 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {} || {}",
+                              user.getOrgId(),
+                              org.getId());
                           exchange.getAttributes().put(AttributeStorage.USER_ATTRIBUTE_KEY, user);
                           return Mono.just(true);
                         })
