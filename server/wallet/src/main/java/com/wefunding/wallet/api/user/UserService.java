@@ -27,12 +27,14 @@ import com.wefunding.wallet.config.AttributeStorage;
 import com.wefunding.wallet.infra.auth.FirebaseVerifier;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Service
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserService {
@@ -82,6 +84,14 @@ public class UserService {
 
   @Transactional
   public Mono<SignInResponse> signIn(String apiKey, SignInRequest request) {
+    log.info(
+        ">>>>>>>>>>>>>>>>>>>>>>>       [signIn] apiKey: {} {} {} {} {}",
+        apiKey,
+        request.email(),
+        request.firebaseId(),
+        request.idToken(),
+        request.provider());
+
     return this.firebaseVerifier
         .verify(request.firebaseId(), request.idToken())
         .filter(verified -> verified)
