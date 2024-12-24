@@ -10,11 +10,13 @@ import com.wefunding.wallet.config.AttributeStorage;
 import com.wefunding.wallet.config.EncryptorProperties;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Service
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class WalletService {
@@ -30,6 +32,8 @@ public class WalletService {
             request.publicKey(),
             Encryptor.encrypt(EncryptorProperties.SECRET_KEY, request.share1()),
             request.encryptedShare3());
+    log.info(">>>>>>>>>>>>>>>> createWallet: {}", AttributeStorage.getUser(exchange).getId());
+    log.info(">>>>>>>>>>>>>>>> createWallet: {}", request.publicKey());
     return this.walletRepository
         .save(
             Wallet.create(

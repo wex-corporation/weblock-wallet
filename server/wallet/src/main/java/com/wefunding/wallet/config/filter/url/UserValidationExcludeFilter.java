@@ -46,10 +46,15 @@ public class UserValidationExcludeFilter extends ExcludeUrlFilter {
     String orgHostHeader = exchange.getRequest().getHeaders().getFirst("X-Al-Org-Host");
     String authorizationHeader =
         exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+    log.info(">>>>>>>>>>>>>>> executeFilter: {}", apiKeyHeader);
+    log.info(">>>>>>>>>>>>>>> orgHostHeader: {}", orgHostHeader);
+    log.info(">>>>>>>>>>>>>>> authorizationHeader: {}", authorizationHeader);
+
     if (apiKeyHeader == null
         || orgHostHeader == null
         || authorizationHeader == null
         || !authorizationHeader.startsWith("Bearer ")) {
+      log.error(">>>>>>>>>>>>>>> error!!!!!!!!!!!");
       return this.sendErrorResponse(
               exchange,
               HttpStatus.UNAUTHORIZED,
@@ -57,6 +62,8 @@ public class UserValidationExcludeFilter extends ExcludeUrlFilter {
           .thenReturn(false);
     }
     String token = authorizationHeader.substring(7);
+    log.info(">>>>>>>>>>>>>>> token: {}", token);
+
     return this.organizationRepository
         .findByApiKey(apiKeyHeader)
         .flatMap(
@@ -95,6 +102,8 @@ public class UserValidationExcludeFilter extends ExcludeUrlFilter {
         .onErrorResume(
             e -> {
               if (e instanceof JWTException || e instanceof AuthorizationException) {
+                log.info(
+                    ">>>>>>>>>>>>>>> JWTException || AuthorizationException: {}", e.getMessage());
                 return this.sendErrorResponse(exchange, HttpStatus.UNAUTHORIZED, e.getMessage())
                     .thenReturn(false);
               } else {
