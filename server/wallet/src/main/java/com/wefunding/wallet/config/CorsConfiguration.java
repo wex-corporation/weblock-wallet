@@ -34,7 +34,9 @@ public class CorsConfiguration {
       ServerHttpRequest request = ctx.getRequest();
       // This should be popup(iframe) client urls
       String allowedOrigin =
-          (this.activeProfile.equals("local") || this.activeProfile.equals("dev"))
+          (this.activeProfile.equals("local")
+                  || this.activeProfile.equals("dev")
+                  || this.activeProfile.equals("prod"))
               ? request.getHeaders().getOrigin()
               : this.findMatchingOrigin(ctx, corsProperties.getAllowedOrigins());
 
