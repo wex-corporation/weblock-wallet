@@ -6,8 +6,13 @@ metadata:
 spec:
   gateways:
   - "{{ .Values.name }}"
+  - mesh
   hosts:
-  - "*"
+  - "{{ .Values.host.name }}"
+  - {{ $fullName }}
+  - {{ $fullName }}.{{ .Release.Namespace }}
+  - {{ $fullName }}.{{ .Release.Namespace }}.svc
+  - {{ $fullName }}.{{ .Release.Namespace }}.svc.cluster.local
   http:
   - match:
     - uri:
