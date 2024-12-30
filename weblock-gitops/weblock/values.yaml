@@ -86,6 +86,11 @@ istio:
       protocol: HTTP
   app: istio-ingress
   istio: ingress
+retries:
+  enabled: true
+  attempts: 2
+  perTryTimeout: 15s
+  retryOn: "connect-failure,refused-stream,unavailable,cancelled,gateway-error,5xx"
 outlierDetection:
   baseEjectionTime: 30s
   consecutive5xxErrors: 3

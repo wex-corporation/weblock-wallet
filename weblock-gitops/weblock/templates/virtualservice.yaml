@@ -17,4 +17,10 @@ spec:
         host: "{{ .Values.name }}.{{ .Values.namespace }}.svc.cluster.local"
         port:
           number: {{ .Values.service.port }}
+    {{- if .Values.retries.enabled }}
+    retries:
+      attempts: {{ .Values.retries.attempts }}
+      perTryTimeout: {{ .Values.retries.perTryTimeout }}
+      retryOn: {{ .Values.retries.retryOn }}
+    {{- end }}
 ---
