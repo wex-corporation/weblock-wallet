@@ -9,10 +9,10 @@ spec:
   - mesh
   hosts:
   - "{{ .Values.host.name }}"
-  - {{ $fullName }}
-  - {{ $fullName }}.{{ .Release.Namespace }}
-  - {{ $fullName }}.{{ .Release.Namespace }}.svc
-  - {{ $fullName }}.{{ .Release.Namespace }}.svc.cluster.local
+  - {{ .Values.name }}
+  - {{ .Values.name }}.{{ .Values.namespace }}
+  - {{ .Values.name }}.{{ .Values.namespace }}.svc
+  - {{ .Values.name }}.{{ .Values.namespace }}.svc.cluster.local
   http:
   - match:
     - uri:
