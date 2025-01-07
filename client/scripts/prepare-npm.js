@@ -3,7 +3,7 @@ import fs from 'fs'
 // 원본 package.json 읽기
 const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'))
 
-// npm 배포용 설정
+// npm 배포용 설정 (npm 계정 : wefunding-tech)
 const npmConfig = {
   ...packageJson,
   name: '@weblock-wallet/sdk',
