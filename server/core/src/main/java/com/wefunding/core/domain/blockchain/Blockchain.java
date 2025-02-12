@@ -156,6 +156,26 @@ public class Blockchain extends DomainEntity {
             18L,
             true,
             "https://mumbai.polygonscan.com"));
+    blockchains.add(
+        Blockchain.createDefault(
+            "Avalanche C-Chain",
+            "https://api.avax.network/ext/bc/C/rpc",
+            43113,
+            "AVAX",
+            "Avalanche",
+            18L,
+            false,
+            "https://snowtrace.io"));
+    blockchains.add(
+        Blockchain.createDefault(
+            "Avalanche Fuji Testnet",
+            "https://api.avax-test.network/ext/bc/c/rpc",
+            43113,
+            "AVAX",
+            "Avalanche",
+            18L,
+            true,
+            "https://testnet.snowscan.xyz"));
     return blockchains;
   }
 }
