@@ -61,13 +61,42 @@ export class WalletModule {
         )
       }
 
-      // 4. 네이티브 토큰 잔액 조회
+      // 4. 네이티브 코인 잔액 조회
       console.log('4. 잔액 조회 시작')
       const nativeBalance = await this.core.wallet.getBalance(
         address,
         network.chainId
       )
-      console.log('네이티브 토큰 잔액:', nativeBalance)
+      console.log('네이티브 코인 잔액:', nativeBalance)
+
+      // 4-1. 아발란체 토큰 잔액 조회
+      const rbtBalance = await this.core.wallet.getTokenBalance(
+        '0xB10536cC40Cb6E6415f70d3a4C1AF7Fa638AE829',
+        address,
+        network.chainId
+      )
+      console.log('RBT 잔액:', rbtBalance)
+
+      const usdrBalance = await this.core.wallet.getTokenBalance(
+        '0x8d335fe5B30e27F2B21F057a4766cf4BB8c30785',
+        address,
+        network.chainId
+      )
+      console.log('USDR 잔액:', usdrBalance)
+
+      const wftBalance = await this.core.wallet.getTokenBalance(
+        '0x6fa62Eda03956ef4E54f3C8597E8c3f3bE40A45B',
+        address,
+        network.chainId
+      )
+      console.log('WFT 잔액:', wftBalance)
+
+      const usdtBalance = await this.core.wallet.getTokenBalance(
+        '0xfF54B9ebe777f528E64C74bc95c68433B7546038',
+        address,
+        network.chainId
+      )
+      console.log('USDT 잔액:', usdtBalance)
 
       // 5. 최근 트랜잭션 조회
       console.log('5. 최근 트랜잭션 조회 시작')
@@ -89,7 +118,40 @@ export class WalletModule {
             balance: nativeBalance,
             decimals: 18,
           },
-          tokens: [],
+          tokens: [
+            {
+              symbol: rbtBalance.symbol,
+              name: 'Real-estate Backed Token',
+              address: '0xB10536cC40Cb6E6415f70d3a4C1AF7Fa638AE829',
+              balance: rbtBalance,
+              decimals: rbtBalance.decimals,
+              totalSupply: rbtBalance,
+            },
+            {
+              symbol: usdrBalance.symbol,
+              name: 'USD Real-estate',
+              address: '0x8d335fe5B30e27F2B21F057a4766cf4BB8c30785',
+              balance: usdrBalance,
+              decimals: usdrBalance.decimals,
+              totalSupply: usdrBalance,
+            },
+            {
+              symbol: wftBalance.symbol,
+              name: 'WeBlock Foundation Token',
+              address: '0x6fa62Eda03956ef4E54f3C8597E8c3f3bE40A45B',
+              balance: wftBalance,
+              decimals: wftBalance.decimals,
+              totalSupply: wftBalance,
+            },
+            {
+              symbol: usdtBalance.symbol,
+              name: 'USD Tether',
+              address: '0xfF54B9ebe777f528E64C74bc95c68433B7546038',
+              balance: usdtBalance,
+              decimals: usdtBalance.decimals,
+              totalSupply: usdtBalance,
+            },
+          ],
           nfts: [],
           securities: [],
         },
