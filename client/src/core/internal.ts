@@ -1,5 +1,6 @@
 import {
   SDKOptions,
+  SendTransactionParams,
   TokenAllowanceParams,
   TokenApprovalParams,
   TokenBalanceParams,
@@ -68,6 +69,14 @@ export class InternalCoreImpl implements InternalCore {
       this.walletService.retrieveWallet(password),
     getBalance: (address: string, chainId: number) =>
       this.walletService.getBalance(address, chainId),
+    getTokenBalance: (
+      tokenAddress: string,
+      walletAddress: string,
+      chainId: number
+    ) =>
+      this.walletService.getTokenBalance(tokenAddress, walletAddress, chainId),
+    sendTransaction: (params: SendTransactionParams) =>
+      this.walletService.sendTransaction(params),
     getTransactionCount: (address: string, chainId: number) =>
       this.walletService.getTransactionCount(address, chainId),
     getBlockNumber: (chainId: number) =>

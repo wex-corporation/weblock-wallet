@@ -1,4 +1,4 @@
-import { Wallet } from 'ethers'
+import { Wallet, Interface } from 'ethers'
 import { generateMnemonic, mnemonicToSeed } from 'bip39'
 import { WalletClient } from '../../clients/api/wallets'
 import { Secrets } from '../../utils/secrets'
@@ -17,6 +17,13 @@ import { RpcMethod } from '../../clients/types'
 import { NetworkService } from '../../core/services/network'
 import { TokenAmount } from '../../utils/numbers'
 import { DECIMALS } from '../../utils/numbers'
+
+// ERC-20 ABI 중 balanceOf, decimals, symbol 만 정의
+const ERC20_ABI = [
+  'function balanceOf(address owner) view returns (uint256)',
+  'function decimals() view returns (uint8)',
+  'function symbol() view returns (string)',
+]
 
 export class WalletService {
   private walletAddress: string | null = null
@@ -256,6 +263,67 @@ export class WalletService {
       formatted: TokenAmount.format(response.result, decimals),
       decimals,
       symbol: network?.symbol || 'ETH',
+    }
+  }
+
+  async getTokenBalance(
+    tokenAddress: string,
+    walletAddress: string,
+    chainId: number
+  ): Promise<TokenBalance> {
+    const erc20 = new Interface(ERC20_ABI)
+
+    // balanceOf 호출 data 생성
+    const data = erc20.encodeFunctionData('balanceOf', [walletAddress])
+
+    // RPC call
+    const rawBalance = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_CALL,
+      params: [
+        {
+          to: tokenAddress,
+          data,
+        },
+        'latest',
+      ],
+    })
+
+    // decimals 호출
+    const decimalsData = erc20.encodeFunctionData('decimals', [])
+    const decimalsRes = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_CALL,
+      params: [
+        {
+          to: tokenAddress,
+          data: decimalsData,
+        },
+        'latest',
+      ],
+    })
+    const decimals = parseInt(decimalsRes.result, 16)
+
+    // symbol 호출
+    const symbolData = erc20.encodeFunctionData('symbol', [])
+    const symbolRes = await this.rpcClient.sendRpc({
+      chainId,
+      method: RpcMethod.ETH_CALL,
+      params: [
+        {
+          to: tokenAddress,
+          data: symbolData,
+        },
+        'latest',
+      ],
+    })
+    const symbol = erc20.decodeFunctionResult('symbol', symbolRes.result)[0]
+
+    return {
+      raw: rawBalance.result,
+      formatted: TokenAmount.format(rawBalance.result, decimals),
+      decimals,
+      symbol,
     }
   }
 

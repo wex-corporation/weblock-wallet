@@ -1,6 +1,7 @@
 import { BlockchainRequest } from '@/clients/types'
 import {
   NetworkInfo,
+  SendTransactionParams,
   TokenAllowanceParams,
   TokenApprovalParams,
   TokenBalance,
@@ -36,6 +37,12 @@ export interface InternalCore {
     create(password: string): Promise<string>
     retrieveWallet(password: string): Promise<string>
     getBalance(address: string, chainId: number): Promise<TokenBalance>
+    getTokenBalance(
+      tokenAddress: string,
+      walletAddress: string,
+      chainId: number
+    ): Promise<TokenBalance>
+    sendTransaction(params: SendTransactionParams): Promise<string>
     getTransactionCount(address: string, chainId: number): Promise<number>
     getBlockNumber(chainId: number): Promise<number>
     sendRawTransaction(signedTx: string, chainId: number): Promise<string>
