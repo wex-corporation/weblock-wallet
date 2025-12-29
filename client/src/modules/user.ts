@@ -59,6 +59,20 @@ export class UserModule {
     return { wallet }
   }
 
+  /**
+   * PIN을 모르는 상태에서 같은 디바이스에 남아있는 복구용 share2(encryptedShare2_device)로
+   * PIN을 재설정합니다. (프라이빗키/주소 유지)
+   */
+  async resetPin(newPassword: string): Promise<WalletResponse> {
+    if (!newPassword) {
+      throw new SDKError('Password is required', SDKErrorCode.INVALID_PARAMS)
+    }
+
+    await this.core.wallet.resetPin(newPassword)
+    const wallet = await this.walletModule.getInfo()
+    return { wallet }
+  }
+
   async signOut(): Promise<void> {
     return this.core.auth.signOut()
   }

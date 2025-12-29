@@ -69,8 +69,6 @@ export class WalletModule {
       )
       console.log('네이티브 코인 잔액:', nativeBalance)
 
-
-
       // // 4-1. 아발란체 토큰 잔액 조회
       // const rbtBalance = await this.core.wallet.getTokenBalance(
       //   '0xB10536cC40Cb6E6415f70d3a4C1AF7Fa638AE829',

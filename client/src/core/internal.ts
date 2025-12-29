@@ -1,11 +1,11 @@
 import {
-  SDKOptions,
-  SendTransactionParams,
-  TokenAllowanceParams,
-  TokenApprovalParams,
-  TokenBalanceParams,
-  TokenInfoParams,
-  TransferRequest,
+    SDKOptions,
+    SendTransactionParams,
+    TokenAllowanceParams,
+    TokenApprovalParams,
+    TokenBalanceParams,
+    TokenInfoParams,
+    TransferRequest,
 } from '../types'
 import { InternalCore } from './types'
 import { AuthService } from './services/auth'
@@ -20,140 +20,150 @@ import { RpcClient } from '../clients/api/rpcs'
 import { AssetService } from './services/asset'
 
 export class InternalCoreImpl implements InternalCore {
-  private readonly authService: AuthService
-  private readonly walletService: WalletService
-  private readonly networkService: NetworkService
-  private readonly assetService: AssetService
-  constructor(private readonly options: SDKOptions) {
-    const httpClient = new HttpClient(options)
-    const firebase = new FirebaseAuth(options)
-    const userClient = new UserClient(httpClient)
-    const walletClient = new WalletClient(httpClient)
-    const rpcClient = new RpcClient(httpClient)
+    private readonly authService: AuthService
+    private readonly walletService: WalletService
+    private readonly networkService: NetworkService
+    private readonly assetService: AssetService
 
-    this.authService = new AuthService(
-      firebase,
-      userClient,
-      walletClient,
-      options.orgHost
-    )
-    this.networkService = new NetworkService(userClient, options.orgHost)
-    this.walletService = new WalletService(
-      walletClient,
-      rpcClient,
-      options.orgHost,
-      this.networkService
-    )
+    constructor(private readonly options: SDKOptions) {
+        const httpClient = new HttpClient(options)
+        const firebase = new FirebaseAuth(options)
+        const userClient = new UserClient(httpClient)
+        const walletClient = new WalletClient(httpClient)
+        const rpcClient = new RpcClient(httpClient)
 
-    this.assetService = new AssetService(
-      rpcClient,
-      this.walletService,
-      this.networkService,
-      userClient,
-      options.orgHost
-    )
-  }
+        this.authService = new AuthService(
+            firebase,
+            userClient,
+            walletClient,
+            options.orgHost
+        )
+        this.networkService = new NetworkService(userClient, options.orgHost)
+        this.walletService = new WalletService(
+            walletClient,
+            rpcClient,
+            options.orgHost,
+            this.networkService
+        )
 
-  auth = {
-    signIn: (provider: string) => this.authService.signIn(provider),
-    signOut: () => this.authService.signOut(),
-    isLoggedIn: () => this.authService.isLoggedIn(),
-    getAuthInfo: () => this.authService.getAuthInfo(),
-    clearNewUserFlag: () => this.authService.clearNewUserFlag(),
-  }
+        this.assetService = new AssetService(
+            rpcClient,
+            this.walletService,
+            this.networkService,
+            userClient,
+            options.orgHost
+        )
+    }
 
-  wallet = {
-    getAddress: () => this.walletService.getAddress(),
-    create: (password: string) => this.walletService.create(password),
-    retrieveWallet: (password: string) =>
-      this.walletService.retrieveWallet(password),
-    getBalance: (address: string, chainId: number) =>
-      this.walletService.getBalance(address, chainId),
-    getTokenBalance: (
-      tokenAddress: string,
-      walletAddress: string,
-      chainId: number
-    ) =>
-      this.walletService.getTokenBalance(tokenAddress, walletAddress, chainId),
-    sendTransaction: (params: SendTransactionParams) =>
-      this.walletService.sendTransaction(params),
-    getTransactionCount: (address: string, chainId: number) =>
-      this.walletService.getTransactionCount(address, chainId),
-    getBlockNumber: (chainId: number) =>
-      this.walletService.getBlockNumber(chainId),
-    sendRawTransaction: (signedTx: string, chainId: number) =>
-      this.walletService.sendRawTransaction(signedTx, chainId),
-    getTransactionReceipt: (txHash: string, chainId: number) =>
-      this.walletService.getTransactionReceipt(txHash, chainId),
-    getTransaction: (txHash: string, chainId: number) =>
-      this.walletService.getTransaction(txHash, chainId),
-    estimateGas: (txParams: any, chainId: number) =>
-      this.walletService.estimateGas(txParams, chainId),
-    getGasPrice: (chainId: number) => this.walletService.getGasPrice(chainId),
-    call: (txParams: any, blockParam: string | number, chainId: number) =>
-      this.walletService.call(txParams, blockParam, chainId),
-    getLatestTransaction: (address: string, chainId: number) =>
-      this.walletService.getLatestTransaction(address, chainId),
-  }
+    auth = {
+        signIn: (provider: string) => this.authService.signIn(provider),
+        signOut: () => this.authService.signOut(),
+        isLoggedIn: () => this.authService.isLoggedIn(),
+        getAuthInfo: () => this.authService.getAuthInfo(),
+        clearNewUserFlag: () => this.authService.clearNewUserFlag(),
+    }
 
-  network = {
-    getRegisteredNetworks: () => this.networkService.getRegisteredNetworks(),
-    registerNetwork: (params: BlockchainRequest) =>
-      this.networkService.registerNetwork(params),
-    switchNetwork: (networkId: string) =>
-      this.networkService.switchNetwork(networkId),
-    getCurrentNetwork: () => this.networkService.getCurrentNetwork(),
-  }
-  asset = {
-    transfer: (params: TransferRequest) => this.assetService.transfer(params),
+    wallet = {
+        getAddress: () => this.walletService.getAddress(),
+        create: (password: string) => this.walletService.create(password),
+        retrieveWallet: (password: string) =>
+            this.walletService.retrieveWallet(password),
 
-    addToken: (params: {
-      type: 'ERC20' | 'SECURITY'
-      networkId: string
-      address: string
-      symbol?: string
-      decimals?: number
-      name?: string
-    }) => this.assetService.addToken(params),
+        resetPin: (newPassword: string) => this.walletService.resetPin(newPassword),
 
-    // New ERC20 methods
-    getTokenBalance: (params: TokenBalanceParams) =>
-      this.assetService.getTokenBalance(params),
+        getBalance: (address: string, chainId: number) =>
+            this.walletService.getBalance(address, chainId),
+        getTokenBalance: (
+            tokenAddress: string,
+            walletAddress: string,
+            chainId: number
+        ) =>
+            this.walletService.getTokenBalance(tokenAddress, walletAddress, chainId),
+        sendTransaction: (params: SendTransactionParams) =>
+            this.walletService.sendTransaction(params),
+        getTransactionCount: (address: string, chainId: number) =>
+            this.walletService.getTransactionCount(address, chainId),
+        getBlockNumber: (chainId: number) =>
+            this.walletService.getBlockNumber(chainId),
+        sendRawTransaction: (signedTx: string, chainId: number) =>
+            this.walletService.sendRawTransaction(signedTx, chainId),
+        getTransactionReceipt: (txHash: string, chainId: number) =>
+            this.walletService.getTransactionReceipt(txHash, chainId),
+        getTransaction: (txHash: string, chainId: number) =>
+            this.walletService.getTransaction(txHash, chainId),
+        estimateGas: (txParams: any, chainId: number) =>
+            this.walletService.estimateGas(txParams, chainId),
+        getGasPrice: (chainId: number) => this.walletService.getGasPrice(chainId),
+        call: (txParams: any, blockParam: string | number, chainId: number) =>
+            this.walletService.call(txParams, blockParam, chainId),
+        getLatestTransaction: (address: string, chainId: number) =>
+            this.walletService.getLatestTransaction(address, chainId),
+    }
 
-    approveToken: (params: TokenApprovalParams) =>
-      this.assetService.approveToken(params),
+    network = {
+        getRegisteredNetworks: () => this.networkService.getRegisteredNetworks(),
+        registerNetwork: (params: BlockchainRequest) =>
+            this.networkService.registerNetwork(params),
+        switchNetwork: (networkId: string) =>
+            this.networkService.switchNetwork(networkId),
+        getCurrentNetwork: () => this.networkService.getCurrentNetwork(),
+    }
 
-    getAllowance: (params: TokenAllowanceParams) =>
-      this.assetService.getAllowance(params),
+    asset = {
+        transfer: (params: TransferRequest) => this.assetService.transfer(params),
 
-    // getTokenInfo: (params: TokenInfoParams) =>
-    //   this.assetService.getTokenInfo(params),
-    addNFTCollection: (params: {
-      networkId: string
-      address: string
-      name?: string
-    }) => this.assetService.addNFTCollection(params),
-    // checkSecurityTokenCompliance: (params: {
-    //   networkId: string
-    //   tokenAddress: string
-    //   from: string
-    //   to: string
-    //   amount: string
-    // }) => this.assetService.checkSecurityTokenCompliance(params),
-    on: (event: string, listener: (...args: any[]) => void) =>
-      this.assetService.on(event, listener),
-    off: (event: string, listener: (...args: any[]) => void) =>
-      this.assetService.off(event, listener),
-    getTokenInfo: (params: TokenInfoParams) =>
-      this.assetService.getTokenInfo(params),
+        /**
+         * ✅ 타입 정합성:
+         * - InternalCore는 decimals?: number
+         * - 기존 AssetService 내부 구현이 decimals를 string으로 받는 경우가 있어,
+         *   여기서 안전하게 string으로 변환해서 전달합니다.
+         */
+        addToken: (params: {
+            type: 'ERC20' | 'SECURITY'
+            networkId: string
+            address: string
+            symbol?: string
+            decimals?: number
+            name?: string
+        }) =>
+            this.assetService.addToken({
+                ...params,
+                decimals:
+                    typeof params.decimals === 'number'
+                        ? String(params.decimals)
+                        : undefined,
+            } as any),
 
-    registerToken: (params: { networkId: string; tokenAddress: string }) =>
-      this.assetService.registerToken(params),
+        getTokenBalance: (params: TokenBalanceParams) =>
+            this.assetService.getTokenBalance(params),
 
-    getTokenFullInfo: (params: {
-      networkId: string
-      tokenAddress: string
-      walletAddress: string
-    }) => this.assetService.getTokenFullInfo(params),
-  }
+        approveToken: (params: TokenApprovalParams) =>
+            this.assetService.approveToken(params),
+
+        getAllowance: (params: TokenAllowanceParams) =>
+            this.assetService.getAllowance(params),
+
+        addNFTCollection: (params: {
+            networkId: string
+            address: string
+            name?: string
+        }) => this.assetService.addNFTCollection(params),
+
+        on: (event: string, listener: (...args: any[]) => void) =>
+            this.assetService.on(event, listener),
+        off: (event: string, listener: (...args: any[]) => void) =>
+            this.assetService.off(event, listener),
+
+        getTokenInfo: (params: TokenInfoParams) =>
+            this.assetService.getTokenInfo(params),
+
+        registerToken: (params: { networkId: string; tokenAddress: string }) =>
+            this.assetService.registerToken(params),
+
+        getTokenFullInfo: (params: {
+            networkId: string
+            tokenAddress: string
+            walletAddress: string
+        }) => this.assetService.getTokenFullInfo(params),
+    }
 }
