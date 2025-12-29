@@ -24,7 +24,6 @@ export class InternalCoreImpl implements InternalCore {
     private readonly walletService: WalletService
     private readonly networkService: NetworkService
     private readonly assetService: AssetService
-
     constructor(private readonly options: SDKOptions) {
         const httpClient = new HttpClient(options)
         const firebase = new FirebaseAuth(options)
@@ -68,9 +67,6 @@ export class InternalCoreImpl implements InternalCore {
         create: (password: string) => this.walletService.create(password),
         retrieveWallet: (password: string) =>
             this.walletService.retrieveWallet(password),
-
-        resetPin: (newPassword: string) => this.walletService.resetPin(newPassword),
-
         getBalance: (address: string, chainId: number) =>
             this.walletService.getBalance(address, chainId),
         getTokenBalance: (
@@ -108,16 +104,9 @@ export class InternalCoreImpl implements InternalCore {
             this.networkService.switchNetwork(networkId),
         getCurrentNetwork: () => this.networkService.getCurrentNetwork(),
     }
-
     asset = {
         transfer: (params: TransferRequest) => this.assetService.transfer(params),
 
-        /**
-         * ✅ 타입 정합성:
-         * - InternalCore는 decimals?: number
-         * - 기존 AssetService 내부 구현이 decimals를 string으로 받는 경우가 있어,
-         *   여기서 안전하게 string으로 변환해서 전달합니다.
-         */
         addToken: (params: {
             type: 'ERC20' | 'SECURITY'
             networkId: string
@@ -125,15 +114,9 @@ export class InternalCoreImpl implements InternalCore {
             symbol?: string
             decimals?: number
             name?: string
-        }) =>
-            this.assetService.addToken({
-                ...params,
-                decimals:
-                    typeof params.decimals === 'number'
-                        ? String(params.decimals)
-                        : undefined,
-            } as any),
+        }) => this.assetService.addToken(params),
 
+        // New ERC20 methods
         getTokenBalance: (params: TokenBalanceParams) =>
             this.assetService.getTokenBalance(params),
 
@@ -143,17 +126,24 @@ export class InternalCoreImpl implements InternalCore {
         getAllowance: (params: TokenAllowanceParams) =>
             this.assetService.getAllowance(params),
 
+        // getTokenInfo: (params: TokenInfoParams) =>
+        //   this.assetService.getTokenInfo(params),
         addNFTCollection: (params: {
             networkId: string
             address: string
             name?: string
         }) => this.assetService.addNFTCollection(params),
-
+        // checkSecurityTokenCompliance: (params: {
+        //   networkId: string
+        //   tokenAddress: string
+        //   from: string
+        //   to: string
+        //   amount: string
+        // }) => this.assetService.checkSecurityTokenCompliance(params),
         on: (event: string, listener: (...args: any[]) => void) =>
             this.assetService.on(event, listener),
         off: (event: string, listener: (...args: any[]) => void) =>
             this.assetService.off(event, listener),
-
         getTokenInfo: (params: TokenInfoParams) =>
             this.assetService.getTokenInfo(params),
 
@@ -165,5 +155,8 @@ export class InternalCoreImpl implements InternalCore {
             tokenAddress: string
             walletAddress: string
         }) => this.assetService.getTokenFullInfo(params),
+
+        getRegisteredCoins: (networkId: string) =>
+            this.assetService.getRegisteredCoins(networkId),
     }
 }
