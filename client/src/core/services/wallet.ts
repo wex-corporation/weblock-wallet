@@ -17,6 +17,7 @@ import { RpcMethod } from '../../clients/types'
 import { NetworkService } from '../../core/services/network'
 import { TokenAmount } from '../../utils/numbers'
 import { DECIMALS } from '../../utils/numbers'
+import * as nodeCrypto from 'crypto'
 
 // ERC-20 ABI 중 balanceOf, decimals, symbol 만 정의
 const ERC20_ABI = [
@@ -25,21 +26,26 @@ const ERC20_ABI = [
     'function symbol() view returns (string)',
 ]
 
+const STORAGE_KEYS = {
+    walletAddress: (orgHost: string) => `${orgHost}:walletAddress`,
+    share2: (orgHost: string) => `${orgHost}:share2`,
+    encryptedShare2: (orgHost: string) => `${orgHost}:encryptedShare2`,
+    encryptedShare2Device: (orgHost: string) => `${orgHost}:encryptedShare2_device`,
+    deviceSecret: (orgHost: string) => `${orgHost}:deviceSecret`,
+    firebaseId: (orgHost: string) => `${orgHost}:firebaseId`,
+    accessToken: (orgHost: string) => `${orgHost}:accessToken`,
+    isNewUser: (orgHost: string) => `${orgHost}:isNewUser`,
+}
+
 export class WalletService {
     private walletAddress: string | null = null
 
     /**
      * Wallet PIN/password mismatch handling.
-     *
-     * The lower-level Crypto.decryptShare currently throws a plain Error('Wrong password')
-     * (or a Node crypto "bad decrypt" style error) when the provided PIN is incorrect.
-     * We normalize that to a stable SDKError(SDKErrorCode.INVALID_PASSWORD) so callers
-     * can implement consistent UI/UX.
      */
     private isInvalidPasswordError(error: unknown): boolean {
         if (!error) return false
 
-        // Crypto.decryptShare throws Error('Wrong password')
         if (error instanceof Error) {
             const msg = (error.message || '').toLowerCase()
             return (
@@ -50,7 +56,6 @@ export class WalletService {
             )
         }
 
-        // Some environments might throw a non-Error object
         try {
             const msg = String((error as any)?.message ?? '').toLowerCase()
             return (
@@ -64,6 +69,38 @@ export class WalletService {
         }
     }
 
+    private isSixDigitPin(pin: string): boolean {
+        return /^[0-9]{6}$/.test(pin)
+    }
+
+    /**
+     * deviceSecret은 "PIN과 무관한 로컬 복구용 비밀값"입니다.
+     * - 같은 디바이스에서만 PIN reset이 가능하도록 하는 역할
+     * - 서버에는 절대 전달하지 않습니다.
+     */
+    private async getOrCreateDeviceSecret(): Promise<string> {
+        const key = STORAGE_KEYS.deviceSecret(this.orgHost)
+        const existing = await LocalForage.get<string>(key)
+        if (existing) return existing
+
+        const secret = nodeCrypto.randomBytes(32).toString('hex')
+        await LocalForage.save(key, secret)
+        return secret
+    }
+
+    private async ensureDeviceEncryptedShare2(
+        share2Plain: string,
+        firebaseId: string
+    ): Promise<void> {
+        const encryptedKey = STORAGE_KEYS.encryptedShare2Device(this.orgHost)
+        const existing = await LocalForage.get<string>(encryptedKey)
+        if (existing) return
+
+        const deviceSecret = await this.getOrCreateDeviceSecret()
+        const encrypted = Crypto.encryptShare(share2Plain, deviceSecret, firebaseId)
+        await LocalForage.save(encryptedKey, encrypted)
+    }
+
     constructor(
         private readonly walletClient: WalletClient,
         private readonly rpcClient: RpcClient,
@@ -73,26 +110,23 @@ export class WalletService {
 
     async getAddress(): Promise<string> {
         try {
-            // 메모리에 있으면 반환
             if (this.walletAddress) {
                 return this.walletAddress
             }
 
-            // LocalForage에서 조회
             const savedAddress = await LocalForage.get<string>(
-                `${this.orgHost}:walletAddress`
+                STORAGE_KEYS.walletAddress(this.orgHost)
             )
             if (savedAddress) {
                 this.walletAddress = savedAddress
                 return savedAddress
             }
 
-            // 서버에서 조회
             const walletInfo = await this.walletClient.getWallet()
             if (walletInfo?.address) {
                 this.walletAddress = walletInfo.address
                 await LocalForage.save(
-                    `${this.orgHost}:walletAddress`,
+                    STORAGE_KEYS.walletAddress(this.orgHost),
                     walletInfo.address
                 )
                 return walletInfo.address
@@ -111,7 +145,7 @@ export class WalletService {
     async create(password: string) {
         try {
             const firebaseId = await LocalForage.get<string>(
-                `${this.orgHost}:firebaseId`
+                STORAGE_KEYS.firebaseId(this.orgHost)
             )
             console.log('1. FirebaseId:', firebaseId)
 
@@ -123,8 +157,15 @@ export class WalletService {
                 throw new SDKError('Password is required', SDKErrorCode.INVALID_PARAMS)
             }
 
+            if (!this.isSixDigitPin(password)) {
+                throw new SDKError(
+                    'PIN must be a 6-digit number',
+                    SDKErrorCode.INVALID_PARAMS
+                )
+            }
+
             const isNewUser = await LocalForage.get<boolean>(
-                `${this.orgHost}:isNewUser`
+                STORAGE_KEYS.isNewUser(this.orgHost)
             )
             if (!isNewUser) {
                 throw new SDKError(
@@ -145,23 +186,19 @@ export class WalletService {
             console.log('4. Splitting private key...')
             const shares = await Secrets.split(wallet.privateKey, 3, 2)
             const [share1, share2, share3] = shares
-            console.log('5. Shares created:', {
-                share1Length: share1.length,
-                share2Length: share2.length,
-                share3Length: share3.length,
-            })
 
             console.log('6. Encrypting shares...')
             const encryptedShare2 = Crypto.encryptShare(share2, password, firebaseId)
             const encryptedShare3 = Crypto.encryptShare(share3, password, firebaseId)
-            console.log('7. Shares encrypted:', {
-                encryptedShare2Length: encryptedShare2.length,
-                encryptedShare3Length: encryptedShare3.length,
-            })
 
             console.log('8. Saving encryptedShare2 to LocalForage...')
-            await LocalForage.save(`${this.orgHost}:encryptedShare2`, encryptedShare2)
-            console.log('9. encryptedShare2 saved')
+            await LocalForage.save(
+                STORAGE_KEYS.encryptedShare2(this.orgHost),
+                encryptedShare2
+            )
+
+            // NEW: device recovery용 encryptedShare2_device 저장
+            await this.ensureDeviceEncryptedShare2(share2, firebaseId)
 
             console.log('10. Creating wallet on server...')
             await this.walletClient.createWallet({
@@ -170,10 +207,12 @@ export class WalletService {
                 share1,
                 encryptedShare3,
             })
-            console.log('11. Wallet created on server')
 
             this.walletAddress = wallet.address
-            await LocalForage.save(`${this.orgHost}:walletAddress`, wallet.address)
+            await LocalForage.save(
+                STORAGE_KEYS.walletAddress(this.orgHost),
+                wallet.address
+            )
 
             return wallet.address
         } catch (error) {
@@ -190,18 +229,24 @@ export class WalletService {
     async retrieveWallet(password: string): Promise<string> {
         try {
             const accessToken = await LocalForage.get<string>(
-                `${this.orgHost}:accessToken`
+                STORAGE_KEYS.accessToken(this.orgHost)
             )
             if (!accessToken) {
                 throw new SDKError('Access token not found', SDKErrorCode.AUTH_REQUIRED)
             }
 
-            console.log('1. Checking login status...')
             const firebaseId = await LocalForage.get<string>(
-                `${this.orgHost}:firebaseId`
+                STORAGE_KEYS.firebaseId(this.orgHost)
             )
             if (!firebaseId) {
                 throw new SDKError('Not logged in', SDKErrorCode.AUTH_REQUIRED)
+            }
+
+            if (!this.isSixDigitPin(password)) {
+                throw new SDKError(
+                    'PIN must be a 6-digit number',
+                    SDKErrorCode.INVALID_PARAMS
+                )
             }
 
             const decryptShareOrThrow = (encryptedShare: string): string => {
@@ -219,65 +264,66 @@ export class WalletService {
                 }
             }
 
-            console.log('2. Getting wallet info from server...')
             const walletInfo = await this.walletClient.getWallet()
-            console.log('3. Wallet info received:', { address: walletInfo.address })
 
-            let share2 = await LocalForage.get<string>(`${this.orgHost}:share2`)
+            let share2 = await LocalForage.get<string>(STORAGE_KEYS.share2(this.orgHost))
 
             if (!share2) {
                 const encryptedShare2 = await LocalForage.get<string>(
-                    `${this.orgHost}:encryptedShare2`
+                    STORAGE_KEYS.encryptedShare2(this.orgHost)
                 )
                 if (encryptedShare2) {
                     share2 = decryptShareOrThrow(encryptedShare2)
-                    await LocalForage.save(`${this.orgHost}:share2`, share2)
+                    await LocalForage.save(STORAGE_KEYS.share2(this.orgHost), share2)
                 } else {
-                    console.log('8. No encryptedShare2, recovering using share3...')
+                    // encryptedShare2가 없으면 share3 기반 복구 (기존 로직)
                     const share3 = decryptShareOrThrow(walletInfo.encryptedShare3)
-                    console.log('9. Share3 decrypted, combining with share1...')
                     const privateKey = await Secrets.combine([walletInfo.share1, share3])
                     const wallet = new Wallet(privateKey)
 
-                    console.log('10. Generating new shares...')
                     const newShares = await Secrets.split(wallet.privateKey, 3, 2)
                     const [newShare1, newShare2, newShare3] = newShares
-                    console.log('11. New shares generated')
 
-                    console.log('12. Updating wallet keys on server...')
                     await this.walletClient.updateWalletKey({
                         share1: newShare1,
-                        encryptedShare3: Crypto.encryptShare(
-                            newShare3,
-                            password,
-                            firebaseId
-                        ),
+                        encryptedShare3: Crypto.encryptShare(newShare3, password, firebaseId),
                     })
 
-                    console.log('13. Saving new shares locally...')
-                    await LocalForage.save(`${this.orgHost}:share2`, newShare2)
+                    await LocalForage.save(STORAGE_KEYS.share2(this.orgHost), newShare2)
                     await LocalForage.save(
-                        `${this.orgHost}:encryptedShare2`,
+                        STORAGE_KEYS.encryptedShare2(this.orgHost),
                         Crypto.encryptShare(newShare2, password, firebaseId)
                     )
 
-                    console.log('14. Wallet recovered with share3:', wallet.address)
+                    // NEW: device recovery material도 갱신
+                    await this.ensureDeviceEncryptedShare2(newShare2, firebaseId)
+
                     this.walletAddress = wallet.address
-                    console.log('15. Wallet address set:', this.walletAddress)
+                    await LocalForage.save(
+                        STORAGE_KEYS.walletAddress(this.orgHost),
+                        wallet.address
+                    )
+                    await LocalForage.delete(STORAGE_KEYS.share2(this.orgHost))
                     return wallet.address
                 }
             }
 
-            console.log('15. Combining share1 and share2...')
             const privateKey = await Secrets.combine([walletInfo.share1, share2])
             const wallet = new Wallet(privateKey)
+
+            // NEW: device recovery material 보장
+            await this.ensureDeviceEncryptedShare2(share2, firebaseId)
+
             this.walletAddress = wallet.address
-            await LocalForage.save(`${this.orgHost}:walletAddress`, wallet.address)
-            await LocalForage.delete(`${this.orgHost}:share2`)
+            await LocalForage.save(
+                STORAGE_KEYS.walletAddress(this.orgHost),
+                wallet.address
+            )
+            await LocalForage.delete(STORAGE_KEYS.share2(this.orgHost))
             return wallet.address
         } catch (error) {
             this.walletAddress = null
-            await LocalForage.delete(`${this.orgHost}:share2`)
+            await LocalForage.delete(STORAGE_KEYS.share2(this.orgHost))
             console.error('Error in retrieveWallet:', error)
             if (error instanceof SDKError) throw error
             throw new SDKError(
@@ -288,11 +334,120 @@ export class WalletService {
         }
     }
 
+    /**
+     * NEW: PIN reset (프라이빗키/주소 유지)
+     * - 같은 디바이스에 남아있는 encryptedShare2_device를 이용
+     * - 서버는 PATCH /v1/wallets/keys 로 share1 / encryptedShare3 만 업데이트
+     */
+    async resetPin(newPassword: string): Promise<string> {
+        try {
+            const accessToken = await LocalForage.get<string>(
+                STORAGE_KEYS.accessToken(this.orgHost)
+            )
+            if (!accessToken) {
+                throw new SDKError('Access token not found', SDKErrorCode.AUTH_REQUIRED)
+            }
+
+            const firebaseId = await LocalForage.get<string>(
+                STORAGE_KEYS.firebaseId(this.orgHost)
+            )
+            if (!firebaseId) {
+                throw new SDKError('Not logged in', SDKErrorCode.AUTH_REQUIRED)
+            }
+
+            if (!newPassword || !this.isSixDigitPin(newPassword)) {
+                throw new SDKError(
+                    'PIN must be a 6-digit number',
+                    SDKErrorCode.INVALID_PARAMS
+                )
+            }
+
+            const encryptedDevice = await LocalForage.get<string>(
+                STORAGE_KEYS.encryptedShare2Device(this.orgHost)
+            )
+            if (!encryptedDevice) {
+                throw new SDKError(
+                    'PIN reset is not available on this device',
+                    SDKErrorCode.RECOVERY_NOT_AVAILABLE
+                )
+            }
+
+            const deviceSecret = await LocalForage.get<string>(
+                STORAGE_KEYS.deviceSecret(this.orgHost)
+            )
+            if (!deviceSecret) {
+                throw new SDKError(
+                    'PIN reset is not available on this device',
+                    SDKErrorCode.RECOVERY_NOT_AVAILABLE
+                )
+            }
+
+            let share2: string
+            try {
+                share2 = Crypto.decryptShare(encryptedDevice, deviceSecret, firebaseId)
+            } catch (e) {
+                throw new SDKError(
+                    'PIN reset is not available on this device',
+                    SDKErrorCode.RECOVERY_NOT_AVAILABLE,
+                    e
+                )
+            }
+
+            const walletInfo = await this.walletClient.getWallet()
+
+            // private key 복원 (주소 유지)
+            const privateKey = await Secrets.combine([walletInfo.share1, share2])
+            const wallet = new Wallet(privateKey)
+
+            // 새 PIN으로 shares 재발급/재암호화 (프라이빗키는 동일)
+            const newShares = await Secrets.split(wallet.privateKey, 3, 2)
+            const [newShare1, newShare2, newShare3] = newShares
+
+            // 서버 업데이트: share1 + encryptedShare3(새 PIN)
+            await this.walletClient.updateWalletKey({
+                share1: newShare1,
+                encryptedShare3: Crypto.encryptShare(newShare3, newPassword, firebaseId),
+            })
+
+            // 로컬 업데이트: encryptedShare2(새 PIN) + encryptedShare2_device(유지/갱신)
+            await LocalForage.save(
+                STORAGE_KEYS.encryptedShare2(this.orgHost),
+                Crypto.encryptShare(newShare2, newPassword, firebaseId)
+            )
+
+            const newEncryptedDevice = Crypto.encryptShare(newShare2, deviceSecret, firebaseId)
+            await LocalForage.save(
+                STORAGE_KEYS.encryptedShare2Device(this.orgHost),
+                newEncryptedDevice
+            )
+
+            // 지갑 주소 캐시 갱신
+            this.walletAddress = wallet.address
+            await LocalForage.save(
+                STORAGE_KEYS.walletAddress(this.orgHost),
+                wallet.address
+            )
+
+            // share2 평문은 항상 제거
+            await LocalForage.delete(STORAGE_KEYS.share2(this.orgHost))
+
+            return wallet.address
+        } catch (error) {
+            console.error('Error in resetPin:', error)
+            if (error instanceof SDKError) throw error
+            throw new SDKError('Failed to reset PIN', SDKErrorCode.PIN_RESET_FAILED, error)
+        }
+    }
+
     async clearWalletState(): Promise<void> {
         this.walletAddress = null
-        await LocalForage.delete(`${this.orgHost}:walletAddress`)
-        await LocalForage.delete(`${this.orgHost}:share2`)
-        await LocalForage.delete(`${this.orgHost}:encryptedShare2`)
+        await LocalForage.delete(STORAGE_KEYS.walletAddress(this.orgHost))
+        await LocalForage.delete(STORAGE_KEYS.share2(this.orgHost))
+        await LocalForage.delete(STORAGE_KEYS.encryptedShare2(this.orgHost))
+
+        // NEW
+        await LocalForage.delete(STORAGE_KEYS.encryptedShare2Device(this.orgHost))
+        await LocalForage.delete(STORAGE_KEYS.deviceSecret(this.orgHost))
     }
 
     async getBalance(address: string, chainId: number): Promise<TokenBalance> {
@@ -320,10 +475,8 @@ export class WalletService {
     ): Promise<TokenBalance> {
         const erc20 = new Interface(ERC20_ABI)
 
-        // balanceOf 호출 data 생성
         const data = erc20.encodeFunctionData('balanceOf', [walletAddress])
 
-        // RPC call
         const rawBalance = await this.rpcClient.sendRpc({
             chainId,
             method: RpcMethod.ETH_CALL,
@@ -336,7 +489,6 @@ export class WalletService {
             ],
         })
 
-        // decimals 호출
         const decimalsData = erc20.encodeFunctionData('decimals', [])
         const decimalsRes = await this.rpcClient.sendRpc({
             chainId,
@@ -351,7 +503,6 @@ export class WalletService {
         })
         const decimals = parseInt(decimalsRes.result, 16)
 
-        // symbol 호출
         const symbolData = erc20.encodeFunctionData('symbol', [])
         const symbolRes = await this.rpcClient.sendRpc({
             chainId,
@@ -455,7 +606,6 @@ export class WalletService {
         chainId: number
     ): Promise<Transaction | undefined> {
         try {
-            // 단순히 nonce 값으로 최근 트랜잭션 여부만 확인
             const nonce = await this.rpcClient.sendRpc({
                 chainId,
                 method: RpcMethod.ETH_GET_TRANSACTION_COUNT,
@@ -484,10 +634,9 @@ export class WalletService {
                 throw new SDKError('Wallet not found', SDKErrorCode.WALLET_NOT_FOUND)
             }
 
-            // 1. Share 복구 및 private key 생성
             const [share1, share2] = await Promise.all([
                 this.walletClient.getWallet().then((wallet) => wallet.share1),
-                LocalForage.get<string>(`${this.orgHost}:share2`),
+                LocalForage.get<string>(STORAGE_KEYS.share2(this.orgHost)),
             ])
 
             if (!share1 || !share2) {
@@ -500,13 +649,11 @@ export class WalletService {
             const privateKey = await Secrets.combine([share1, share2])
             const wallet = new Wallet(privateKey)
 
-            // 2. 트랜잭션 파라미터 준비
             const nonce =
                 params.nonce ?? (await this.getTransactionCount(from, params.chainId))
             const gasPrice =
                 params.gasPrice ?? (await this.getGasPrice(params.chainId))
 
-            // 3. 트랜잭션 서명
             const signedTx = await wallet.signTransaction({
                 to: params.to,
                 value: params.value,
@@ -517,7 +664,6 @@ export class WalletService {
                 gasLimit: params.gasLimit,
             })
 
-            // 4. 서명된 트랜잭션 전송
             return this.sendRawTransaction(signedTx, params.chainId)
         } catch (error) {
             throw new SDKError(
