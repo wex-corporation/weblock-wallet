@@ -288,7 +288,7 @@ public class UserService {
   //  }
 
   public Mono<Coin> registerToken(RegisterTokenRequest req /*, UUID userId */) {
-    UUID blockchainId = req.blockchainId();
+    UUID blockchainId = UUID.fromString(req.blockchainId());
     String contract = normalizeAddress(req.contractAddress());
 
     Integer decimals = (int) req.decimals();
