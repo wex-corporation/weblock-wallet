@@ -23,6 +23,7 @@ import { NetworkService } from './network'
 import { EventEmitter } from 'events'
 import { setTimeout } from 'timers'
 import { UserClient } from '@/clients/api/users'
+import { TokenResponse } from '@/clients/types'
 import { TokenAmount } from '../../utils/numbers'
 
 export interface TokenMetadata {
@@ -34,6 +35,7 @@ export interface TokenMetadata {
 
 export class AssetService extends EventEmitter {
   private readonly erc20Interface: Interface
+  private readonly chainIdCache = new Map<string, number>()
 
   constructor(
     private readonly rpcClient: RpcClient,
@@ -44,6 +46,58 @@ export class AssetService extends EventEmitter {
   ) {
     super()
     this.erc20Interface = new Interface(ERC20_ABI)
+  }
+
+  /**
+   * Resolve a user-facing networkId (blockchainId) into an EVM chainId for /v1/rpcs.
+   *
+   * Notes
+   * - Many SDK APIs use `networkId` to mean the registered blockchain id (UUID).
+   * - The wallet-rpc endpoint (/v1/rpcs) expects `chainId`.
+   * - Some older call-sites may pass chainId as a string; we support both.
+   */
+  private async resolveChainId(networkId: string): Promise<number> {
+    const trimmed = (networkId ?? '').trim()
+
+    const cached = this.chainIdCache.get(trimmed)
+    if (cached) return cached
+
+    const numeric = Number(trimmed)
+    if (!Number.isNaN(numeric) && Number.isFinite(numeric) && numeric > 0) {
+      this.chainIdCache.set(trimmed, numeric)
+      return numeric
+    }
+
+    // Try current network first (fast path)
+    try {
+      const current = await this.networkService.getCurrentNetwork()
+      if (current && current.id === trimmed) {
+        this.chainIdCache.set(trimmed, current.chainId)
+        return current.chainId
+      }
+      if (current && String(current.chainId) === trimmed) {
+        this.chainIdCache.set(trimmed, current.chainId)
+        return current.chainId
+      }
+    } catch {
+      // ignore
+    }
+
+    // Fallback: search all registered networks
+    const networks = await this.networkService.getRegisteredNetworks()
+    const found = networks.find((n) => n.id === trimmed)
+    if (found) {
+      this.chainIdCache.set(trimmed, found.chainId)
+      return found.chainId
+    }
+
+    const foundByChainId = networks.find((n) => String(n.chainId) === trimmed)
+    if (foundByChainId) {
+      this.chainIdCache.set(trimmed, foundByChainId.chainId)
+      return foundByChainId.chainId
+    }
+
+    throw new SDKError('Invalid network', SDKErrorCode.INVALID_NETWORK)
   }
 
   async getTokenInfo(params: TokenInfoParams): Promise<TokenMetadata> {
@@ -298,18 +352,63 @@ export class AssetService extends EventEmitter {
     decimals?: number
     name?: string
   }): Promise<void> {
-    // Store token info in local storage
+    // 1) Persist to backend (DB) so the token survives logout/login.
+    //    If metadata is missing, fetch it from chain.
+    const hasMeta =
+      !!params.name && !!params.symbol && typeof params.decimals === 'number'
+
+    const meta = hasMeta
+      ? {
+          name: params.name as string,
+          symbol: params.symbol as string,
+          decimals: params.decimals as number,
+        }
+      : await this.getTokenInfo({
+          networkId: params.networkId,
+          tokenAddress: params.address,
+        })
+
+    try {
+      await this.userClient.registerToken({
+        blockchainId: params.networkId,
+        contractAddress: params.address,
+        name: meta.name,
+        symbol: meta.symbol,
+        decimals: meta.decimals,
+      })
+    } catch (error) {
+      throw new SDKError(
+        'Failed to register token',
+        SDKErrorCode.REQUEST_FAILED,
+        error
+      )
+    }
+
+    // 2) Store token info in local storage as cache.
     const key = `${this.orgHost}:token:${params.networkId}:${params.address}`
     await LocalForage.save(key, params)
   }
 
+  async getRegisteredCoins(networkId: string): Promise<TokenResponse[]> {
+    try {
+      return await this.userClient.getRegisteredCoins(networkId)
+    } catch (error) {
+      throw new SDKError(
+        'Failed to get registered tokens',
+        SDKErrorCode.REQUEST_FAILED,
+        error
+      )
+    }
+  }
+
   async getTokenBalance(params: TokenBalanceParams): Promise<string> {
     try {
+      const chainId = await this.resolveChainId(params.networkId)
       const data = this.erc20Interface.encodeFunctionData('balanceOf', [
         params.walletAddress,
       ])
       const response = await this.rpcClient.sendRpc({
-        chainId: Number(params.networkId),
+        chainId,
         method: RpcMethod.ETH_CALL,
         params: [
           {
@@ -331,12 +430,13 @@ export class AssetService extends EventEmitter {
 
   async approveToken(params: TokenApprovalParams): Promise<string> {
     try {
+      const chainId = await this.resolveChainId(params.networkId)
       const data = this.erc20Interface.encodeFunctionData('approve', [
         params.spender,
         params.amount,
       ])
       const response = await this.rpcClient.sendRpc({
-        chainId: Number(params.networkId),
+        chainId,
         method: RpcMethod.ETH_SEND_RAW_TRANSACTION,
         params: [
           {
@@ -357,12 +457,13 @@ export class AssetService extends EventEmitter {
 
   async getAllowance(params: TokenAllowanceParams): Promise<string> {
     try {
+      const chainId = await this.resolveChainId(params.networkId)
       const data = this.erc20Interface.encodeFunctionData('allowance', [
         params.owner,
         params.spender,
       ])
       const response = await this.rpcClient.sendRpc({
-        chainId: Number(params.networkId),
+        chainId,
         method: RpcMethod.ETH_CALL,
         params: [
           {
@@ -387,9 +488,10 @@ export class AssetService extends EventEmitter {
     networkId: string,
     method: string
   ): Promise<string> {
+    const chainId = await this.resolveChainId(networkId)
     const data = this.erc20Interface.encodeFunctionData(method, [])
     const response = await this.rpcClient.sendRpc({
-      chainId: Number(networkId),
+      chainId,
       method: RpcMethod.ETH_CALL,
       params: [
         {

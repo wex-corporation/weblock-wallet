@@ -80,6 +80,13 @@ export class WeBlockSDK {
       return this.userModule.retrieveWallet(password)
     },
 
+    /**
+     * ✅ 추가: PIN reset API 노출
+     */
+    resetPin: async (newPassword: string): Promise<WalletResponse> => {
+      return this.userModule.resetPin(newPassword)
+    },
+
     signOut: async (): Promise<void> => {
       return this.userModule.signOut()
     },
@@ -168,56 +175,6 @@ export class WeBlockSDK {
     }): Promise<void> => {
       return this.assetModule.addNFTCollection(params)
     },
-
-    // checkSecurityTokenCompliance: async (params: {
-    //   networkId: string
-    //   tokenAddress: string
-    //   from: string
-    //   to: string
-    //   amount: string
-    // }): Promise<{
-    //   canTransfer: boolean
-    //   reasons?: string[]
-    // }> => {
-    //   return this.assetModule.checkSecurityTokenCompliance(params)
-    // },
-
-    getTokenBalance: async (params: {
-      networkId: string
-      tokenAddress: string
-      walletAddress: string
-    }): Promise<string> => {
-      return this.assetModule.getTokenBalance(params)
-    },
-
-    approveToken: async (params: {
-      networkId: string
-      tokenAddress: string
-      spender: string
-      amount: string
-    }): Promise<string> => {
-      return this.assetModule.approveToken(params)
-    },
-
-    getAllowance: async (params: {
-      networkId: string
-      tokenAddress: string
-      owner: string
-      spender: string
-    }): Promise<string> => {
-      return this.assetModule.getAllowance(params)
-    },
-
-    // getTokenInfo: async (params: {
-    //   networkId: string
-    //   tokenAddress: string
-    // }): Promise<{
-    //   name: string
-    //   symbol: string
-    //   decimals: number
-    // }> => {
-    //   return this.assetModule.getTokenInfo(params)
-    // },
 
     on: (event: string, listener: (...args: any[]) => void): void => {
       this.assetModule.on(event, listener)

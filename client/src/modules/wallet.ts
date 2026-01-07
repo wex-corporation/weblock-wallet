@@ -4,6 +4,7 @@ import {
   SDKError,
   SDKErrorCode,
   TokenBalance,
+  TokenInfo,
 } from '../types'
 import { InternalCore } from '../core/types'
 
@@ -69,35 +70,6 @@ export class WalletModule {
       )
       console.log('네이티브 코인 잔액:', nativeBalance)
 
-      // // 4-1. 아발란체 토큰 잔액 조회
-      // const rbtBalance = await this.core.wallet.getTokenBalance(
-      //   '0xB10536cC40Cb6E6415f70d3a4C1AF7Fa638AE829',
-      //   address,
-      //   network.chainId
-      // )
-      // console.log('RBT 잔액:', rbtBalance)
-      //
-      // const usdrBalance = await this.core.wallet.getTokenBalance(
-      //   '0x8d335fe5B30e27F2B21F057a4766cf4BB8c30785',
-      //   address,
-      //   network.chainId
-      // )
-      // console.log('USDR 잔액:', usdrBalance)
-      //
-      // const wftBalance = await this.core.wallet.getTokenBalance(
-      //   '0x6fa62Eda03956ef4E54f3C8597E8c3f3bE40A45B',
-      //   address,
-      //   network.chainId
-      // )
-      // console.log('WFT 잔액:', wftBalance)
-      //
-      // const usdtBalance = await this.core.wallet.getTokenBalance(
-      //   '0xfF54B9ebe777f528E64C74bc95c68433B7546038',
-      //   address,
-      //   network.chainId
-      // )
-      // console.log('USDT 잔액:', usdtBalance)
-
       // 5. 최근 트랜잭션 조회
       console.log('5. 최근 트랜잭션 조회 시작')
       const latestTransaction = await this.core.wallet.getLatestTransaction(
@@ -105,6 +77,42 @@ export class WalletModule {
         network.chainId
       )
       console.log('최근 트랜잭션:', latestTransaction)
+
+      // 6. 등록된 토큰(백엔드 DB) 조회 및 잔액 계산
+      let tokens: TokenInfo[] = []
+      try {
+        const registered = await this.core.asset.getRegisteredCoins(network.id)
+        if (registered?.length) {
+          const unique = new Map(
+            registered.map((c) => [c.contractAddress.toLowerCase(), c])
+          )
+
+          tokens = await Promise.all(
+            Array.from(unique.values()).map(async (coin) => {
+              // Prefer RPC-derived balances, but keep backend metadata as source-of-truth for label/decimals.
+              const full = await this.core.asset.getTokenFullInfo({
+                networkId: network.id,
+                tokenAddress: coin.contractAddress,
+                walletAddress: address,
+              })
+              return {
+                ...full,
+                address: coin.contractAddress,
+                name: coin.name ?? full.name,
+                symbol: coin.symbol ?? full.symbol,
+                decimals:
+                  typeof coin.decimals === 'number'
+                    ? coin.decimals
+                    : full.decimals,
+              }
+            })
+          )
+        }
+      } catch (e) {
+        // Don't fail the whole wallet-info if token listing fails.
+        console.warn('Registered token load failed:', e)
+        tokens = []
+      }
 
       const walletInfo: WalletInfo = {
         address,
@@ -118,40 +126,7 @@ export class WalletModule {
             balance: nativeBalance,
             decimals: 18,
           },
-          tokens: [
-            // {
-            //   symbol: rbtBalance.symbol,
-            //   name: 'Real-estate Backed Token',
-            //   address: '0xB10536cC40Cb6E6415f70d3a4C1AF7Fa638AE829',
-            //   balance: rbtBalance,
-            //   decimals: rbtBalance.decimals,
-            //   totalSupply: rbtBalance,
-            // },
-            // {
-            //   symbol: usdrBalance.symbol,
-            //   name: 'USD Real-estate',
-            //   address: '0x8d335fe5B30e27F2B21F057a4766cf4BB8c30785',
-            //   balance: usdrBalance,
-            //   decimals: usdrBalance.decimals,
-            //   totalSupply: usdrBalance,
-            // },
-            // {
-            //   symbol: wftBalance.symbol,
-            //   name: 'WeBlock Foundation Token',
-            //   address: '0x6fa62Eda03956ef4E54f3C8597E8c3f3bE40A45B',
-            //   balance: wftBalance,
-            //   decimals: wftBalance.decimals,
-            //   totalSupply: wftBalance,
-            // },
-            // {
-            //   symbol: usdtBalance.symbol,
-            //   name: 'USD Tether',
-            //   address: '0xfF54B9ebe777f528E64C74bc95c68433B7546038',
-            //   balance: usdtBalance,
-            //   decimals: usdtBalance.decimals,
-            //   totalSupply: usdtBalance,
-            // },
-          ],
+          tokens,
           nfts: [],
           securities: [],
         },
@@ -169,6 +144,7 @@ export class WalletModule {
       )
     }
   }
+
   async getBalance(address: string, chainId: number): Promise<TokenBalance> {
     return this.core.wallet.getBalance(address, chainId)
   }

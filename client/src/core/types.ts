@@ -36,15 +36,6 @@ export interface InternalCore {
     getAddress(): Promise<string>
     create(password: string): Promise<string>
     retrieveWallet(password: string): Promise<string>
-
-    /**
-     * PIN을 모르는 상태에서(연속 실패 등) 같은 디바이스에 남아있는
-     * 복구용 share2(encryptedShare2_device)를 이용해 PIN을 재설정합니다.
-     * - 프라이빗키/주소는 유지됩니다.
-     * - 로컬 복구 데이터가 없으면 RECOVERY_NOT_AVAILABLE 에러가 발생합니다.
-     */
-    resetPin(newPassword: string): Promise<string>
-
     getBalance(address: string, chainId: number): Promise<TokenBalance>
     getTokenBalance(
       tokenAddress: string,
@@ -90,22 +81,50 @@ export interface InternalCore {
     getTokenBalance: (params: TokenBalanceParams) => Promise<string>
     approveToken: (params: TokenApprovalParams) => Promise<string>
     getAllowance: (params: TokenAllowanceParams) => Promise<string>
+    // getTokenInfo: (params: TokenInfoParams) => Promise<TokenInfo>
     addNFTCollection: (params: {
       networkId: string
       address: string
       name?: string
     }) => Promise<void>
+    // checkSecurityTokenCompliance: (params: {
+    //   networkId: string
+    //   tokenAddress: string
+    //   from: string
+    //   to: string
+    //   amount: string
+    // }) => Promise<{ canTransfer: boolean; reasons?: string[] }>
     on(event: string, listener: (...args: any[]) => void): void
     off(event: string, listener: (...args: any[]) => void): void
+    // 토큰 정보 조회
     getTokenInfo(params: TokenInfoParams): Promise<TokenMetadata>
+
+    // 토큰 등록
     registerToken(params: {
       networkId: string
       tokenAddress: string
     }): Promise<void>
+
+    // 토큰 전체 정보 조회
     getTokenFullInfo(params: {
       networkId: string
       tokenAddress: string
       walletAddress: string
     }): Promise<TokenInfo>
+
+    /**
+     * Get tokens registered for the current user on the given blockchain.
+     * - `networkId` here is the Wallet Backend's blockchainId (UUID).
+     */
+    getRegisteredCoins(networkId: string): Promise<
+      Array<{
+        id: string
+        blockchainId: string
+        name: string
+        symbol: string
+        contractAddress: string
+        decimals: number
+      }>
+    >
   }
 }
