@@ -25,6 +25,7 @@ import com.wefunding.wallet.api.user.dto.SignInResponse;
 import com.wefunding.wallet.api.user.dto.UserDTO;
 import com.wefunding.wallet.config.AttributeStorage;
 import com.wefunding.wallet.infra.auth.FirebaseVerifier;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -255,35 +256,62 @@ public class UserService {
                     blockchain.isTestnet()));
   }
 
-  @Transactional
-  public Mono<CoinDTO> registerToken(ServerWebExchange exchange, RegisterTokenRequest request) {
-    return this.coinRepository
-        .findByBlockchainIdAndContractAddress(request.blockchainId(), request.contractAddress())
-        .switchIfEmpty(
-            this.coinRepository.save(
-                Coin.token(
-                    request.name(),
-                    request.symbol(),
-                    request.blockchainId(),
-                    request.contractAddress(),
-                    request.decimals())))
+  //  @Transactional
+  //  public Mono<CoinDTO> registerToken(ServerWebExchange exchange, RegisterTokenRequest request) {
+  //    return this.coinRepository
+  //        .findByBlockchainIdAndContractAddress(request.blockchainId(), request.contractAddress())
+  //        .switchIfEmpty(
+  //            this.coinRepository.save(
+  //                Coin.token(
+  //                    request.name(),
+  //                    request.symbol(),
+  //                    request.blockchainId(),
+  //                    request.contractAddress(),
+  //                    request.decimals())))
+  //        .flatMap(
+  //            coin ->
+  //                this.userCoinsRepository
+  //                    .findByUserId(AttributeStorage.getUser(exchange).getId())
+  //                    .flatMap(
+  //                        userCoins -> {
+  //                          userCoins.addCoinId(coin.getId());
+  //                          return this.userCoinsRepository.save(userCoins);
+  //                        })
+  //                    .thenReturn(
+  //                        new CoinDTO(
+  //                            coin.getId(),
+  //                            coin.getBlockchainId(),
+  //                            coin.getName(),
+  //                            coin.getSymbol(),
+  //                            coin.getContractAddress(),
+  //                            coin.getDecimals())));
+  //  }
+
+  public Mono<Coin> registerToken(RegisterTokenRequest req /*, UUID userId */) {
+    UUID blockchainId = req.blockchainId();
+    String contract = normalizeAddress(req.contractAddress());
+
+    Integer decimals = (int) req.decimals();
+    if (decimals == null) {
+      // 현재 요청은 decimals가 항상 오지만, 방어적으로 처리
+      decimals = 18;
+    }
+
+    // 핵심: upsert로 중복 등록을 “성공” 처리
+    return coinRepository
+        .upsertToken(req.name(), req.symbol(), blockchainId, contract, decimals)
         .flatMap(
-            coin ->
-                this.userCoinsRepository
-                    .findByUserId(AttributeStorage.getUser(exchange).getId())
-                    .flatMap(
-                        userCoins -> {
-                          userCoins.addCoinId(coin.getId());
-                          return this.userCoinsRepository.save(userCoins);
-                        })
-                    .thenReturn(
-                        new CoinDTO(
-                            coin.getId(),
-                            coin.getBlockchainId(),
-                            coin.getName(),
-                            coin.getSymbol(),
-                            coin.getContractAddress(),
-                            coin.getDecimals())));
+            coin -> {
+              // 유저-코인 매핑이 있다면 여기서도 upsert/ignore로 처리해야 “재로그인 유지”가 확실해집니다.
+              // return userCoinRepository.insertIgnore(userId, coin.getId()).thenReturn(coin);
+
+              return Mono.just(coin);
+            });
+  }
+
+  private String normalizeAddress(String address) {
+    if (address == null) return null;
+    return address.trim().toLowerCase();
   }
 
   @Transactional(readOnly = true)

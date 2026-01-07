@@ -59,6 +59,40 @@ export interface TokenResponse {
   decimals: number
 }
 
+// register-token 요청: 백엔드가 최소 요청형(주소만) 또는 풀 요청형(메타 포함) 둘 다 가능하게 바뀌는 케이스 대응
+export type RegisterTokenRequest =
+  | {
+      blockchainId: string
+      contractAddress: string
+    }
+  | {
+      blockchainId: string
+      contractAddress: string
+      name: string
+      symbol: string
+      decimals: number
+    }
+
+// register-token 응답: 백엔드가 코인 자체를 반환하거나, {coin:...}, {data:...}로 감싸는 케이스 대응
+export type RegisterTokenResponse =
+  | CoinResponse
+  | { coin: CoinResponse }
+  | { data: CoinResponse }
+
+// 프로젝트에 이미 TokenResponse / CoinResponse가 있다면 중복 정의하지 말고,
+// 아래 형태로 필드 타입만 맞춰주세요.
+export interface CoinResponse {
+  id: string
+  blockchainId: string
+  contractAddress: string
+  name: string
+  symbol: string
+  decimals: number
+  isDefault?: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
 export interface CreateWalletRequest {
   address: string
   publicKey: string
