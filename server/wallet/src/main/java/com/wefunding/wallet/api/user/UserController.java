@@ -1,5 +1,6 @@
 package com.wefunding.wallet.api.user;
 
+import com.wefunding.core.domain.coin.Coin;
 import com.wefunding.wallet.api.user.dto.BlockchainDTO;
 import com.wefunding.wallet.api.user.dto.CoinDTO;
 import com.wefunding.wallet.api.user.dto.RegisterBlockchainRequest;
@@ -8,6 +9,7 @@ import com.wefunding.wallet.api.user.dto.SignInRequest;
 import com.wefunding.wallet.api.user.dto.SignInResponse;
 import com.wefunding.wallet.api.user.dto.UserDTO;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,10 +40,15 @@ public class UserController {
     return this.userService.getUser(exchange);
   }
 
+  //  @PostMapping("/register-token")
+  //  public Mono<CoinDTO> registerToken(
+  //      ServerWebExchange exchange, @RequestBody final RegisterTokenRequest request) {
+  //    return this.userService.registerToken(exchange, request);
+  //  }
+
   @PostMapping("/register-token")
-  public Mono<CoinDTO> registerToken(
-      ServerWebExchange exchange, @RequestBody final RegisterTokenRequest request) {
-    return this.userService.registerToken(exchange, request);
+  public Mono<ResponseEntity<Coin>> registerToken(@RequestBody RegisterTokenRequest req) {
+    return userService.registerToken(req).map(ResponseEntity::ok); // 중복이어도 ok(200)로 반환
   }
 
   @GetMapping("/coins")
