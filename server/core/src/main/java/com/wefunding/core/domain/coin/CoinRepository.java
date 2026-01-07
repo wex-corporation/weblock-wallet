@@ -3,6 +3,7 @@ package com.wefunding.core.domain.coin;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,12 +24,16 @@ public interface CoinRepository extends ReactiveCrudRepository<Coin, UUID> {
         (:name, :symbol, :blockchainId, :contractAddress, FALSE, :decimals, now(), now())
       ON CONFLICT (blockchain_id, contract_address)
       DO UPDATE SET
-        name = EXCLUDED.name,
-        symbol = EXCLUDED.symbol,
-        decimals = EXCLUDED.decimals,
+        name       = COALESCE(EXCLUDED.name, coins.name),
+        symbol     = COALESCE(EXCLUDED.symbol, coins.symbol),
+        decimals   = COALESCE(EXCLUDED.decimals, coins.decimals),
         updated_at = now()
       RETURNING *
       """)
   Mono<Coin> upsertToken(
-      String name, String symbol, UUID blockchainId, String contractAddress, Integer decimals);
+      @Param("name") String name,
+      @Param("symbol") String symbol,
+      @Param("blockchainId") UUID blockchainId,
+      @Param("contractAddress") String contractAddress,
+      @Param("decimals") Integer decimals);
 }
