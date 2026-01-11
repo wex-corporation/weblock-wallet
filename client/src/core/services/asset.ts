@@ -431,21 +431,24 @@ export class AssetService extends EventEmitter {
   async approveToken(params: TokenApprovalParams): Promise<string> {
     try {
       const chainId = await this.resolveChainId(params.networkId)
+
       const data = this.erc20Interface.encodeFunctionData('approve', [
         params.spender,
         params.amount,
       ])
-      const response = await this.rpcClient.sendRpc({
+
+      // ✅ 반드시 로컬에서 서명(rawTx)해서 /v1/rpcs 로 전송해야 함
+      const txHash = await this.walletService.sendTransaction({
+        to: params.tokenAddress,
+        value: '0',
+        data,
         chainId,
-        method: RpcMethod.ETH_SEND_RAW_TRANSACTION,
-        params: [
-          {
-            to: params.tokenAddress,
-            data,
-          },
-        ],
       })
-      return response.result
+
+      // 기존 AssetService 패턴과 동일하게 상태 추적 이벤트 발생
+      this.trackTransaction(txHash, chainId)
+
+      return txHash
     } catch (error) {
       throw new SDKError(
         'Failed to approve token',
