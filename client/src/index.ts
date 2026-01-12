@@ -1,5 +1,3 @@
-// src/index.ts
-
 import {
   SDKOptions,
   WalletInfo,
@@ -15,27 +13,15 @@ import {
   TokenBalanceParams,
   TokenApprovalParams,
   TokenAllowanceParams,
+  ERC1155BalanceParams,
+  RbtClaimableParams,
+  RbtClaimParams,
 } from './types'
 import { Core } from './core'
-import {
-  UserModule,
-  WalletModule,
-  AssetModule,
-  InvestmentModule,
-} from './modules'
+import { UserModule, WalletModule, AssetModule } from './modules'
 import { SDKError, SDKErrorCode } from './types/error'
 import { NetworkModule } from './modules/network'
 import { TokenMetadata } from './core/services/asset'
-
-// ✅ investment types / module
-import type {
-  GetOfferingParams,
-  OfferingView,
-  InvestRbtParams,
-  InvestRbtResult,
-  ClaimRbtRevenueParams,
-  ClaimRbtRevenueResult,
-} from './types/investment'
 
 /**
  * WeBlock Wallet SDK
@@ -47,7 +33,6 @@ export class WeBlockSDK {
   private readonly walletModule: WalletModule
   private readonly assetModule: AssetModule
   private readonly networkModule: NetworkModule
-  private readonly investmentModule: InvestmentModule
   private initialized = false
 
   constructor(options: SDKOptions) {
@@ -59,8 +44,6 @@ export class WeBlockSDK {
     this.userModule = new UserModule(options, internalCore, this.walletModule)
     this.assetModule = new AssetModule(options, internalCore)
     this.networkModule = new NetworkModule(options, internalCore)
-    this.investmentModule = new InvestmentModule(options, internalCore)
-
     this.initialized = true
     console.info('WeBlock SDK initialized successfully')
   }
@@ -71,18 +54,16 @@ export class WeBlockSDK {
     if (!['local', 'dev', 'stage', 'prod'].includes(environment)) {
       throw new SDKError('Invalid environment', SDKErrorCode.INVALID_CONFIG)
     }
-    if (!apiKey) {
+    if (!apiKey)
       throw new SDKError('API key is required', SDKErrorCode.INVALID_CONFIG)
-    }
-    if (!orgHost) {
+    if (!orgHost)
       throw new SDKError(
         'Organization host is required',
         SDKErrorCode.INVALID_CONFIG
       )
-    }
   }
 
-  private ensureInitialized(): void {
+  private ensureInitialized() {
     if (!this.initialized) {
       throw new SDKError('SDK is not initialized', SDKErrorCode.NOT_INITIALIZED)
     }
@@ -94,17 +75,14 @@ export class WeBlockSDK {
 
   public readonly user = {
     signIn: async (provider: 'google.com'): Promise<SignInResponse> => {
-      this.ensureInitialized()
       return this.userModule.signIn(provider)
     },
 
     createWallet: async (password: string): Promise<WalletResponse> => {
-      this.ensureInitialized()
       return this.userModule.createWallet(password)
     },
 
     retrieveWallet: async (password: string): Promise<WalletResponse> => {
-      this.ensureInitialized()
       return this.userModule.retrieveWallet(password)
     },
 
@@ -112,115 +90,76 @@ export class WeBlockSDK {
      * ✅ 추가: PIN reset API 노출
      */
     resetPin: async (newPassword: string): Promise<WalletResponse> => {
-      this.ensureInitialized()
       return this.userModule.resetPin(newPassword)
     },
 
     signOut: async (): Promise<void> => {
-      this.ensureInitialized()
       return this.userModule.signOut()
     },
   }
 
   public readonly wallet = {
     getInfo: async (): Promise<WalletInfo> => {
-      this.ensureInitialized()
       return this.walletModule.getInfo()
     },
-
     onWalletUpdate: (callback: (wallet: WalletInfo) => void): (() => void) => {
-      this.ensureInitialized()
       return this.walletModule.onWalletUpdate(callback)
     },
-
     onTransactionUpdate: (
       callback: (tx: Transaction | undefined) => void
     ): (() => void) => {
-      this.ensureInitialized()
       return this.walletModule.onTransactionUpdate(callback)
     },
-
     getBalance: (address: string, chainId: number): Promise<TokenBalance> => {
-      this.ensureInitialized()
       return this.walletModule.getBalance(address, chainId)
     },
-
     getTransactionCount: (
       address: string,
       chainId: number
     ): Promise<number> => {
-      this.ensureInitialized()
       return this.walletModule.getTransactionCount(address, chainId)
     },
-
     getBlockNumber: (chainId: number): Promise<number> => {
-      this.ensureInitialized()
       return this.walletModule.getBlockNumber(chainId)
     },
-
     sendRawTransaction: (
       signedTx: string,
       chainId: number
     ): Promise<string> => {
-      this.ensureInitialized()
       return this.walletModule.sendRawTransaction(signedTx, chainId)
     },
-
     getTransactionReceipt: (txHash: string, chainId: number): Promise<any> => {
-      this.ensureInitialized()
       return this.walletModule.getTransactionReceipt(txHash, chainId)
     },
-
     getTransaction: (txHash: string, chainId: number): Promise<any> => {
-      this.ensureInitialized()
       return this.walletModule.getTransaction(txHash, chainId)
     },
-
     estimateGas: (txParams: any, chainId: number): Promise<number> => {
-      this.ensureInitialized()
       return this.walletModule.estimateGas(txParams, chainId)
     },
-
     getGasPrice: (chainId: number): Promise<string> => {
-      this.ensureInitialized()
       return this.walletModule.getGasPrice(chainId)
     },
-
     call: (
       txParams: any,
       blockParam: string | number,
       chainId: number
     ): Promise<string> => {
-      this.ensureInitialized()
       return this.walletModule.call(txParams, blockParam, chainId)
     },
   }
 
   public readonly network = {
-    getAvailableNetworks: () => {
-      this.ensureInitialized()
-      return this.networkModule.getAvailableNetworks()
-    },
-
-    addNetwork: (request: AddNetworkRequest) => {
-      this.ensureInitialized()
-      return this.networkModule.addNetwork(request)
-    },
-
-    switchNetwork: (networkId: string) => {
-      this.ensureInitialized()
-      return this.networkModule.switchNetwork(networkId)
-    },
-
-    getCurrentNetwork: () => {
-      this.ensureInitialized()
-      return this.networkModule.getCurrentNetwork()
-    },
+    getAvailableNetworks: () => this.networkModule.getAvailableNetworks(),
+    addNetwork: (request: AddNetworkRequest) =>
+      this.networkModule.addNetwork(request),
+    switchNetwork: (networkId: string) =>
+      this.networkModule.switchNetwork(networkId),
+    getCurrentNetwork: () => this.networkModule.getCurrentNetwork(),
   }
 
   public readonly asset = {
     transfer: async (params: TransferRequest): Promise<TransferResponse> => {
-      this.ensureInitialized()
       return this.assetModule.transfer(params)
     },
 
@@ -232,7 +171,6 @@ export class WeBlockSDK {
       decimals?: number
       name?: string
     }): Promise<void> => {
-      this.ensureInitialized()
       return this.assetModule.addToken(params)
     },
 
@@ -241,46 +179,21 @@ export class WeBlockSDK {
       address: string
       name?: string
     }): Promise<void> => {
-      this.ensureInitialized()
       return this.assetModule.addNFTCollection(params)
     },
 
     on: (event: string, listener: (...args: any[]) => void): void => {
-      this.ensureInitialized()
       this.assetModule.on(event, listener)
     },
-
     off: (event: string, listener: (...args: any[]) => void): void => {
-      this.ensureInitialized()
       this.assetModule.off(event, listener)
     },
 
     getTokenInfo: async (params: TokenInfoParams): Promise<TokenMetadata> => {
-      this.ensureInitialized()
       return this.assetModule.getTokenInfo(params)
     },
 
-    registerToken: async (params: {
-      networkId: string
-      tokenAddress: string
-    }): Promise<void> => {
-      this.ensureInitialized()
-      return this.assetModule.registerToken(params)
-    },
-
-    getTokenFullInfo: async (params: {
-      networkId: string
-      tokenAddress: string
-      walletAddress: string
-    }): Promise<TokenInfo> => {
-      this.ensureInitialized()
-      return this.assetModule.getTokenFullInfo(params)
-    },
-
-    /**
-     * ✅ ERC20 잔액 조회 (주의: 현재 AssetModule 구현은 raw balance string을 반환)
-     * - TokenBalance(객체)가 아니라 string(wei) 입니다.
-     */
+    // ERC20 helpers
     getTokenBalance: async (params: TokenBalanceParams): Promise<string> => {
       this.ensureInitialized()
       return this.assetModule.getTokenBalance(params)
@@ -295,59 +208,38 @@ export class WeBlockSDK {
       this.ensureInitialized()
       return this.assetModule.getAllowance(params)
     },
-  }
 
-  /**
-   * ✅ NEW: Investment API Surface
-   */
-  public readonly invest = {
-    getOffering: async (params: GetOfferingParams): Promise<OfferingView> => {
+    // ERC1155 / RBT helpers
+    getERC1155Balance: async (
+      params: ERC1155BalanceParams
+    ): Promise<string> => {
       this.ensureInitialized()
-      return this.investmentModule.getOffering(params)
+      return this.assetModule.getERC1155Balance(params)
     },
 
-    investRbtWithUsdr: async (
-      params: InvestRbtParams
-    ): Promise<InvestRbtResult> => {
+    getRbtClaimable: async (params: RbtClaimableParams): Promise<string> => {
       this.ensureInitialized()
-      return this.investmentModule.investRbtWithUsdr(params)
+      return this.assetModule.getRbtClaimable(params)
     },
 
-    claimRbtRevenue: async (
-      params: ClaimRbtRevenueParams
-    ): Promise<ClaimRbtRevenueResult> => {
+    claimRbt: async (params: RbtClaimParams): Promise<string> => {
       this.ensureInitialized()
-      return this.investmentModule.claimRbtRevenue(params)
+      return this.assetModule.claimRbt(params)
     },
 
-    getClaimable: async (params: {
+    registerToken: async (params: {
       networkId: string
-      rbtAssetAddress: string
-      seriesId: bigint | number | string
-      account?: string
-    }): Promise<string> => {
-      this.ensureInitialized()
-      return this.investmentModule.getClaimable(params)
+      tokenAddress: string
+    }): Promise<void> => {
+      return this.assetModule.registerToken(params)
     },
 
-    getRbtBalance: async (params: {
+    getTokenFullInfo: async (params: {
       networkId: string
-      rbtAssetAddress: string
-      seriesId: bigint | number | string
-      account?: string
-    }): Promise<string> => {
-      this.ensureInitialized()
-      return this.investmentModule.getRbtBalance(params)
-    },
-
-    on: (event: string, listener: (...args: any[]) => void): void => {
-      this.ensureInitialized()
-      this.investmentModule.on(event, listener)
-    },
-
-    off: (event: string, listener: (...args: any[]) => void): void => {
-      this.ensureInitialized()
-      this.investmentModule.off(event, listener)
+      tokenAddress: string
+      walletAddress: string
+    }): Promise<TokenInfo> => {
+      return this.assetModule.getTokenFullInfo(params)
     },
   }
 }

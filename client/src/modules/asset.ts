@@ -7,6 +7,9 @@ import {
   TokenAllowanceParams,
   TokenInfoParams,
   TokenInfo,
+  ERC1155BalanceParams,
+  RbtClaimableParams,
+  RbtClaimParams,
 } from '../types'
 import { InternalCore } from '../core/types'
 import { TokenMetadata } from '@/core/services/asset'
@@ -55,6 +58,18 @@ export class AssetModule {
 
   async getTokenBalance(params: TokenBalanceParams): Promise<string> {
     return this.core.asset.getTokenBalance(params)
+  }
+
+  async getERC1155Balance(params: ERC1155BalanceParams): Promise<string> {
+    return this.core.asset.getERC1155Balance(params)
+  }
+
+  async getRbtClaimable(params: RbtClaimableParams): Promise<string> {
+    return this.core.asset.getRbtClaimable(params)
+  }
+
+  async claimRbt(params: RbtClaimParams): Promise<string> {
+    return this.core.asset.claimRbt(params)
   }
 
   async approveToken(params: TokenApprovalParams): Promise<string> {

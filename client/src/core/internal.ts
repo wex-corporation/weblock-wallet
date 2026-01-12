@@ -1,11 +1,12 @@
-// client/src/core/internal.ts
-
 import {
   SDKOptions,
   SendTransactionParams,
   TokenAllowanceParams,
   TokenApprovalParams,
   TokenBalanceParams,
+  ERC1155BalanceParams,
+  RbtClaimableParams,
+  RbtClaimParams,
   TokenInfoParams,
   TransferRequest,
 } from '../types'
@@ -20,35 +21,12 @@ import { WalletClient } from '../clients/api/wallets'
 import { BlockchainRequest } from '@/clients/types'
 import { RpcClient } from '../clients/api/rpcs'
 import { AssetService } from './services/asset'
-import { InvestmentService } from './services/investment'
-
-import type {
-  GetOfferingParams,
-  InvestRbtParams,
-  ClaimRbtRevenueParams,
-} from '../types/investment'
-
-type GetClaimableParams = {
-  networkId: string
-  rbtAssetAddress: string
-  seriesId: bigint | number | string
-  account?: string
-}
-
-type GetRbtBalanceParams = {
-  networkId: string
-  rbtAssetAddress: string
-  seriesId: bigint | number | string
-  account?: string
-}
 
 export class InternalCoreImpl implements InternalCore {
   private readonly authService: AuthService
   private readonly walletService: WalletService
   private readonly networkService: NetworkService
   private readonly assetService: AssetService
-  private readonly investmentService: InvestmentService
-
   constructor(private readonly options: SDKOptions) {
     const httpClient = new HttpClient(options)
     const firebase = new FirebaseAuth(options)
@@ -62,9 +40,7 @@ export class InternalCoreImpl implements InternalCore {
       walletClient,
       options.orgHost
     )
-
     this.networkService = new NetworkService(userClient, options.orgHost)
-
     this.walletService = new WalletService(
       walletClient,
       rpcClient,
@@ -78,12 +54,6 @@ export class InternalCoreImpl implements InternalCore {
       this.networkService,
       userClient,
       options.orgHost
-    )
-
-    this.investmentService = new InvestmentService(
-      rpcClient,
-      this.walletService,
-      this.networkService
     )
   }
 
@@ -137,7 +107,6 @@ export class InternalCoreImpl implements InternalCore {
       this.networkService.switchNetwork(networkId),
     getCurrentNetwork: () => this.networkService.getCurrentNetwork(),
   }
-
   asset = {
     transfer: (params: TransferRequest) => this.assetService.transfer(params),
 
@@ -154,23 +123,39 @@ export class InternalCoreImpl implements InternalCore {
     getTokenBalance: (params: TokenBalanceParams) =>
       this.assetService.getTokenBalance(params),
 
+    // ERC1155 / RBT helpers
+    getERC1155Balance: (params: ERC1155BalanceParams) =>
+      this.assetService.getERC1155Balance(params),
+
+    getRbtClaimable: (params: RbtClaimableParams) =>
+      this.assetService.getRbtClaimable(params),
+
+    claimRbt: (params: RbtClaimParams) => this.assetService.claimRbt(params),
+
     approveToken: (params: TokenApprovalParams) =>
       this.assetService.approveToken(params),
 
     getAllowance: (params: TokenAllowanceParams) =>
       this.assetService.getAllowance(params),
 
+    // getTokenInfo: (params: TokenInfoParams) =>
+    //   this.assetService.getTokenInfo(params),
     addNFTCollection: (params: {
       networkId: string
       address: string
       name?: string
     }) => this.assetService.addNFTCollection(params),
-
+    // checkSecurityTokenCompliance: (params: {
+    //   networkId: string
+    //   tokenAddress: string
+    //   from: string
+    //   to: string
+    //   amount: string
+    // }) => this.assetService.checkSecurityTokenCompliance(params),
     on: (event: string, listener: (...args: any[]) => void) =>
       this.assetService.on(event, listener),
     off: (event: string, listener: (...args: any[]) => void) =>
       this.assetService.off(event, listener),
-
     getTokenInfo: (params: TokenInfoParams) =>
       this.assetService.getTokenInfo(params),
 
@@ -185,28 +170,5 @@ export class InternalCoreImpl implements InternalCore {
 
     getRegisteredCoins: (networkId: string) =>
       this.assetService.getRegisteredCoins(networkId),
-  }
-
-  investment = {
-    getOffering: (params: GetOfferingParams) =>
-      this.investmentService.getOffering(params),
-
-    investRbtWithUsdr: (params: InvestRbtParams) =>
-      this.investmentService.investRbtWithUsdr(params),
-
-    claimRbtRevenue: (params: ClaimRbtRevenueParams) =>
-      this.investmentService.claimRbtRevenue(params),
-
-    getClaimable: (params: GetClaimableParams) =>
-      this.investmentService.getClaimable(params),
-
-    getRbtBalance: (params: GetRbtBalanceParams) =>
-      this.investmentService.getRbtBalance(params),
-
-    on: (event: string, listener: (...args: any[]) => void) =>
-      this.investmentService.on(event, listener),
-
-    off: (event: string, listener: (...args: any[]) => void) =>
-      this.investmentService.off(event, listener),
   }
 }

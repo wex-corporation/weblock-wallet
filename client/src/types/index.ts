@@ -302,6 +302,38 @@ export interface TokenInfoParams {
   tokenAddress: string
 }
 
+/**
+ * ERC-1155 balanceOf params
+ */
+export interface ERC1155BalanceParams {
+  networkId: string
+  tokenAddress: string
+  walletAddress: string
+  tokenId: string | number
+}
+
+/**
+ * RBTPropertyToken claimable() params
+ */
+export interface RbtClaimableParams {
+  networkId: string
+  tokenAddress: string
+  walletAddress: string
+  tokenId: string | number
+}
+
+/**
+ * RBTPropertyToken claim() params
+ */
+export interface RbtClaimParams {
+  networkId: string
+  tokenAddress: string
+  tokenId: string | number
+  gasLimit?: string
+  gasPrice?: string
+  nonce?: number
+}
+
 export interface SendTransactionParams {
   to: string
   value: string
@@ -348,4 +380,3 @@ export interface TransactionStatusEvent {
 }
 
 export * from './error'
-export * from './investment'

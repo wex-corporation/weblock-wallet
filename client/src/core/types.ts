@@ -6,6 +6,9 @@ import {
   TokenApprovalParams,
   TokenBalance,
   TokenBalanceParams,
+  ERC1155BalanceParams,
+  RbtClaimableParams,
+  RbtClaimParams,
   TokenInfo,
   TokenInfoParams,
   Transaction,
@@ -13,15 +16,6 @@ import {
   TransferResponse,
 } from '../types'
 import { TokenMetadata } from './services/asset'
-
-import {
-  GetOfferingParams,
-  OfferingView,
-  InvestRbtParams,
-  InvestRbtResult,
-  ClaimRbtRevenueParams,
-  ClaimRbtRevenueResult,
-} from '../types/investment'
 
 export interface InternalCore {
   auth: {
@@ -88,6 +82,14 @@ export interface InternalCore {
       name?: string
     }) => Promise<void>
     getTokenBalance: (params: TokenBalanceParams) => Promise<string>
+    /** ERC-1155 balanceOf(account, tokenId) */
+    getERC1155Balance: (params: ERC1155BalanceParams) => Promise<string>
+
+    /** RBTPropertyToken claimable(tokenId, account) */
+    getRbtClaimable: (params: RbtClaimableParams) => Promise<string>
+
+    /** RBTPropertyToken claim(tokenId) -> txHash */
+    claimRbt: (params: RbtClaimParams) => Promise<string>
     approveToken: (params: TokenApprovalParams) => Promise<string>
     getAllowance: (params: TokenAllowanceParams) => Promise<string>
     // getTokenInfo: (params: TokenInfoParams) => Promise<TokenInfo>
@@ -135,26 +137,5 @@ export interface InternalCore {
         decimals: number
       }>
     >
-  }
-  investment: {
-    getOffering(params: GetOfferingParams): Promise<OfferingView>
-    investRbtWithUsdr(params: InvestRbtParams): Promise<InvestRbtResult>
-    claimRbtRevenue(
-      params: ClaimRbtRevenueParams
-    ): Promise<ClaimRbtRevenueResult>
-    getClaimable(params: {
-      networkId: string
-      rbtAssetAddress: string
-      seriesId: bigint | number | string
-      account?: string
-    }): Promise<string>
-    getRbtBalance(params: {
-      networkId: string
-      rbtAssetAddress: string
-      seriesId: bigint | number | string
-      account?: string
-    }): Promise<string>
-    on(event: string, listener: (...args: any[]) => void): void
-    off(event: string, listener: (...args: any[]) => void): void
   }
 }
