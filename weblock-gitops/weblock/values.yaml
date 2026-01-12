@@ -7,7 +7,7 @@ env: prod
 image:
   repository: 864981744671.dkr.ecr.ap-northeast-2.amazonaws.com/weblock
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "71e2cb6-20774524128"
+  tag: "4db072c-20905416841"
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
