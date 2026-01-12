@@ -119,7 +119,12 @@ export class UserClient {
       try {
         const res = await this.client.post<RegisterTokenResponse>(
           `${this.baseUrl}/register-token`,
-          body
+          body,
+          {
+            // register-token 은 사용자 컨텍스트가 필요한 엔드포인트이므로
+            // 반드시 Authorization: Bearer <JWT> 가 포함되어야 한다.
+            needsAccessToken: true,
+          }
         )
         const coin = this.unwrapCoin(res)
         // 응답이 없거나 이상하면 다음 후보 시도
