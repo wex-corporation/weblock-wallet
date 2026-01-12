@@ -4,6 +4,9 @@ import {
   TokenAllowanceParams,
   TokenApprovalParams,
   TokenBalanceParams,
+  ERC1155BalanceParams,
+  RbtClaimableParams,
+  RbtClaimParams,
   TokenInfoParams,
   TransferRequest,
 } from '../types'
@@ -119,6 +122,15 @@ export class InternalCoreImpl implements InternalCore {
     // New ERC20 methods
     getTokenBalance: (params: TokenBalanceParams) =>
       this.assetService.getTokenBalance(params),
+
+    // ERC1155 / RBT helpers
+    getERC1155Balance: (params: ERC1155BalanceParams) =>
+      this.assetService.getERC1155Balance(params),
+
+    getRbtClaimable: (params: RbtClaimableParams) =>
+      this.assetService.getRbtClaimable(params),
+
+    claimRbt: (params: RbtClaimParams) => this.assetService.claimRbt(params),
 
     approveToken: (params: TokenApprovalParams) =>
       this.assetService.approveToken(params),

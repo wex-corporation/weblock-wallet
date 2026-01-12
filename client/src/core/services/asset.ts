@@ -6,6 +6,9 @@ import {
   TokenAllowanceParams,
   TokenInfoParams,
   TokenInfo,
+  ERC1155BalanceParams,
+  RbtClaimableParams,
+  RbtClaimParams,
   SDKError,
   SDKErrorCode,
   TransferResponse,
@@ -14,7 +17,7 @@ import {
   TransactionReceipt,
   TokenBalance,
 } from '../../types'
-import { ERC20_ABI } from '../../contract/contracts'
+import { ERC20_ABI, RBT_PROPERTY_TOKEN_ABI } from '../../contract/contracts'
 import { Interface } from 'ethers'
 import { RpcMethod } from '@/clients/types'
 import { LocalForage } from '../../utils/storage'
@@ -35,6 +38,7 @@ export interface TokenMetadata {
 
 export class AssetService extends EventEmitter {
   private readonly erc20Interface: Interface
+  private readonly rbtInterface: Interface
   private readonly chainIdCache = new Map<string, number>()
 
   constructor(
@@ -46,6 +50,7 @@ export class AssetService extends EventEmitter {
   ) {
     super()
     this.erc20Interface = new Interface(ERC20_ABI)
+    this.rbtInterface = new Interface(RBT_PROPERTY_TOKEN_ABI)
   }
 
   /**
@@ -422,6 +427,104 @@ export class AssetService extends EventEmitter {
     } catch (error) {
       throw new SDKError(
         'Failed to get token balance',
+        SDKErrorCode.REQUEST_FAILED,
+        error
+      )
+    }
+  }
+
+  /**
+   * ERC-1155 balanceOf(account, tokenId)
+   * - Returns raw hex string (0x...)
+   */
+  async getERC1155Balance(params: ERC1155BalanceParams): Promise<string> {
+    try {
+      const chainId = await this.resolveChainId(params.networkId)
+      const data = this.rbtInterface.encodeFunctionData('balanceOf', [
+        params.walletAddress,
+        params.tokenId,
+      ])
+      const response = await this.rpcClient.sendRpc({
+        chainId,
+        method: RpcMethod.ETH_CALL,
+        params: [
+          {
+            to: params.tokenAddress,
+            data,
+          },
+          'latest',
+        ],
+      })
+      return response.result
+    } catch (error) {
+      throw new SDKError(
+        'Failed to get ERC1155 balance',
+        SDKErrorCode.REQUEST_FAILED,
+        error
+      )
+    }
+  }
+
+  /**
+   * RBTPropertyToken claimable(tokenId, account)
+   * - Returns raw hex string (0x...)
+   */
+  async getRbtClaimable(params: RbtClaimableParams): Promise<string> {
+    try {
+      const chainId = await this.resolveChainId(params.networkId)
+      const data = this.rbtInterface.encodeFunctionData('claimable', [
+        params.tokenId,
+        params.walletAddress,
+      ])
+      const response = await this.rpcClient.sendRpc({
+        chainId,
+        method: RpcMethod.ETH_CALL,
+        params: [
+          {
+            to: params.tokenAddress,
+            data,
+          },
+          'latest',
+        ],
+      })
+      return response.result
+    } catch (error) {
+      throw new SDKError(
+        'Failed to get claimable amount',
+        SDKErrorCode.REQUEST_FAILED,
+        error
+      )
+    }
+  }
+
+  /**
+   * RBTPropertyToken claim(tokenId)
+   * - Sends a signed transaction via WalletService
+   * - Returns txHash
+   */
+  async claimRbt(params: RbtClaimParams): Promise<string> {
+    try {
+      const chainId = await this.resolveChainId(params.networkId)
+      const data = this.rbtInterface.encodeFunctionData('claim', [
+        params.tokenId,
+      ])
+
+      const txHash = await this.walletService.sendTransaction({
+        to: params.tokenAddress,
+        value: '0',
+        data,
+        chainId,
+        gasLimit: params.gasLimit,
+        gasPrice: params.gasPrice,
+        nonce: params.nonce,
+      })
+
+      // Track tx status updates (re-use existing tracker)
+      this.trackTransaction(txHash, chainId)
+      return txHash
+    } catch (error) {
+      throw new SDKError(
+        'Failed to claim RBT',
         SDKErrorCode.REQUEST_FAILED,
         error
       )

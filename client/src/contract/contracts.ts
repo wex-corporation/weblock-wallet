@@ -94,3 +94,52 @@ export const ERC20_ABI = [
     type: 'function',
   },
 ] as const
+
+/**
+ * Minimal ERC-1155 ABI (balanceOf only)
+ */
+export const ERC1155_ABI = [
+  {
+    constant: true,
+    inputs: [
+      { name: 'account', type: 'address' },
+      { name: 'id', type: 'uint256' },
+    ],
+    name: 'balanceOf',
+    outputs: [{ name: '', type: 'uint256' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+] as const
+
+/**
+ * Minimal RBTPropertyToken ABI for My Page features.
+ * - balanceOf(account, tokenId): ERC1155
+ * - claimable(tokenId, account): view
+ * - claim(tokenId): nonpayable
+ */
+export const RBT_PROPERTY_TOKEN_ABI = [
+  ...ERC1155_ABI,
+  {
+    constant: true,
+    inputs: [
+      { name: 'tokenId', type: 'uint256' },
+      { name: 'account', type: 'address' },
+    ],
+    name: 'claimable',
+    outputs: [{ name: '', type: 'uint256' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [{ name: 'tokenId', type: 'uint256' }],
+    name: 'claim',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+] as const

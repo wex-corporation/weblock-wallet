@@ -6,6 +6,9 @@ import {
   TokenApprovalParams,
   TokenBalance,
   TokenBalanceParams,
+  ERC1155BalanceParams,
+  RbtClaimableParams,
+  RbtClaimParams,
   TokenInfo,
   TokenInfoParams,
   Transaction,
@@ -79,6 +82,14 @@ export interface InternalCore {
       name?: string
     }) => Promise<void>
     getTokenBalance: (params: TokenBalanceParams) => Promise<string>
+    /** ERC-1155 balanceOf(account, tokenId) */
+    getERC1155Balance: (params: ERC1155BalanceParams) => Promise<string>
+
+    /** RBTPropertyToken claimable(tokenId, account) */
+    getRbtClaimable: (params: RbtClaimableParams) => Promise<string>
+
+    /** RBTPropertyToken claim(tokenId) -> txHash */
+    claimRbt: (params: RbtClaimParams) => Promise<string>
     approveToken: (params: TokenApprovalParams) => Promise<string>
     getAllowance: (params: TokenAllowanceParams) => Promise<string>
     // getTokenInfo: (params: TokenInfoParams) => Promise<TokenInfo>

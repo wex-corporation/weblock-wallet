@@ -10,6 +10,12 @@ import {
   TokenBalance,
   TokenInfo,
   TokenInfoParams,
+  TokenBalanceParams,
+  TokenApprovalParams,
+  TokenAllowanceParams,
+  ERC1155BalanceParams,
+  RbtClaimableParams,
+  RbtClaimParams,
 } from './types'
 import { Core } from './core'
 import { UserModule, WalletModule, AssetModule } from './modules'
@@ -185,6 +191,40 @@ export class WeBlockSDK {
 
     getTokenInfo: async (params: TokenInfoParams): Promise<TokenMetadata> => {
       return this.assetModule.getTokenInfo(params)
+    },
+
+    // ERC20 helpers
+    getTokenBalance: async (params: TokenBalanceParams): Promise<string> => {
+      this.ensureInitialized()
+      return this.assetModule.getTokenBalance(params)
+    },
+
+    approveToken: async (params: TokenApprovalParams): Promise<string> => {
+      this.ensureInitialized()
+      return this.assetModule.approveToken(params)
+    },
+
+    getAllowance: async (params: TokenAllowanceParams): Promise<string> => {
+      this.ensureInitialized()
+      return this.assetModule.getAllowance(params)
+    },
+
+    // ERC1155 / RBT helpers
+    getERC1155Balance: async (
+      params: ERC1155BalanceParams
+    ): Promise<string> => {
+      this.ensureInitialized()
+      return this.assetModule.getERC1155Balance(params)
+    },
+
+    getRbtClaimable: async (params: RbtClaimableParams): Promise<string> => {
+      this.ensureInitialized()
+      return this.assetModule.getRbtClaimable(params)
+    },
+
+    claimRbt: async (params: RbtClaimParams): Promise<string> => {
+      this.ensureInitialized()
+      return this.assetModule.claimRbt(params)
     },
 
     registerToken: async (params: {
