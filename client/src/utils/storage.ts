@@ -2,17 +2,21 @@ import localforage from 'localforage'
 
 interface Item<T> {
   value: T
-  expiry?: number | null
+  /**
+   * Absolute expiry time in epoch milliseconds.
+   * If omitted, the value does not expire.
+   */
+  expiryEpochMs?: number | null
 }
 
 interface ILocalForage {
-  save<T>(key: string, value: T, expiry?: number | null): Promise<void>
+  save<T>(key: string, value: T, expiryEpochMs?: number | null): Promise<void>
   get<T>(key: string): Promise<T | null>
   delete(key: string): Promise<void>
   removeAll(): Promise<void>
 }
 
-// LocalForage 인스턴스 생성
+// LocalForage instance
 const storage = localforage.createInstance({
   name: '@WeBlock-wallet',
   storeName: 'secure-storage',
@@ -21,11 +25,15 @@ const storage = localforage.createInstance({
 })
 
 export const LocalForage: ILocalForage = {
-  async save<T>(key: string, value: T, expiry?: number | null): Promise<void> {
+  async save<T>(
+    key: string,
+    value: T,
+    expiryEpochMs?: number | null
+  ): Promise<void> {
     try {
       const item: Item<T> = {
         value,
-        expiry,
+        expiryEpochMs,
       }
       await storage.setItem(key, item)
     } catch (err) {
@@ -37,11 +45,10 @@ export const LocalForage: ILocalForage = {
     try {
       const item = await storage.getItem<Item<T>>(key)
 
-      if (!item) {
-        return null
-      }
+      if (!item) return null
 
-      if (item.expiry && Date.now() > item.expiry * 1000) {
+      // Fix: expiry is epoch ms, compare directly.
+      if (item.expiryEpochMs && Date.now() > item.expiryEpochMs) {
         await storage.removeItem(key)
         return null
       }

@@ -138,6 +138,19 @@ export interface JsonRpcResponse<T = any> {
   }
 }
 
+export interface UpsertDeviceRecoveryRequest {
+  deviceId: string
+  encryptedShare2Device: string
+  deviceSecret: string
+}
+
+export interface DeviceRecoveryResponse {
+  found: boolean
+  deviceId?: string | null
+  encryptedShare2Device?: string | null
+  deviceSecret?: string | null
+}
+
 export enum RpcMethod {
   ETH_GET_BALANCE = 'eth_getBalance',
   ETH_GET_BLOCK_BY_NUMBER = 'eth_getBlockByNumber',

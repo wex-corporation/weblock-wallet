@@ -11,6 +11,8 @@ databaseChangeLog:
   - include:
       file: classpath:db/wallet/walletChangeLog.yaml
   - include:
+      file: classpath:db/wallet/walletDeviceRecoveryChangeLog.yaml   # ✅ 추가
+  - include:
       file: classpath:db/blockchain/blockchainChangeLog.yaml
   - include:
       file: classpath:db/userBlockchains/userBlockchainsChangeLog.yaml

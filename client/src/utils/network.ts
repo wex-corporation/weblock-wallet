@@ -17,6 +17,22 @@ export const KNOWN_NETWORKS: Record<number, Partial<BlockchainRequest>> = {
     explorerUrl: 'https://polygonscan.com',
     isTestnet: false,
   },
+  43114: {
+    chainId: 43114,
+    currencySymbol: 'AVAX',
+    currencyName: 'Avalanche',
+    currencyDecimals: 18,
+    explorerUrl: 'https://snowtrace.io',
+    isTestnet: false,
+  },
+  43113: {
+    chainId: 43113,
+    currencySymbol: 'AVAX',
+    currencyName: 'Avalanche Fuji',
+    currencyDecimals: 18,
+    explorerUrl: 'https://testnet.snowtrace.io',
+    isTestnet: true,
+  },
 }
 
 export const DEFAULT_NETWORK_PARAMS: BlockchainRequest = {
