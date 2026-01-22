@@ -1,10 +1,10 @@
 databaseChangeLog:
   - changeSet:
-      id: create-wallet-device-recoveries-table
+      id: create-wallets-table
       author: oscar
       changes:
         - createTable:
-            tableName: wallet_device_recoveries
+            tableName: wallets
             columns:
               - column:
                   name: id
@@ -13,79 +13,46 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
                   defaultValueComputed: uuid_generate_v4()
-
               - column:
-                  name: org_id
-                  type: UUID
+                  name: address
+                  type: VARCHAR(255)
                   constraints:
                     nullable: false
-
+                    unique: true
+              - column:
+                  name: public_key
+                  type: TEXT
+              - column:
+                  name: share_1
+                  type: TEXT
+              - column:
+                  name: encrypted_share_3
+                  type: TEXT
               - column:
                   name: user_id
                   type: UUID
-                  constraints:
-                    nullable: false
-
-              - column:
-                  name: device_id
-                  type: VARCHAR(128)
-                  constraints:
-                    nullable: false
-
-              # Ciphertext already (encrypted by client with deviceSecret + firebaseId)
-              - column:
-                  name: encrypted_share2_device
-                  type: TEXT
-                  constraints:
-                    nullable: false
-
-              # Server-encrypted deviceSecret (so client can restore if local storage is wiped)
-              - column:
-                  name: device_secret_enc
-                  type: TEXT
-                  constraints:
-                    nullable: false
-
               - column:
                   name: created_at
                   type: TIMESTAMP WITH TIME ZONE
                   defaultValueComputed: CURRENT_TIMESTAMP
-
               - column:
                   name: updated_at
                   type: TIMESTAMP WITH TIME ZONE
                   defaultValueComputed: CURRENT_TIMESTAMP
-
               - column:
                   name: deleted_at
                   type: TIMESTAMP WITH TIME ZONE
-
         - addForeignKeyConstraint:
-            constraintName: fk_wallet_device_recoveries_org
-            referencedTableName: organizations
-            referencedColumnNames: id
-            baseTableName: wallet_device_recoveries
-            baseColumnNames: org_id
-
-        - addForeignKeyConstraint:
-            constraintName: fk_wallet_device_recoveries_user
+            constraintName: fk_wallets_users
             referencedTableName: users
             referencedColumnNames: id
-            baseTableName: wallet_device_recoveries
+            baseTableName: wallets
             baseColumnNames: user_id
-
-        - addUniqueConstraint:
-            tableName: wallet_device_recoveries
-            columnNames: org_id, user_id, device_id
-            constraintName: uq_wallet_device_recoveries_org_user_device
-
         - createIndex:
-            tableName: wallet_device_recoveries
+            tableName: wallets
             columns:
               - column:
-                  name: org_id
+                  name: id
               - column:
                   name: user_id
-              - column:
-                  name: updated_at
-            indexName: idx_wallet_device_recoveries_org_user_updated
+            indexName: idx_wallets_id_user_id
