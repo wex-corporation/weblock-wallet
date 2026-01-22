@@ -5,6 +5,9 @@ export const RBT_PRIMARY_SALE_ROUTER_ABI = [
     outputs: [
       { name: 'asset', type: 'address' },
       { name: 'seriesId', type: 'uint256' },
+      // ✅ InvestRouter 확장 필드: 결제 토큰 주소 (USDR/USDT)
+      // 구버전 Router에는 없을 수 있으므로 decode 쪽에서 방어함.
+      { name: 'paymentToken', type: 'address' },
       { name: 'unitPrice', type: 'uint256' },
       { name: 'remainingUnits', type: 'uint256' },
       { name: 'startAt', type: 'uint64' },

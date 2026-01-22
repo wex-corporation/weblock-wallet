@@ -49,10 +49,32 @@ export class HttpClient {
       if (!accessToken) {
         throw new SDKError('No access token found', SDKErrorCode.AUTH_REQUIRED)
       }
-      headers['Authorization'] = `Bearer ${accessToken}`
+      ;(headers as Record<string, string>)['Authorization'] =
+        `Bearer ${accessToken}`
     }
 
     return headers
+  }
+
+  private async safeReadErrorDetails(
+    response: Response
+  ): Promise<unknown | undefined> {
+    const contentType = response.headers.get('content-type') || ''
+
+    try {
+      if (contentType.includes('application/json')) {
+        return await response.json()
+      }
+    } catch {
+      // ignore and try text
+    }
+
+    try {
+      const text = await response.text()
+      return text || undefined
+    } catch {
+      return undefined
+    }
   }
 
   private async request<T>(
@@ -66,35 +88,47 @@ export class HttpClient {
     const requestInit: RequestInit = {
       method,
       headers: {
-        ...headers,
-        ...config.headers,
+        ...(headers as Record<string, string>),
+        ...(config.headers as Record<string, string> | undefined),
       },
       credentials: config.credentials,
     }
 
-    if (data) {
+    if (data !== undefined) {
       requestInit.body = JSON.stringify(data)
     }
 
     const response = await fetch(`${this.baseUrl}${path}`, requestInit)
 
     if (!response.ok) {
+      // If an authenticated request fails due to auth, clear token to force re-authentication.
+      if (
+        config.needsAccessToken &&
+        (response.status === 401 || response.status === 403)
+      ) {
+        await LocalForage.delete(`${this.orgHost}:accessToken`)
+        throw new SDKError(
+          `Authentication required (status: ${response.status})`,
+          SDKErrorCode.AUTH_REQUIRED,
+          await this.safeReadErrorDetails(response)
+        )
+      }
+
       throw new SDKError(
         `HTTP error! status: ${response.status}`,
         SDKErrorCode.REQUEST_FAILED,
-        await response.json()
+        await this.safeReadErrorDetails(response)
       )
     }
 
-    if (
-      response.status === 200 &&
-      response.headers.get('content-length') === '0'
-    ) {
-      return undefined as T
-    }
+    // No content
+    if (response.status === 204) return undefined as T
+
+    const contentLength = response.headers.get('content-length')
+    if (contentLength === '0') return undefined as T
 
     try {
-      return await response.json()
+      return (await response.json()) as T
     } catch {
       return undefined as T
     }

@@ -86,14 +86,15 @@ export interface NetworkInfo {
  * 토큰 잔액 정보
  */
 export interface TokenBalance {
-  /** 원본 값 (Wei) */
   raw: string
-  /** 변환된 값 */
   formatted: string
-  /** 소수점 자리수 */
   decimals: number
-  /** 토큰 심볼 */
   symbol: string
+
+  // Legacy / compatibility aliases
+  balanceWei?: string
+  balance?: string
+  result?: string
 }
 
 /**

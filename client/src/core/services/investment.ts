@@ -1,3 +1,5 @@
+// client/src/core/services/investment.ts
+
 import { RpcClient } from '../../clients/api/rpcs'
 import { WalletService } from './wallet'
 import { NetworkService } from './network'
@@ -29,11 +31,58 @@ import {
 } from '../../contract/weblock'
 
 const MAX_UINT256 = 2n ** 256n - 1n
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+
+/**
+ * InvestRouter(신규) / LegacyRouter(구버전) offerings() 디코딩을 모두 지원하기 위한 ABI
+ * - 신규(InvestRouter): (asset, seriesId, paymentToken, unitPrice, remainingUnits, startAt, endAt, treasury, enabled)
+ * - 구버전(Legacy):      (asset, seriesId, unitPrice, remainingUnits, startAt, endAt, treasury, enabled)
+ */
+const OFFERING_ABI_INVEST_ROUTER = [
+  {
+    inputs: [{ name: 'offeringId', type: 'uint256' }],
+    name: 'offerings',
+    outputs: [
+      { name: 'asset', type: 'address' },
+      { name: 'seriesId', type: 'uint256' },
+      { name: 'paymentToken', type: 'address' },
+      { name: 'unitPrice', type: 'uint256' },
+      { name: 'remainingUnits', type: 'uint256' },
+      { name: 'startAt', type: 'uint64' },
+      { name: 'endAt', type: 'uint64' },
+      { name: 'treasury', type: 'address' },
+      { name: 'enabled', type: 'bool' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+] as const
+
+const OFFERING_ABI_LEGACY_ROUTER = [
+  {
+    inputs: [{ name: 'offeringId', type: 'uint256' }],
+    name: 'offerings',
+    outputs: [
+      { name: 'asset', type: 'address' },
+      { name: 'seriesId', type: 'uint256' },
+      { name: 'unitPrice', type: 'uint256' },
+      { name: 'remainingUnits', type: 'uint256' },
+      { name: 'startAt', type: 'uint64' },
+      { name: 'endAt', type: 'uint64' },
+      { name: 'treasury', type: 'address' },
+      { name: 'enabled', type: 'bool' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+] as const
 
 export class InvestmentService extends EventEmitter {
   private readonly erc20Interface: Interface
   private readonly saleInterface: Interface
   private readonly rbtInterface: Interface
+  private readonly offeringInvestIface: Interface
+  private readonly offeringLegacyIface: Interface
   private readonly chainIdCache = new Map<string, number>()
 
   constructor(
@@ -45,6 +94,8 @@ export class InvestmentService extends EventEmitter {
     this.erc20Interface = new Interface(ERC20_ABI)
     this.saleInterface = new Interface(RBT_PRIMARY_SALE_ROUTER_ABI as any)
     this.rbtInterface = new Interface(RBT_PROPERTY_TOKEN_ABI as any)
+    this.offeringInvestIface = new Interface(OFFERING_ABI_INVEST_ROUTER as any)
+    this.offeringLegacyIface = new Interface(OFFERING_ABI_LEGACY_ROUTER as any)
   }
 
   private assertHexAddress(addr: string, field: string) {
@@ -63,16 +114,12 @@ export class InvestmentService extends EventEmitter {
       }
       const s = (v ?? '').toString().trim()
       if (!s) throw new Error('empty')
-      // 0x or decimal
       return BigInt(s)
     } catch {
       throw new SDKError(`Invalid ${field}`, SDKErrorCode.INVALID_PARAMS)
     }
   }
 
-  /**
-   * Resolve `networkId` (wallet backend blockchainId UUID) or chainId string -> EVM chainId
-   */
   private async resolveChainId(networkId: string): Promise<number> {
     const trimmed = (networkId ?? '').trim()
     const cached = this.chainIdCache.get(trimmed)
@@ -84,7 +131,6 @@ export class InvestmentService extends EventEmitter {
       return numeric
     }
 
-    // fast path: current network
     try {
       const current = await this.networkService.getCurrentNetwork()
       if (current && current.id === trimmed) {
@@ -99,7 +145,6 @@ export class InvestmentService extends EventEmitter {
       // ignore
     }
 
-    // fallback: all networks
     const networks = await this.networkService.getRegisteredNetworks()
     const found = networks.find((n) => n.id === trimmed)
     if (found) {
@@ -126,7 +171,6 @@ export class InvestmentService extends EventEmitter {
       params: [{ to, data }, 'latest'],
     })
 
-    // ✅ error가 내려오는 케이스도 방어
     if (res.error) {
       throw new SDKError(
         `ETH_CALL failed: ${res.error.message}`,
@@ -135,7 +179,6 @@ export class InvestmentService extends EventEmitter {
       )
     }
 
-    // ✅ result?: string 이므로 undefined 방어 후 string으로 좁힘
     if (res.result === undefined) {
       throw new SDKError(
         'ETH_CALL returned empty result',
@@ -144,18 +187,6 @@ export class InvestmentService extends EventEmitter {
     }
 
     return res.result
-  }
-
-  private decodeU256(
-    resultHex: string,
-    method: 'allowance' | 'balanceOf' | 'claimable'
-  ): bigint {
-    const decoded = this.erc20Interface.decodeFunctionResult(
-      method as any,
-      resultHex as any
-    )
-    // ethers v6: bigint
-    return BigInt(decoded[0].toString())
   }
 
   async getOffering(params: GetOfferingParams): Promise<OfferingView> {
@@ -168,42 +199,81 @@ export class InvestmentService extends EventEmitter {
     ])
     const result = await this.ethCall(chainId, params.saleRouterAddress, data)
 
-    const decoded = this.saleInterface.decodeFunctionResult('offerings', result)
+    let decoded: any
+    let isLegacy = false
+    try {
+      decoded = this.offeringInvestIface.decodeFunctionResult(
+        'offerings',
+        result
+      )
+    } catch {
+      decoded = this.offeringLegacyIface.decodeFunctionResult(
+        'offerings',
+        result
+      )
+      isLegacy = true
+    }
+
     const asset = decoded[0] as string
     const seriesId = BigInt(decoded[1].toString())
-    const unitPrice = BigInt(decoded[2].toString())
-    const remainingUnits = BigInt(decoded[3].toString())
-    const startAt = BigInt(decoded[4].toString())
-    const endAt = BigInt(decoded[5].toString())
-    const treasury = decoded[6] as string
-    const enabled = Boolean(decoded[7])
 
+    let paymentToken: string | undefined
+    let unitPrice: bigint
+    let remainingUnits: bigint
+    let startAt: bigint
+    let endAt: bigint
+    let treasury: string
+    let enabled: boolean
+
+    if (!isLegacy) {
+      paymentToken = decoded[2] as string
+      unitPrice = BigInt(decoded[3].toString())
+      remainingUnits = BigInt(decoded[4].toString())
+      startAt = BigInt(decoded[5].toString())
+      endAt = BigInt(decoded[6].toString())
+      treasury = decoded[7] as string
+      enabled = Boolean(decoded[8])
+    } else {
+      unitPrice = BigInt(decoded[2].toString())
+      remainingUnits = BigInt(decoded[3].toString())
+      startAt = BigInt(decoded[4].toString())
+      endAt = BigInt(decoded[5].toString())
+      treasury = decoded[6] as string
+      enabled = Boolean(decoded[7])
+    }
+
+    // OfferingView 타입이 paymentToken을 모를 수 있어도 런타임에서는 넣어줌
     return {
       asset,
       seriesId,
+      ...(paymentToken ? ({ paymentToken } as any) : {}),
       unitPrice,
       remainingUnits,
       startAt,
       endAt,
       treasury,
       enabled,
-    }
+    } as OfferingView
   }
 
   /**
-   * USDR로 투자 (approve 필요. autoApprove 옵션 제공)
-   * - Router.buy(offeringId, units, maxCost) 호출
+   * approve + buy (USDR/USDT 공용)
+   * - InvestRouter: offering.paymentToken을 사용
+   * - Legacy Router: params.usdrAddress를 사용
    */
   async investRbtWithUsdr(params: InvestRbtParams): Promise<InvestRbtResult> {
-    this.assertHexAddress(params.usdrAddress, 'usdrAddress')
     this.assertHexAddress(params.saleRouterAddress, 'saleRouterAddress')
+
+    // ✅ Legacy router 대응용: 존재할 때만 검증
+    if (params.usdrAddress) {
+      this.assertHexAddress(params.usdrAddress, 'usdrAddress')
+    }
 
     const chainId = await this.resolveChainId(params.networkId)
     const offeringId = this.toBigInt(params.offeringId, 'offeringId')
     const units = this.toBigInt(params.units, 'units')
-    if (units <= 0n) {
+    if (units <= 0n)
       throw new SDKError('Invalid units', SDKErrorCode.INVALID_PARAMS)
-    }
 
     const offering = await this.getOffering({
       networkId: params.networkId,
@@ -215,7 +285,27 @@ export class InvestmentService extends EventEmitter {
       throw new SDKError('Offering is disabled', SDKErrorCode.REQUEST_FAILED)
     }
 
-    // cost = units * unitPrice
+    const paymentTokenFromOffering = (offering as any).paymentToken as
+      | string
+      | undefined
+
+    // ✅ 여기서 "string | undefined"를 확실히 string으로 좁힘
+    const paymentTokenAddressCandidate =
+      paymentTokenFromOffering && paymentTokenFromOffering !== ZERO_ADDRESS
+        ? paymentTokenFromOffering
+        : params.usdrAddress
+
+    if (!paymentTokenAddressCandidate) {
+      throw new SDKError(
+        'Payment token address is missing. Use InvestRouter (offering.paymentToken) or provide usdrAddress for legacy router.',
+        SDKErrorCode.INVALID_PARAMS
+      )
+    }
+
+    // ✅ 이제부터는 string으로 확정된 값만 사용
+    const paymentTokenAddress: string = paymentTokenAddressCandidate
+    this.assertHexAddress(paymentTokenAddress, 'paymentTokenAddress')
+
     const cost = units * offering.unitPrice
     const maxCost =
       params.maxCostWei != null
@@ -233,7 +323,6 @@ export class InvestmentService extends EventEmitter {
 
     let approvalTxHash: string | undefined
 
-    // autoApprove: allowance 확인 후 필요 시 approve
     const autoApprove = params.autoApprove ?? true
     const approveMax = params.approveMax ?? true
     const waitForApprovalReceipt = params.waitForApprovalReceipt ?? true
@@ -243,11 +332,14 @@ export class InvestmentService extends EventEmitter {
         'allowance',
         [buyer, params.saleRouterAddress]
       )
+
+      // ✅ (에러 285 라인 계열 해결) to 파라미터 string 확정
       const allowanceHex = await this.ethCall(
         chainId,
-        params.usdrAddress,
+        paymentTokenAddress,
         allowanceData
       )
+
       const allowanceDecoded = this.erc20Interface.decodeFunctionResult(
         'allowance',
         allowanceHex
@@ -261,8 +353,9 @@ export class InvestmentService extends EventEmitter {
           approveAmount.toString(),
         ])
 
+        // ✅ (에러 317 라인 계열 해결) to 파라미터 string 확정
         approvalTxHash = await this.walletService.sendTransaction({
-          to: params.usdrAddress,
+          to: paymentTokenAddress,
           value: '0',
           data: approveData,
           chainId,
@@ -283,13 +376,13 @@ export class InvestmentService extends EventEmitter {
       }
     }
 
-    // buy
     const buyData = this.saleInterface.encodeFunctionData('buy', [
       offeringId,
       units,
       maxCost,
     ])
 
+    // ✅ (에러 349 라인 계열은 buy 쪽도 함께 안정화된 상태)
     const purchaseTxHash = await this.walletService.sendTransaction({
       to: params.saleRouterAddress,
       value: '0',
@@ -308,10 +401,6 @@ export class InvestmentService extends EventEmitter {
     }
   }
 
-  /**
-   * RBT 수익(이자) claim
-   * - RBTPropertyToken.claim(seriesId)
-   */
   async claimRbtRevenue(
     params: ClaimRbtRevenueParams
   ): Promise<ClaimRbtRevenueResult> {
@@ -333,9 +422,6 @@ export class InvestmentService extends EventEmitter {
     return { txHash }
   }
 
-  /**
-   * claimable 조회 (eth_call)
-   */
   async getClaimable(params: {
     networkId: string
     rbtAssetAddress: string
@@ -357,9 +443,6 @@ export class InvestmentService extends EventEmitter {
     return BigInt(decoded[0].toString()).toString()
   }
 
-  /**
-   * RBT balanceOf 조회 (eth_call)
-   */
   async getRbtBalance(params: {
     networkId: string
     rbtAssetAddress: string
@@ -395,9 +478,7 @@ export class InvestmentService extends EventEmitter {
         params: [txHash],
       })
 
-      if (res.result) {
-        return res.result.status === '0x1'
-      }
+      if (res.result) return res.result.status === '0x1'
 
       retryCount++
       await new Promise((r) => setTimeout(r, 3000))

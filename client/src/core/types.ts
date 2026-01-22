@@ -39,6 +39,10 @@ export interface InternalCore {
     getAddress(): Promise<string>
     create(password: string): Promise<string>
     retrieveWallet(password: string): Promise<string>
+
+    /** Reset PIN using device recovery material (encryptedShare2_device). */
+    resetPin(newPassword: string): Promise<string>
+
     getBalance(address: string, chainId: number): Promise<TokenBalance>
     getTokenBalance(
       tokenAddress: string,

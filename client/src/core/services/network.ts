@@ -53,12 +53,45 @@ export class NetworkService {
   async switchNetwork(networkId: string): Promise<void> {
     try {
       const networks = await this.getRegisteredNetworks()
-      const network = networks.find((n) => n.id === networkId)
+      const key = String(networkId || '').trim()
+
+      // 1) direct id match
+      let network = networks.find((n) => n.id === key)
+
+      // 2) name match (case-insensitive)
+      if (!network) {
+        const lower = key.toLowerCase()
+        network = networks.find((n) => (n.name || '').toLowerCase() === lower)
+      }
+
+      // 3) chainId match (when caller passes a numeric string)
+      if (!network && /^\d+$/.test(key)) {
+        const chainId = Number(key)
+        network = networks.find((n) => n.chainId === chainId)
+      }
+
+      // 4) common aliases (keeps backward compatibility with callers passing "fuji")
+      if (!network) {
+        const alias = key.toLowerCase()
+        const aliasChainId: Record<string, number> = {
+          fuji: 43113,
+          avalanchefuji: 43113,
+          'avalanche-fuji': 43113,
+          avaxfuji: 43113,
+          'avax-fuji': 43113,
+        }
+        const chainId = aliasChainId[alias]
+        if (chainId) {
+          network = networks.find((n) => n.chainId === chainId)
+        }
+      }
+
       if (!network) {
         throw new SDKError('Network not found', SDKErrorCode.INVALID_NETWORK)
       }
 
-      await LocalForage.save(`${this.orgHost}:currentNetwork`, networkId)
+      // Persist the real network id (UUID), not the input.
+      await LocalForage.save(`${this.orgHost}:currentNetwork`, network.id)
     } catch (error) {
       if (error instanceof SDKError) throw error
       throw new SDKError('Failed to switch network', SDKErrorCode.NETWORK_ERROR)

@@ -19,8 +19,26 @@ export class RpcClient {
       params: request.params,
     }
 
-    return this.client.post(this.baseUrl, rpcRequest, {
+    const res: any = await this.client.post(this.baseUrl, rpcRequest, {
       needsAccessToken: true,
     })
+
+    // Some backends return JSON-stringified objects in `result` (e.g., eth_getTransactionReceipt).
+    // Normalize here so higher layers can rely on object fields like `status`, `blockNumber`, etc.
+    if (res && typeof res.result === 'string') {
+      const t = res.result.trim()
+      if (
+        (t.startsWith('{') && t.endsWith('}')) ||
+        (t.startsWith('[') && t.endsWith(']'))
+      ) {
+        try {
+          res.result = JSON.parse(t)
+        } catch {
+          // ignore parse errors; keep original string
+        }
+      }
+    }
+
+    return res
   }
 }

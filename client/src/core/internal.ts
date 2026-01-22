@@ -1,3 +1,5 @@
+// client/src/core/internal.ts
+
 import {
   SDKOptions,
   SendTransactionParams,
@@ -27,6 +29,7 @@ export class InternalCoreImpl implements InternalCore {
   private readonly walletService: WalletService
   private readonly networkService: NetworkService
   private readonly assetService: AssetService
+
   constructor(private readonly options: SDKOptions) {
     const httpClient = new HttpClient(options)
     const firebase = new FirebaseAuth(options)
@@ -40,7 +43,9 @@ export class InternalCoreImpl implements InternalCore {
       walletClient,
       options.orgHost
     )
+
     this.networkService = new NetworkService(userClient, options.orgHost)
+
     this.walletService = new WalletService(
       walletClient,
       rpcClient,
@@ -70,6 +75,10 @@ export class InternalCoreImpl implements InternalCore {
     create: (password: string) => this.walletService.create(password),
     retrieveWallet: (password: string) =>
       this.walletService.retrieveWallet(password),
+
+    // Fix: expose resetPin to InternalCore wallet facade
+    resetPin: (newPassword: string) => this.walletService.resetPin(newPassword),
+
     getBalance: (address: string, chainId: number) =>
       this.walletService.getBalance(address, chainId),
     getTokenBalance: (
@@ -107,6 +116,7 @@ export class InternalCoreImpl implements InternalCore {
       this.networkService.switchNetwork(networkId),
     getCurrentNetwork: () => this.networkService.getCurrentNetwork(),
   }
+
   asset = {
     transfer: (params: TransferRequest) => this.assetService.transfer(params),
 
@@ -119,11 +129,9 @@ export class InternalCoreImpl implements InternalCore {
       name?: string
     }) => this.assetService.addToken(params),
 
-    // New ERC20 methods
     getTokenBalance: (params: TokenBalanceParams) =>
       this.assetService.getTokenBalance(params),
 
-    // ERC1155 / RBT helpers
     getERC1155Balance: (params: ERC1155BalanceParams) =>
       this.assetService.getERC1155Balance(params),
 
@@ -138,24 +146,18 @@ export class InternalCoreImpl implements InternalCore {
     getAllowance: (params: TokenAllowanceParams) =>
       this.assetService.getAllowance(params),
 
-    // getTokenInfo: (params: TokenInfoParams) =>
-    //   this.assetService.getTokenInfo(params),
     addNFTCollection: (params: {
       networkId: string
       address: string
       name?: string
     }) => this.assetService.addNFTCollection(params),
-    // checkSecurityTokenCompliance: (params: {
-    //   networkId: string
-    //   tokenAddress: string
-    //   from: string
-    //   to: string
-    //   amount: string
-    // }) => this.assetService.checkSecurityTokenCompliance(params),
+
     on: (event: string, listener: (...args: any[]) => void) =>
       this.assetService.on(event, listener),
+
     off: (event: string, listener: (...args: any[]) => void) =>
       this.assetService.off(event, listener),
+
     getTokenInfo: (params: TokenInfoParams) =>
       this.assetService.getTokenInfo(params),
 

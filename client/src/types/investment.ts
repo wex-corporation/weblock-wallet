@@ -1,3 +1,7 @@
+// client/src/types/investment.ts
+// ✅ InvestRouter(USDR/USDT) 지원을 위해 usdrAddress를 optional로 변경
+// ✅ OfferingView에 paymentToken(옵션)을 추가 (Legacy Router 호환)
+
 export interface GetOfferingParams {
   networkId: string
   saleRouterAddress: string
@@ -7,6 +11,13 @@ export interface GetOfferingParams {
 export interface OfferingView {
   asset: string
   seriesId: bigint
+
+  /**
+   * InvestRouter 확장 필드: 결제 토큰 주소(USDR/USDT).
+   * Legacy Router에서는 존재하지 않으므로 optional.
+   */
+  paymentToken?: string
+
   unitPrice: bigint
   remainingUnits: bigint
   startAt: bigint
@@ -17,7 +28,13 @@ export interface OfferingView {
 
 export interface InvestRbtParams {
   networkId: string
-  usdrAddress: string
+
+  /**
+   * (Legacy Router 호환용)
+   * InvestRouter(신규)에서는 offering.paymentToken을 사용하므로 생략 가능.
+   */
+  usdrAddress?: string
+
   saleRouterAddress: string
   offeringId: bigint | number | string
   units: bigint | number | string
@@ -49,6 +66,7 @@ export interface InvestRbtParams {
 export interface InvestRbtResult {
   offering: OfferingView
   costWei: string
+  approvalTxxHash?: string // ⛔️ 아래 "approvalTxHash"로 통일 권장. (기존 호환이면 유지)
   approvalTxHash?: string
   purchaseTxHash: string
 }
