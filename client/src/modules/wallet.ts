@@ -7,12 +7,125 @@ import {
   TokenInfo,
 } from '../types'
 import { InternalCore } from '../core/types'
+import { WEBLOCK_FUJI_DEPLOYMENT } from '../core/config/weblockFujiDeployment'
+import { TokenAmount } from '../utils/numbers'
+
+type RegisteredCoin = {
+  id: string
+  blockchainId: string
+  name: string
+  symbol: string
+  contractAddress: string
+  decimals: number
+}
+
+const FUJI_CHAIN_ID = WEBLOCK_FUJI_DEPLOYMENT.chainId
+const FUJI_USDR_ADDRESS = WEBLOCK_FUJI_DEPLOYMENT.tokens.USDR.address.toLowerCase()
+const FUJI_RBT_ADDRESS =
+  WEBLOCK_FUJI_DEPLOYMENT.contracts.product1.rbtAsset.toLowerCase()
+const FUJI_RBT_SERIES_ID = Number(
+  WEBLOCK_FUJI_DEPLOYMENT.contracts.product1.seriesId
+)
 
 export class WalletModule {
   constructor(
     private readonly options: SDKOptions,
     private readonly core: InternalCore
   ) {}
+
+  private pickDefaultNetwork(availableNetworks: WalletInfo['network']['available']) {
+    if (!availableNetworks.length) return null
+
+    const fuji =
+      availableNetworks.find(
+        (network) =>
+          network.chainId === FUJI_CHAIN_ID &&
+          (network.isTestnet ||
+            (network.name || '').toLowerCase().includes('fuji') ||
+            (network.rpcUrl || '').toLowerCase().includes('avax-test'))
+      ) ?? null
+
+    if (fuji) return fuji
+
+    return availableNetworks.find((network) => !network.isTestnet) ?? availableNetworks[0]
+  }
+
+  private withDefaultRegisteredCoins(
+    network: WalletInfo['network']['current'],
+    registered: RegisteredCoin[]
+  ): RegisteredCoin[] {
+    if (!network) return registered
+
+    const map = new Map<string, RegisteredCoin>()
+    for (const coin of registered) {
+      if (!coin?.contractAddress) continue
+      map.set(coin.contractAddress.toLowerCase(), {
+        ...coin,
+        contractAddress: coin.contractAddress.toLowerCase(),
+      })
+    }
+
+    if (network.chainId === FUJI_CHAIN_ID && !map.has(FUJI_USDR_ADDRESS)) {
+      map.set(FUJI_USDR_ADDRESS, {
+        id: 'default-fuji-usdr',
+        blockchainId: network.id,
+        name: 'WeBlock USD Settlement Token',
+        symbol: 'USDR',
+        contractAddress: FUJI_USDR_ADDRESS,
+        decimals: 18,
+      })
+    }
+
+    return Array.from(map.values())
+  }
+
+  private decodeHexBalanceToDecimal(value: string): string {
+    if (!value) return '0'
+    try {
+      return BigInt(value).toString()
+    } catch {
+      return '0'
+    }
+  }
+
+  private async getFujiRbtTokenInfo(
+    networkId: string,
+    walletAddress: string
+  ): Promise<TokenInfo | null> {
+    try {
+      const rawHex = await this.core.asset.getERC1155Balance({
+        networkId,
+        tokenAddress: FUJI_RBT_ADDRESS,
+        walletAddress,
+        tokenId: FUJI_RBT_SERIES_ID,
+      })
+
+      const raw = this.decodeHexBalanceToDecimal(rawHex)
+      const balance: TokenBalance = {
+        raw,
+        formatted: TokenAmount.fromWei(raw, 0),
+        decimals: 0,
+        symbol: 'RBT',
+      }
+
+      return {
+        address: FUJI_RBT_ADDRESS,
+        name: 'RBT Property Token',
+        symbol: 'RBT',
+        decimals: 0,
+        balance,
+        totalSupply: {
+          raw: '0',
+          formatted: '0',
+          decimals: 0,
+          symbol: 'RBT',
+        },
+      }
+    } catch (error) {
+      console.warn('Failed to load default RBT balance:', error)
+      return null
+    }
+  }
 
   async getInfo(): Promise<WalletInfo> {
     try {
@@ -48,8 +161,13 @@ export class WalletModule {
 
       // 현재 네트워크가 없으면 기본 네트워크로 설정
       if (!currentNetwork) {
-        const defaultNetwork =
-          availableNetworks.find((n) => !n.isTestnet) || availableNetworks[0]
+        const defaultNetwork = this.pickDefaultNetwork(availableNetworks)
+        if (!defaultNetwork) {
+          throw new SDKError(
+            '사용 가능한 네트워크가 없습니다',
+            SDKErrorCode.NETWORK_ERROR
+          )
+        }
         await this.core.network.switchNetwork(defaultNetwork.id)
         console.log('기본 네트워크로 설정:', defaultNetwork.name)
       }
@@ -82,19 +200,21 @@ export class WalletModule {
       let tokens: TokenInfo[] = []
       try {
         const registered = await this.core.asset.getRegisteredCoins(network.id)
-        if (registered?.length) {
-          const unique = new Map(
-            registered.map((c) => [c.contractAddress.toLowerCase(), c])
-          )
+        const targetCoins = this.withDefaultRegisteredCoins(
+          network,
+          (registered ?? []) as RegisteredCoin[]
+        )
+        const tokenMap = new Map<string, TokenInfo>()
 
-          tokens = await Promise.all(
-            Array.from(unique.values()).map(async (coin) => {
-              // Prefer RPC-derived balances, but keep backend metadata as source-of-truth for label/decimals.
+        if (targetCoins.length) {
+          const results = await Promise.allSettled(
+            targetCoins.map(async (coin) => {
               const full = await this.core.asset.getTokenFullInfo({
                 networkId: network.id,
                 tokenAddress: coin.contractAddress,
                 walletAddress: address,
               })
+
               return {
                 ...full,
                 address: coin.contractAddress,
@@ -107,7 +227,27 @@ export class WalletModule {
               }
             })
           )
+
+          results.forEach((result) => {
+            if (result.status === 'fulfilled') {
+              tokenMap.set(
+                result.value.address.toLowerCase(),
+                result.value as TokenInfo
+              )
+              return
+            }
+            console.warn('Registered token load failed:', result.reason)
+          })
         }
+
+        if (network.chainId === FUJI_CHAIN_ID) {
+          const rbtToken = await this.getFujiRbtTokenInfo(network.id, address)
+          if (rbtToken) {
+            tokenMap.set(rbtToken.address.toLowerCase(), rbtToken)
+          }
+        }
+
+        tokens = Array.from(tokenMap.values())
       } catch (e) {
         // Don't fail the whole wallet-info if token listing fails.
         console.warn('Registered token load failed:', e)
