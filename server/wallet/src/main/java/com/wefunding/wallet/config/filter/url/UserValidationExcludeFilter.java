@@ -73,8 +73,7 @@ public class UserValidationExcludeFilter extends ExcludeUrlFilter {
                         if (!user.getOrgId().equals(org.getId())) {
                           return Mono.error(
                               new AuthorizationException(
-                                  String.format(
-                                      "User not registered on org id '%s'", org.getId()),
+                                  String.format("User not registered on org id '%s'", org.getId()),
                                   ErrorCode.USER_NOT_FOUND));
                         }
                         exchange.getAttributes().put(AttributeStorage.USER_ATTRIBUTE_KEY, user);
@@ -95,7 +94,8 @@ public class UserValidationExcludeFilter extends ExcludeUrlFilter {
               } else {
                 log.warn("Request failed: {}", e.getMessage());
               }
-              return this.sendErrorResponse(exchange, e.getHttpStatus(), this.resolveErrorMessage(e))
+              return this.sendErrorResponse(
+                      exchange, e.getHttpStatus(), this.resolveErrorMessage(e))
                   .thenReturn(false);
             })
         .onErrorResume(
