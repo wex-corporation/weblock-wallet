@@ -62,7 +62,8 @@ public class UserController {
   //  }
 
   @PostMapping("/register-token")
-  public Mono<Coin> registerToken(@RequestBody RegisterTokenRequest req) {
+  public Mono<Coin> registerToken(
+      ServerWebExchange exchange, @RequestBody RegisterTokenRequest req) {
     final UUID blockchainId = parseUuidOr400(req.blockchainId(), "blockchainId is required");
     final String contractAddress = normalizeAddressOr400(req.contractAddress());
 
@@ -94,7 +95,8 @@ public class UserController {
                               meta.symbol(),
                               blockchainId,
                               contractAddress,
-                              meta.decimals())));
+                              meta.decimals())))
+          .flatMap(coin -> this.userService.attachCoinToUser(exchange, coin));
     }
 
     if (req.decimals() <= 0) {
@@ -105,7 +107,8 @@ public class UserController {
 
     // ✅ 메타가 있으면 upsert (중복이어도 OK), null overwrite는 COALESCE로 방지됨
     return coinRepository.upsertToken(
-        req.name().trim(), req.symbol().trim(), blockchainId, contractAddress, req.decimals());
+        req.name().trim(), req.symbol().trim(), blockchainId, contractAddress, req.decimals())
+        .flatMap(coin -> this.userService.attachCoinToUser(exchange, coin));
   }
 
   /**
