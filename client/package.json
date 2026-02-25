@@ -1,6 +1,6 @@
 {
   "name": "@weblock-wallet/sdk",
-  "version": "0.1.75",
+  "version": "0.1.76",
   "description": "WeBlock Wallet SDK for Web3 wallet integration",
   "private": false,
   "publishConfig": {
