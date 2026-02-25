@@ -2,6 +2,7 @@
 
 import { SDKError, SDKOptions, SDKErrorCode } from '@/types'
 import { LocalForage } from '@/utils/storage'
+import { Jwt } from '@/utils/jwt'
 
 interface RequestConfig {
   headers?: HeadersInit
@@ -35,6 +36,38 @@ export class HttpClient {
     }
   }
 
+  private getAccessTokenStorageKey(): string {
+    return `${this.orgHost}:accessToken`
+  }
+
+  private async getValidAccessToken(): Promise<string> {
+    const tokenKey = this.getAccessTokenStorageKey()
+    const accessToken = await LocalForage.get<string>(tokenKey)
+    if (!accessToken) {
+      throw new SDKError(
+        'Session expired. Please sign in again.',
+        SDKErrorCode.AUTH_REQUIRED
+      )
+    }
+
+    const payload = Jwt.tryParse(accessToken)
+    const expiryEpochMs =
+      typeof payload?.exp === 'number' && Number.isFinite(payload.exp)
+        ? payload.exp * 1000
+        : null
+
+    if (!expiryEpochMs || Date.now() >= expiryEpochMs) {
+      await LocalForage.delete(tokenKey)
+      throw new SDKError(
+        'Session expired. Please sign in again.',
+        SDKErrorCode.AUTH_REQUIRED,
+        { reason: 'access_token_expired' }
+      )
+    }
+
+    return accessToken
+  }
+
   private async getHeaders(needsAccessToken = false): Promise<HeadersInit> {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -43,12 +76,7 @@ export class HttpClient {
     }
 
     if (needsAccessToken) {
-      const accessToken = await LocalForage.get<string>(
-        `${this.orgHost}:accessToken`
-      )
-      if (!accessToken) {
-        throw new SDKError('No access token found', SDKErrorCode.AUTH_REQUIRED)
-      }
+      const accessToken = await this.getValidAccessToken()
       ;(headers as Record<string, string>)['Authorization'] =
         `Bearer ${accessToken}`
     }
@@ -106,9 +134,9 @@ export class HttpClient {
         config.needsAccessToken &&
         (response.status === 401 || response.status === 403)
       ) {
-        await LocalForage.delete(`${this.orgHost}:accessToken`)
+        await LocalForage.delete(this.getAccessTokenStorageKey())
         throw new SDKError(
-          `Authentication required (status: ${response.status})`,
+          'Session expired. Please sign in again.',
           SDKErrorCode.AUTH_REQUIRED,
           await this.safeReadErrorDetails(response)
         )

@@ -3,7 +3,7 @@ import { UserClient } from '../../clients/api/users'
 import { LocalForage } from '../../utils/storage'
 import { WalletClient } from '@/clients/api/wallets'
 import { Jwt } from '../../utils/jwt'
-import { SignInStatus } from '@/index'
+import { SignInStatus, SDKError, SDKErrorCode } from '@/index'
 
 export class AuthService {
   constructor(
@@ -23,19 +23,21 @@ export class AuthService {
       provider,
     })
 
-    console.log('Server response:', response)
     const { token, isNewUser } = response
 
-    const exp = Jwt.parse(token)?.exp! * 1000
+    const payload = Jwt.tryParse(token)
+    const exp = payload?.exp ? payload.exp * 1000 : null
 
-    console.log('Token exp:', exp)
-    console.log('isNewUser value:', isNewUser)
+    if (!exp || !Number.isFinite(exp) || exp <= Date.now()) {
+      throw new SDKError(
+        'Invalid access token received from server',
+        SDKErrorCode.INVALID_RESPONSE
+      )
+    }
+
     await LocalForage.save(`${this.orgHost}:firebaseId`, credentials.firebaseId)
     await LocalForage.save(`${this.orgHost}:accessToken`, token, exp)
     await LocalForage.save(`${this.orgHost}:isNewUser`, isNewUser)
-
-    const savedIsNewUser = await LocalForage.get(`${this.orgHost}:isNewUser`)
-    console.log('Saved isNewUser:', savedIsNewUser)
 
     let status: SignInStatus
     if (isNewUser) {

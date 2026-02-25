@@ -16,6 +16,22 @@ interface ILocalForage {
   removeAll(): Promise<void>
 }
 
+const toExpiryEpochMs = (value: unknown): number | null => {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+    return null
+  }
+  // Legacy compatibility: older clients may store expiry in epoch seconds.
+  return value < 1_000_000_000_000 ? value * 1000 : value
+}
+
+const isObjectRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isWrappedItem = <T>(value: unknown): value is Item<T> & { expiry?: number } =>
+  isObjectRecord(value) &&
+  'value' in value &&
+  ('expiryEpochMs' in value || 'expiry' in value || Object.keys(value).length === 1)
+
 // LocalForage instance
 const storage = localforage.createInstance({
   name: '@WeBlock-wallet',
@@ -43,17 +59,21 @@ export const LocalForage: ILocalForage = {
 
   async get<T>(key: string): Promise<T | null> {
     try {
-      const item = await storage.getItem<Item<T>>(key)
+      const item = await storage.getItem<unknown>(key)
 
       if (!item) return null
 
-      // Fix: expiry is epoch ms, compare directly.
-      if (item.expiryEpochMs && Date.now() > item.expiryEpochMs) {
-        await storage.removeItem(key)
-        return null
+      if (isWrappedItem<T>(item)) {
+        const expiryEpochMs = toExpiryEpochMs(item.expiryEpochMs ?? item.expiry)
+        if (expiryEpochMs && Date.now() > expiryEpochMs) {
+          await storage.removeItem(key)
+          return null
+        }
+        return item.value ?? null
       }
 
-      return item.value
+      // Legacy compatibility: some old entries were stored as a raw value.
+      return item as T
     } catch (err) {
       console.error(`Error retrieving data for key "${key}":`, err)
       return null
