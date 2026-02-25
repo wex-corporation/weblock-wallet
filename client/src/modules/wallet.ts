@@ -20,7 +20,8 @@ type RegisteredCoin = {
 }
 
 const FUJI_CHAIN_ID = WEBLOCK_FUJI_DEPLOYMENT.chainId
-const FUJI_USDR_ADDRESS = WEBLOCK_FUJI_DEPLOYMENT.tokens.USDR.address.toLowerCase()
+const FUJI_USDR_ADDRESS =
+  WEBLOCK_FUJI_DEPLOYMENT.tokens.USDR.address.toLowerCase()
 const FUJI_RBT_ADDRESS =
   WEBLOCK_FUJI_DEPLOYMENT.contracts.product1.rbtAsset.toLowerCase()
 const FUJI_RBT_SERIES_ID = Number(
@@ -33,7 +34,9 @@ export class WalletModule {
     private readonly core: InternalCore
   ) {}
 
-  private pickDefaultNetwork(availableNetworks: WalletInfo['network']['available']) {
+  private pickDefaultNetwork(
+    availableNetworks: WalletInfo['network']['available']
+  ) {
     if (!availableNetworks.length) return null
 
     const fuji =
@@ -47,7 +50,10 @@ export class WalletModule {
 
     if (fuji) return fuji
 
-    return availableNetworks.find((network) => !network.isTestnet) ?? availableNetworks[0]
+    return (
+      availableNetworks.find((network) => !network.isTestnet) ??
+      availableNetworks[0]
+    )
   }
 
   private withDefaultRegisteredCoins(
