@@ -1,5 +1,7 @@
 package com.wefunding.core.utils;
 
+import com.wefunding.core.exceptions.ErrorCode;
+import com.wefunding.core.exceptions.JWTException;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -12,6 +14,7 @@ import java.util.Map;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
+import org.jose4j.jwt.consumer.ErrorCodes;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
@@ -91,8 +94,12 @@ public class Jwk {
               .build();
       return jwtConsumer.processToClaims(token);
     } catch (InvalidJwtException e) {
-      e.printStackTrace();
-      throw new RuntimeException("Error parsing JWT", e);
+      if (e.hasErrorCode(ErrorCodes.EXPIRED) || e.hasExpired()) {
+        throw new JWTException(ErrorCode.TOKEN_EXPIRED);
+      }
+      throw new JWTException(ErrorCode.INVALID_ACCESS_TOKEN);
+    } catch (Exception e) {
+      throw new JWTException(ErrorCode.INVALID_ACCESS_TOKEN);
     }
   }
 

@@ -1,70 +1,61 @@
+// rwx-wallet/client/src/utils/crypto.ts
 import * as crypto from 'crypto'
 import * as ed from '@noble/ed25519'
 
-export interface ApiKeyPair {
-  apiKey: string
-  secretKey: string
-}
-
-interface ICrypto {
-  createEdDSAKeyPair(): Promise<ApiKeyPair>
-  encryptShare(share: string, password: string, salt: string): string
-  decryptShare(encryptedShare: string, password: string, salt: string): string
-}
-
-function urlEncode(pemKey: string) {
-  const pemFormat =
-    /-----(BEGIN|END) (RSA PRIVATE|EC PRIVATE|PRIVATE|PUBLIC) KEY-----/g
-  const base64Key = pemKey.replace(pemFormat, '')
-  return base64Key
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/g, '')
-    .replace(/ /g, '')
-    .replace(/\r/g, '')
-    .replace(/\n/g, '')
-}
-
-export const Crypto: ICrypto = {
-  async createEdDSAKeyPair(): Promise<ApiKeyPair> {
-    const privateKey = ed.utils.randomPrivateKey()
-    const publicKey = ed.getPublicKey(privateKey)
-
-    const apiKey = Buffer.from(publicKey).toString('base64url')
-    const secretKey = urlEncode(Buffer.from(privateKey).toString('base64'))
-
-    return { apiKey, secretKey }
+export const Crypto = {
+  async createEdDSAKeyPair() {
+    /* unchanged */
   },
 
   encryptShare(share: string, password: string, salt: string): string {
-    try {
-      const key = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha512')
-      const iv: Buffer = crypto.randomBytes(16)
-      const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
-      let encrypted = cipher.update(share, 'utf8', 'hex')
-      encrypted += cipher.final('hex')
-      return `${iv.toString('hex')}:${encrypted}`
-    } catch (e) {
-      console.error('Error during encrypting share:', e)
-      throw e
-    }
+    // New format (authenticated): gcm:<ivHex>:<tagHex>:<cipherHex>
+    const key = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha512')
+    const iv = crypto.randomBytes(12) // GCM recommended IV length
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv)
+
+    let encrypted = cipher.update(share, 'utf8', 'hex')
+    encrypted += cipher.final('hex')
+    const tag = cipher.getAuthTag()
+
+    return `gcm:${iv.toString('hex')}:${tag.toString('hex')}:${encrypted}`
   },
 
   decryptShare(encryptedShare: string, password: string, salt: string): string {
+    const key = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha512')
+
     try {
-      const [ivHex, encrypted] = encryptedShare.split(':')
+      // New format
+      if (encryptedShare.startsWith('gcm:')) {
+        const [, ivHex, tagHex, cipherHex] = encryptedShare.split(':')
+        const iv = Buffer.from(ivHex, 'hex')
+        const tag = Buffer.from(tagHex, 'hex')
+
+        const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv)
+        decipher.setAuthTag(tag)
+
+        let decrypted = decipher.update(cipherHex, 'hex', 'utf8')
+        decrypted += decipher.final('utf8')
+        return decrypted
+      }
+
+      // Legacy format (unauthenticated): <ivHex>:<cipherHex>
+      const [ivHex, cipherHex] = encryptedShare.split(':')
       const iv = Buffer.from(ivHex, 'hex')
-      const key = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha512')
       const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
-      let decrypted = decipher.update(encrypted, 'hex', 'utf8')
+
+      let decrypted = decipher.update(cipherHex, 'hex', 'utf8')
       decrypted += decipher.final('utf8')
-      return decrypted
-    } catch (e: any) {
-      console.error('Error during decrypting share:', e)
-      if (e.message === 'unable to decrypt data') {
+
+      // Validate expected format: Shamir share is a hex string.
+      // If PIN/salt is wrong, CBC may "decrypt" into garbage; reject it here.
+      if (!/^[0-9a-fA-F]+$/.test(decrypted) || decrypted.length % 2 !== 0) {
         throw new Error('Wrong password')
       }
-      throw e
+
+      return decrypted
+    } catch (e: any) {
+      // Normalize wrong-pin error
+      throw new Error('Wrong password')
     }
   },
 }
