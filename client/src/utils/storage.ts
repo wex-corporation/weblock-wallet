@@ -27,10 +27,14 @@ const toExpiryEpochMs = (value: unknown): number | null => {
 const isObjectRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
 
-const isWrappedItem = <T>(value: unknown): value is Item<T> & { expiry?: number } =>
+const isWrappedItem = <T>(
+  value: unknown
+): value is Item<T> & { expiry?: number } =>
   isObjectRecord(value) &&
   'value' in value &&
-  ('expiryEpochMs' in value || 'expiry' in value || Object.keys(value).length === 1)
+  ('expiryEpochMs' in value ||
+    'expiry' in value ||
+    Object.keys(value).length === 1)
 
 // LocalForage instance
 const storage = localforage.createInstance({
