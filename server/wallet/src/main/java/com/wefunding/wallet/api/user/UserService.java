@@ -25,6 +25,7 @@ import com.wefunding.wallet.api.user.dto.SignInResponse;
 import com.wefunding.wallet.api.user.dto.UserDTO;
 import com.wefunding.wallet.config.AttributeStorage;
 import com.wefunding.wallet.infra.auth.FirebaseVerifier;
+import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -312,6 +313,20 @@ public class UserService {
   private String normalizeAddress(String address) {
     if (address == null) return null;
     return address.trim().toLowerCase();
+  }
+
+  @Transactional
+  public Mono<Coin> attachCoinToUser(ServerWebExchange exchange, Coin coin) {
+    UUID userId = AttributeStorage.getUser(exchange).getId();
+    return this.userCoinsRepository
+        .findByUserId(userId)
+        .flatMap(
+            userCoins -> {
+              userCoins.addCoinId(coin.getId());
+              return this.userCoinsRepository.save(userCoins);
+            })
+        .switchIfEmpty(this.userCoinsRepository.save(UserCoins.create(userId, List.of(coin))))
+        .thenReturn(coin);
   }
 
   @Transactional(readOnly = true)
