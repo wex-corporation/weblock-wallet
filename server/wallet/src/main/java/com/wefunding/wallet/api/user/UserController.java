@@ -106,8 +106,9 @@ public class UserController {
     }
 
     // ✅ 메타가 있으면 upsert (중복이어도 OK), null overwrite는 COALESCE로 방지됨
-    return coinRepository.upsertToken(
-        req.name().trim(), req.symbol().trim(), blockchainId, contractAddress, req.decimals())
+    return coinRepository
+        .upsertToken(
+            req.name().trim(), req.symbol().trim(), blockchainId, contractAddress, req.decimals())
         .flatMap(coin -> this.userService.attachCoinToUser(exchange, coin));
   }
 
