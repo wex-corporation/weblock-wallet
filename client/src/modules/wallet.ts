@@ -22,6 +22,10 @@ type RegisteredCoin = {
 const FUJI_CHAIN_ID = WEBLOCK_FUJI_DEPLOYMENT.chainId
 const FUJI_USDR_ADDRESS =
   WEBLOCK_FUJI_DEPLOYMENT.tokens.USDR.address.toLowerCase()
+const FUJI_USDT_ADDRESS =
+  WEBLOCK_FUJI_DEPLOYMENT.tokens.USDT.address.toLowerCase()
+const FUJI_USDC_ADDRESS =
+  WEBLOCK_FUJI_DEPLOYMENT.tokens.USDC.address.toLowerCase()
 const FUJI_RBT_ADDRESS =
   WEBLOCK_FUJI_DEPLOYMENT.contracts.product1.rbtAsset.toLowerCase()
 const FUJI_RBT_SERIES_ID = Number(
@@ -82,6 +86,28 @@ export class WalletModule {
       })
     }
 
+    if (network.chainId === FUJI_CHAIN_ID && !map.has(FUJI_USDT_ADDRESS)) {
+      map.set(FUJI_USDT_ADDRESS, {
+        id: 'default-fuji-usdt',
+        blockchainId: network.id,
+        name: 'Tether USD (Test)',
+        symbol: 'USDT',
+        contractAddress: FUJI_USDT_ADDRESS,
+        decimals: 6,
+      })
+    }
+
+    if (network.chainId === FUJI_CHAIN_ID && !map.has(FUJI_USDC_ADDRESS)) {
+      map.set(FUJI_USDC_ADDRESS, {
+        id: 'default-fuji-usdc',
+        blockchainId: network.id,
+        name: 'USD Coin (Test)',
+        symbol: 'USDC',
+        contractAddress: FUJI_USDC_ADDRESS,
+        decimals: 6,
+      })
+    }
+
     return Array.from(map.values())
   }
 
@@ -116,15 +142,15 @@ export class WalletModule {
 
       return {
         address: FUJI_RBT_ADDRESS,
-        name: 'RBT Property Token',
-        symbol: 'RBT',
+        name: 'WeBlock RWA Property NFT',
+        symbol: 'WBRWA1',
         decimals: 0,
         balance,
         totalSupply: {
           raw: '0',
           formatted: '0',
           decimals: 0,
-          symbol: 'RBT',
+          symbol: 'WBRWA1',
         },
       }
     } catch (error) {

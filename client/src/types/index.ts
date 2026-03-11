@@ -381,3 +381,4 @@ export interface TransactionStatusEvent {
 }
 
 export * from './error'
+export * from './investment'

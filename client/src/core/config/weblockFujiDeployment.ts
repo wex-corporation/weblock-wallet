@@ -1,6 +1,3 @@
-// client/src/config/weblockFujiDeployment.ts
-// Fuji(43113) WeBlock deployment addresses (2026-01-18)
-
 export type Address = `0x${string}`
 
 export const WEBLOCK_FUJI_DEPLOYMENT = {
@@ -9,7 +6,7 @@ export const WEBLOCK_FUJI_DEPLOYMENT = {
   rpcUrl: 'https://api.avax-test.network/ext/bc/C/rpc',
   explorerBaseUrl: 'https://testnet.snowtrace.io',
 
-  treasury: '0x67394081091BDE902b38774076a332240Aa14b27' as Address,
+  treasury: '0x04d974094Ac7BE61e1cf9ED9eaD858090D742Ef8' as Address,
 
   tokens: {
     USDR: {
@@ -22,6 +19,11 @@ export const WEBLOCK_FUJI_DEPLOYMENT = {
       decimals: 6,
       symbol: 'USDT',
     },
+    USDC: {
+      address: '0xfdA453E5d63E3FF663fbF300713C6838c6dD78cf' as Address,
+      decimals: 6,
+      symbol: 'USDC',
+    },
     WFT: {
       address: '0x64529efA2bF566794d051f7531B53EE9413E7794' as Address,
       decimals: 18,
@@ -30,14 +32,26 @@ export const WEBLOCK_FUJI_DEPLOYMENT = {
   },
 
   contracts: {
-    rbtFactory: '0x6bF159f474094915805c9768c533c6c24737F8a3' as Address,
-    investRouter: '0x41c1EeD232D29FCc19c09b0e26A70e4B8c9b34e6' as Address,
+    rwa: {
+      asset: '0x6CAF9C4cD4C0928C62c273ed7F2F3B9f3bbfa500' as Address,
+      saleEscrow: '0xA2Dd7CD5C29Ac79A2c2cd253ED3e3BE474f314D2' as Address,
+      interestVault: '0x6a2cfAF9D931c57FD49970b5e8d852442040b6f2' as Address,
+      redemptionVault: '0xD67B733c75c67177074e41506dFF0dC509EBF02B' as Address,
+    },
     product1: {
+      productId: 1n,
       offeringId: 1n,
       seriesId: 1n,
-      rbtAsset: '0x6173a35cBB99B82c51c6A0e0265C06B7955Eb017' as Address,
-      unitPriceWei: 1000000000000000000n, // 1 USDR
-      paymentToken: '0xbc3A31c1788624E5bFf69cdC3a1E7405A01C6De2' as Address, // USDR
+      rbtAsset: '0x6CAF9C4cD4C0928C62c273ed7F2F3B9f3bbfa500' as Address,
+      saleEscrow: '0xA2Dd7CD5C29Ac79A2c2cd253ED3e3BE474f314D2' as Address,
+      interestVault: '0x6a2cfAF9D931c57FD49970b5e8d852442040b6f2' as Address,
+      redemptionVault: '0xD67B733c75c67177074e41506dFF0dC509EBF02B' as Address,
+      unitPriceUsdt: 1000000n,
+      unitPriceUsdc: 1000000n,
+      paymentTokens: [
+        '0x4CcEF90D730AB83366a3936FA301536649E105Ed' as Address,
+        '0xfdA453E5d63E3FF663fbF300713C6838c6dD78cf' as Address,
+      ],
     },
   },
 } as const

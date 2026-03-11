@@ -15,6 +15,27 @@ import {
   TransferRequest,
   TransferResponse,
 } from '../types'
+import {
+  BuyRwaProductParams,
+  BuyRwaProductResult,
+  ClaimAllRwaInterestParams,
+  ClaimRbtRevenueParams,
+  ClaimRbtRevenueResult,
+  ClaimRwaInterestParams,
+  ClaimRwaInterestResult,
+  GetClaimableRwaInterestParams,
+  GetOfferingParams,
+  GetRwaBalanceParams,
+  GetRwaOfferingParams,
+  InvestRbtParams,
+  InvestRbtResult,
+  OfferingView,
+  PreviewRedeemRwaParams,
+  PreviewRedeemRwaResult,
+  RedeemRwaParams,
+  RedeemRwaResult,
+  RwaOfferingView,
+} from '../types/investment'
 import { TokenMetadata } from './services/asset'
 
 export interface InternalCore {
@@ -73,6 +94,48 @@ export interface InternalCore {
     getCurrentNetwork(): Promise<NetworkInfo | null>
     registerNetwork(params: BlockchainRequest): Promise<void>
     switchNetwork(networkId: string): Promise<void>
+  }
+
+  investment: {
+    getOffering(params: GetOfferingParams): Promise<OfferingView>
+    investRbtWithUsdr(params: InvestRbtParams): Promise<InvestRbtResult>
+    claimRbtRevenue(params: ClaimRbtRevenueParams): Promise<ClaimRbtRevenueResult>
+    getClaimable(params: {
+      networkId: string
+      rbtAssetAddress: string
+      seriesId: bigint | number | string
+      account?: string
+    }): Promise<string>
+    getRbtBalance(params: {
+      networkId: string
+      rbtAssetAddress: string
+      seriesId: bigint | number | string
+      account?: string
+    }): Promise<string>
+    getRwaOffering(params: GetRwaOfferingParams): Promise<RwaOfferingView>
+    buyRwaProduct(params: BuyRwaProductParams): Promise<BuyRwaProductResult>
+    claimRwaInterest(params: ClaimRwaInterestParams): Promise<ClaimRwaInterestResult>
+    claimAllRwaInterest(
+      params: ClaimAllRwaInterestParams
+    ): Promise<ClaimRwaInterestResult>
+    getClaimableRwaInterest(params: GetClaimableRwaInterestParams): Promise<string>
+    getRwaBalance(params: GetRwaBalanceParams): Promise<string>
+    redeemRwa(params: RedeemRwaParams): Promise<RedeemRwaResult>
+    previewRedeemRwa(
+      params: PreviewRedeemRwaParams
+    ): Promise<PreviewRedeemRwaResult>
+    getRewardTokens(params: {
+      networkId: string
+      interestVaultAddress: string
+      productId: bigint | number | string
+    }): Promise<string[]>
+    getPayoutTokens(params: {
+      networkId: string
+      redemptionVaultAddress: string
+      productId: bigint | number | string
+    }): Promise<string[]>
+    on(event: string, listener: (...args: any[]) => void): void
+    off(event: string, listener: (...args: any[]) => void): void
   }
 
   asset: {
