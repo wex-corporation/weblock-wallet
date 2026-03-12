@@ -23,14 +23,12 @@ import { WalletClient } from '../clients/api/wallets'
 import { BlockchainRequest } from '@/clients/types'
 import { RpcClient } from '../clients/api/rpcs'
 import { AssetService } from './services/asset'
-import { InvestmentService } from './services/investment'
 
 export class InternalCoreImpl implements InternalCore {
   private readonly authService: AuthService
   private readonly walletService: WalletService
   private readonly networkService: NetworkService
   private readonly assetService: AssetService
-  private readonly investmentService: InvestmentService
 
   constructor(private readonly options: SDKOptions) {
     const httpClient = new HttpClient(options)
@@ -61,12 +59,6 @@ export class InternalCoreImpl implements InternalCore {
       this.networkService,
       userClient,
       options.orgHost
-    )
-
-    this.investmentService = new InvestmentService(
-      rpcClient,
-      this.walletService,
-      this.networkService
     )
   }
 
@@ -123,37 +115,6 @@ export class InternalCoreImpl implements InternalCore {
     switchNetwork: (networkId: string) =>
       this.networkService.switchNetwork(networkId),
     getCurrentNetwork: () => this.networkService.getCurrentNetwork(),
-  }
-
-  investment = {
-    getOffering: (params: any) => this.investmentService.getOffering(params),
-    investRbtWithUsdr: (params: any) =>
-      this.investmentService.investRbtWithUsdr(params),
-    claimRbtRevenue: (params: any) =>
-      this.investmentService.claimRbtRevenue(params),
-    getClaimable: (params: any) => this.investmentService.getClaimable(params),
-    getRbtBalance: (params: any) => this.investmentService.getRbtBalance(params),
-    getRwaOffering: (params: any) =>
-      this.investmentService.getRwaOffering(params),
-    buyRwaProduct: (params: any) => this.investmentService.buyRwaProduct(params),
-    claimRwaInterest: (params: any) =>
-      this.investmentService.claimRwaInterest(params),
-    claimAllRwaInterest: (params: any) =>
-      this.investmentService.claimAllRwaInterest(params),
-    getClaimableRwaInterest: (params: any) =>
-      this.investmentService.getClaimableRwaInterest(params),
-    getRwaBalance: (params: any) => this.investmentService.getRwaBalance(params),
-    redeemRwa: (params: any) => this.investmentService.redeemRwa(params),
-    previewRedeemRwa: (params: any) =>
-      this.investmentService.previewRedeemRwa(params),
-    getRewardTokens: (params: any) =>
-      this.investmentService.getRewardTokens(params),
-    getPayoutTokens: (params: any) =>
-      this.investmentService.getPayoutTokens(params),
-    on: (event: string, listener: (...args: any[]) => void) =>
-      this.investmentService.on(event, listener),
-    off: (event: string, listener: (...args: any[]) => void) =>
-      this.investmentService.off(event, listener),
   }
 
   asset = {

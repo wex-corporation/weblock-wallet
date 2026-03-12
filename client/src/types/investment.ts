@@ -1,3 +1,7 @@
+// client/src/types/investment.ts
+// ✅ InvestRouter(USDR/USDT) 지원을 위해 usdrAddress를 optional로 변경
+// ✅ OfferingView에 paymentToken(옵션)을 추가 (Legacy Router 호환)
+
 export interface GetOfferingParams {
   networkId: string
   saleRouterAddress: string
@@ -7,7 +11,13 @@ export interface GetOfferingParams {
 export interface OfferingView {
   asset: string
   seriesId: bigint
+
+  /**
+   * InvestRouter 확장 필드: 결제 토큰 주소(USDR/USDT).
+   * Legacy Router에서는 존재하지 않으므로 optional.
+   */
   paymentToken?: string
+
   unitPrice: bigint
   remainingUnits: bigint
   startAt: bigint
@@ -18,14 +28,37 @@ export interface OfferingView {
 
 export interface InvestRbtParams {
   networkId: string
+
+  /**
+   * (Legacy Router 호환용)
+   * InvestRouter(신규)에서는 offering.paymentToken을 사용하므로 생략 가능.
+   */
   usdrAddress?: string
+
   saleRouterAddress: string
   offeringId: bigint | number | string
   units: bigint | number | string
+
+  /**
+   * 보호용 상한(슬리피지 개념). 미지정 시 cost == maxCost로 처리.
+   */
   maxCostWei?: string
+
+  /**
+   * true면 allowance 확인 후 부족 시 approve까지 자동 수행
+   */
   autoApprove?: boolean
+
+  /**
+   * autoApprove일 때 approve를 MaxUint로 할지(cost만 할지)
+   */
   approveMax?: boolean
+
+  /**
+   * autoApprove에서 approve tx 영수증을 기다릴지(기본 true 권장)
+   */
   waitForApprovalReceipt?: boolean
+
   gasLimitApprove?: string
   gasLimitBuy?: string
 }
@@ -33,7 +66,7 @@ export interface InvestRbtParams {
 export interface InvestRbtResult {
   offering: OfferingView
   costWei: string
-  approvalTxxHash?: string
+  approvalTxxHash?: string // ⛔️ 아래 "approvalTxHash"로 통일 권장. (기존 호환이면 유지)
   approvalTxHash?: string
   purchaseTxHash: string
 }
@@ -47,115 +80,4 @@ export interface ClaimRbtRevenueParams {
 
 export interface ClaimRbtRevenueResult {
   txHash: string
-}
-
-export interface PaymentOptionView {
-  tokenAddress: string
-  enabled: boolean
-  known: boolean
-  unitPrice: bigint
-  escrowedAmount: bigint
-  releasedAmount: bigint
-}
-
-export interface RwaOfferingView {
-  asset: string
-  productId: bigint
-  targetUnits: bigint
-  unitsSold: bigint
-  remainingUnits: bigint
-  saleStart: bigint
-  saleEnd: bigint
-  treasury: string
-  status: number
-  enabled: boolean
-  paymentOption?: PaymentOptionView
-}
-
-export interface GetRwaOfferingParams {
-  networkId: string
-  saleEscrowAddress: string
-  productId: bigint | number | string
-  paymentTokenAddress?: string
-}
-
-export interface BuyRwaProductParams {
-  networkId: string
-  saleEscrowAddress: string
-  productId: bigint | number | string
-  paymentTokenAddress: string
-  units: bigint | number | string
-  maxCostWei?: string
-  autoApprove?: boolean
-  approveMax?: boolean
-  waitForApprovalReceipt?: boolean
-  gasLimitApprove?: string
-  gasLimitBuy?: string
-}
-
-export interface BuyRwaProductResult {
-  offering: RwaOfferingView
-  costWei: string
-  approvalTxHash?: string
-  purchaseTxHash: string
-}
-
-export interface ClaimRwaInterestParams {
-  networkId: string
-  interestVaultAddress: string
-  productId: bigint | number | string
-  rewardTokenAddress: string
-  gasLimit?: string
-}
-
-export interface ClaimAllRwaInterestParams {
-  networkId: string
-  interestVaultAddress: string
-  productId: bigint | number | string
-  gasLimit?: string
-}
-
-export interface ClaimRwaInterestResult {
-  txHash: string
-}
-
-export interface GetClaimableRwaInterestParams {
-  networkId: string
-  interestVaultAddress: string
-  productId: bigint | number | string
-  rewardTokenAddress: string
-  account?: string
-}
-
-export interface GetRwaBalanceParams {
-  networkId: string
-  assetAddress: string
-  productId: bigint | number | string
-  account?: string
-}
-
-export interface RedeemRwaParams {
-  networkId: string
-  redemptionVaultAddress: string
-  productId: bigint | number | string
-  payoutTokenAddress: string
-  units: bigint | number | string
-  gasLimit?: string
-}
-
-export interface RedeemRwaResult {
-  txHash: string
-}
-
-export interface PreviewRedeemRwaParams {
-  networkId: string
-  redemptionVaultAddress: string
-  productId: bigint | number | string
-  payoutTokenAddress: string
-  account?: string
-}
-
-export interface PreviewRedeemRwaResult {
-  units: string
-  payoutAmount: string
 }

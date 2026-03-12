@@ -18,7 +18,7 @@ import {
   RbtClaimParams,
 } from './types'
 import { Core } from './core'
-import { UserModule, WalletModule, AssetModule, InvestmentModule } from './modules'
+import { UserModule, WalletModule, AssetModule } from './modules'
 import { SDKError, SDKErrorCode } from './types/error'
 import { NetworkModule } from './modules/network'
 import { TokenMetadata } from './core/services/asset'
@@ -33,7 +33,6 @@ export class WeBlockSDK {
   private readonly walletModule: WalletModule
   private readonly assetModule: AssetModule
   private readonly networkModule: NetworkModule
-  private readonly investmentModule: InvestmentModule
   private initialized = false
 
   constructor(options: SDKOptions) {
@@ -45,7 +44,6 @@ export class WeBlockSDK {
     this.userModule = new UserModule(options, internalCore, this.walletModule)
     this.assetModule = new AssetModule(options, internalCore)
     this.networkModule = new NetworkModule(options, internalCore)
-    this.investmentModule = new InvestmentModule(options, internalCore)
     this.initialized = true
     console.info('WeBlock SDK initialized successfully')
   }
@@ -158,37 +156,6 @@ export class WeBlockSDK {
     switchNetwork: (networkId: string) =>
       this.networkModule.switchNetwork(networkId),
     getCurrentNetwork: () => this.networkModule.getCurrentNetwork(),
-  }
-
-  public readonly investment = {
-    getOffering: (params: any) => this.investmentModule.getOffering(params),
-    investRbtWithUsdr: (params: any) =>
-      this.investmentModule.investRbtWithUsdr(params),
-    claimRbtRevenue: (params: any) =>
-      this.investmentModule.claimRbtRevenue(params),
-    getClaimable: (params: any) => this.investmentModule.getClaimable(params),
-    getRbtBalance: (params: any) => this.investmentModule.getRbtBalance(params),
-    getRwaOffering: (params: any) =>
-      this.investmentModule.getRwaOffering(params),
-    buyRwaProduct: (params: any) => this.investmentModule.buyRwaProduct(params),
-    claimRwaInterest: (params: any) =>
-      this.investmentModule.claimRwaInterest(params),
-    claimAllRwaInterest: (params: any) =>
-      this.investmentModule.claimAllRwaInterest(params),
-    getClaimableRwaInterest: (params: any) =>
-      this.investmentModule.getClaimableRwaInterest(params),
-    getRwaBalance: (params: any) => this.investmentModule.getRwaBalance(params),
-    redeemRwa: (params: any) => this.investmentModule.redeemRwa(params),
-    previewRedeemRwa: (params: any) =>
-      this.investmentModule.previewRedeemRwa(params),
-    getRewardTokens: (params: any) =>
-      this.investmentModule.getRewardTokens(params),
-    getPayoutTokens: (params: any) =>
-      this.investmentModule.getPayoutTokens(params),
-    on: (event: string, listener: (...args: any[]) => void) =>
-      this.investmentModule.on(event, listener),
-    off: (event: string, listener: (...args: any[]) => void) =>
-      this.investmentModule.off(event, listener),
   }
 
   public readonly asset = {
