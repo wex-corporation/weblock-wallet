@@ -23,12 +23,14 @@ import { WalletClient } from '../clients/api/wallets'
 import { BlockchainRequest } from '@/clients/types'
 import { RpcClient } from '../clients/api/rpcs'
 import { AssetService } from './services/asset'
+import { InvestmentService } from './services/investment'
 
 export class InternalCoreImpl implements InternalCore {
   private readonly authService: AuthService
   private readonly walletService: WalletService
   private readonly networkService: NetworkService
   private readonly assetService: AssetService
+  private readonly investmentService: InvestmentService
 
   constructor(private readonly options: SDKOptions) {
     const httpClient = new HttpClient(options)
@@ -59,6 +61,12 @@ export class InternalCoreImpl implements InternalCore {
       this.networkService,
       userClient,
       options.orgHost
+    )
+
+    this.investmentService = new InvestmentService(
+      rpcClient,
+      this.walletService,
+      this.networkService
     )
   }
 
@@ -172,5 +180,34 @@ export class InternalCoreImpl implements InternalCore {
 
     getRegisteredCoins: (networkId: string) =>
       this.assetService.getRegisteredCoins(networkId),
+  }
+
+  investment = {
+    // v1 (legacy SaleRouter)
+    getOffering: (params: Parameters<InvestmentService['getOffering']>[0]) =>
+      this.investmentService.getOffering(params),
+    investRbtWithUsdr: (params: Parameters<InvestmentService['investRbtWithUsdr']>[0]) =>
+      this.investmentService.investRbtWithUsdr(params),
+    claimRbtRevenue: (params: Parameters<InvestmentService['claimRbtRevenue']>[0]) =>
+      this.investmentService.claimRbtRevenue(params),
+    getClaimable: (params: Parameters<InvestmentService['getClaimable']>[0]) =>
+      this.investmentService.getClaimable(params),
+    getRbtBalance: (params: Parameters<InvestmentService['getRbtBalance']>[0]) =>
+      this.investmentService.getRbtBalance(params),
+    // v2 (RBTSeriesManager)
+    getSeriesV2: (params: Parameters<InvestmentService['getSeriesV2']>[0]) =>
+      this.investmentService.getSeriesV2(params),
+    investRbtV2: (params: Parameters<InvestmentService['investRbtV2']>[0]) =>
+      this.investmentService.investRbtV2(params),
+    claimInterestV2: (params: Parameters<InvestmentService['claimInterestV2']>[0]) =>
+      this.investmentService.claimInterestV2(params),
+    redeemRbtV2: (params: Parameters<InvestmentService['redeemRbtV2']>[0]) =>
+      this.investmentService.redeemRbtV2(params),
+    getPendingInterestV2: (params: Parameters<InvestmentService['getPendingInterestV2']>[0]) =>
+      this.investmentService.getPendingInterestV2(params),
+    on: (event: string, listener: (...args: any[]) => void) =>
+      this.investmentService.on(event, listener),
+    off: (event: string, listener: (...args: any[]) => void) =>
+      this.investmentService.off(event, listener),
   }
 }
