@@ -1,3 +1,22 @@
+// ---------------------------------------------------------------------------
+// LEGACY ABIs – target the old Fuji testnet deployment (pre weblock-token v2).
+// The weblock-token v2 architecture replaces these contracts:
+//
+//   OLD                              NEW (weblock-token source of truth)
+//   ───────────────────────────────────────────────────────────────────
+//   SaleRouter.buy(offeringId,       RBTSeriesManager.buy(tokenId,
+//     units, maxCost)                  paymentToken, quantity,
+//                                      maxCost, beneficiary)
+//   SaleRouter.offerings(offeringId) RBTSeriesManager.getSeries(tokenId)
+//   RBTAsset.claim(tokenId)          RBTSeriesManager.claimInterest(tokenId,
+//                                      paymentToken)
+//   RBTAsset.claimable(tokenId,      RBTSeriesManager.quotePrimarySale /
+//     account)                         interest accounting on manager
+//
+// TODO(v2): replace these ABIs with the ones exported by
+//   weblock-token/scripts/export-abis.js after the v2 contracts are deployed.
+// ---------------------------------------------------------------------------
+
 export const RBT_PRIMARY_SALE_ROUTER_ABI = [
   {
     inputs: [{ name: 'offeringId', type: 'uint256' }],
