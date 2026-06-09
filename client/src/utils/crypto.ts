@@ -2,9 +2,22 @@
 import * as crypto from 'crypto'
 import * as ed from '@noble/ed25519'
 
+// @noble/ed25519 v2 ships without a bundled hash; wire sha512 so the sync API works.
+ed.etc.sha512Sync = (...m) =>
+  crypto.createHash('sha512').update(ed.etc.concatBytes(...m)).digest()
+
 export const Crypto = {
-  async createEdDSAKeyPair() {
-    /* unchanged */
+  /**
+   * Generate a new Ed25519 keypair, hex-encoded.
+   * Previously an empty stub that silently returned undefined.
+   */
+  createEdDSAKeyPair(): { privateKey: string; publicKey: string } {
+    const privateKey = ed.utils.randomPrivateKey()
+    const publicKey = ed.getPublicKey(privateKey)
+    return {
+      privateKey: Buffer.from(privateKey).toString('hex'),
+      publicKey: Buffer.from(publicKey).toString('hex'),
+    }
   },
 
   encryptShare(share: string, password: string, salt: string): string {

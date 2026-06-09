@@ -66,7 +66,6 @@ export interface InvestRbtParams {
 export interface InvestRbtResult {
   offering: OfferingView
   costWei: string
-  approvalTxxHash?: string // ⛔️ 아래 "approvalTxHash"로 통일 권장. (기존 호환이면 유지)
   approvalTxHash?: string
   purchaseTxHash: string
 }
