@@ -124,8 +124,11 @@ public class UserController {
     Mono<String> symbolM =
         callEvmString(chain.getRpcUrl(), contractAddress, "0x95d89b41")
             .onErrorResume(e -> Mono.empty());
+    // On RPC failure, surface a sentinel (-1) so the validation below rejects with a
+    // clear "provide decimals" error instead of silently registering a token as 18
+    // decimals (USDR/USDT/USDC are 6 — an 18 fallback would skew all amount math).
     Mono<Integer> decimalsM =
-        callEvmUint(chain.getRpcUrl(), contractAddress, "0x313ce567").onErrorReturn(18);
+        callEvmUint(chain.getRpcUrl(), contractAddress, "0x313ce567").onErrorReturn(-1);
 
     return Mono.zip(nameM.defaultIfEmpty(""), symbolM.defaultIfEmpty(""), decimalsM)
         .flatMap(

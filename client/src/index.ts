@@ -21,7 +21,26 @@ import { Core } from './core'
 import { UserModule, WalletModule, AssetModule } from './modules'
 import { SDKError, SDKErrorCode } from './types/error'
 import { NetworkModule } from './modules/network'
+import { InvestmentModule } from './modules/Investment'
 import { TokenMetadata } from './core/services/asset'
+import {
+  GetOfferingParams,
+  OfferingView,
+  InvestRbtParams,
+  InvestRbtResult,
+  ClaimRbtRevenueParams,
+  ClaimRbtRevenueResult,
+  GetSeriesParams,
+  SeriesView,
+  InvestRbtV2Params,
+  InvestRbtV2Result,
+  ClaimInterestV2Params,
+  ClaimInterestV2Result,
+  RedeemRbtV2Params,
+  RedeemRbtV2Result,
+  GetPendingInterestParams,
+  SeriesState,
+} from './types/investment'
 
 /**
  * WeBlock Wallet SDK
@@ -33,6 +52,7 @@ export class WeBlockSDK {
   private readonly walletModule: WalletModule
   private readonly assetModule: AssetModule
   private readonly networkModule: NetworkModule
+  private readonly investmentModule: InvestmentModule
   private initialized = false
 
   constructor(options: SDKOptions) {
@@ -44,6 +64,7 @@ export class WeBlockSDK {
     this.userModule = new UserModule(options, internalCore, this.walletModule)
     this.assetModule = new AssetModule(options, internalCore)
     this.networkModule = new NetworkModule(options, internalCore)
+    this.investmentModule = new InvestmentModule(options, internalCore)
     this.initialized = true
     console.info('WeBlock SDK initialized successfully')
   }
@@ -242,6 +263,68 @@ export class WeBlockSDK {
       return this.assetModule.getTokenFullInfo(params)
     },
   }
+
+  /** RBT investment operations (v1 SaleRouter and v2 RBTSeriesManager). */
+  public readonly investment = {
+    // ── v1 (legacy SaleRouter) ─────────────────────────────────────────────
+    getOffering: (params: GetOfferingParams): Promise<OfferingView> => {
+      this.ensureInitialized()
+      return this.investmentModule.getOffering(params)
+    },
+    investRbtWithUsdr: (params: InvestRbtParams): Promise<InvestRbtResult> => {
+      this.ensureInitialized()
+      return this.investmentModule.investRbtWithUsdr(params)
+    },
+    claimRbtRevenue: (params: ClaimRbtRevenueParams): Promise<ClaimRbtRevenueResult> => {
+      this.ensureInitialized()
+      return this.investmentModule.claimRbtRevenue(params)
+    },
+    getClaimable: (params: {
+      networkId: string
+      rbtAssetAddress: string
+      seriesId: bigint | number | string
+      account?: string
+    }): Promise<string> => {
+      this.ensureInitialized()
+      return this.investmentModule.getClaimable(params)
+    },
+    getRbtBalance: (params: {
+      networkId: string
+      rbtAssetAddress: string
+      seriesId: bigint | number | string
+      account?: string
+    }): Promise<string> => {
+      this.ensureInitialized()
+      return this.investmentModule.getRbtBalance(params)
+    },
+    // ── v2 (RBTSeriesManager) ──────────────────────────────────────────────
+    getSeriesV2: (params: GetSeriesParams): Promise<SeriesView> => {
+      this.ensureInitialized()
+      return this.investmentModule.getSeriesV2(params)
+    },
+    investRbtV2: (params: InvestRbtV2Params): Promise<InvestRbtV2Result> => {
+      this.ensureInitialized()
+      return this.investmentModule.investRbtV2(params)
+    },
+    claimInterestV2: (params: ClaimInterestV2Params): Promise<ClaimInterestV2Result> => {
+      this.ensureInitialized()
+      return this.investmentModule.claimInterestV2(params)
+    },
+    redeemRbtV2: (params: RedeemRbtV2Params): Promise<RedeemRbtV2Result> => {
+      this.ensureInitialized()
+      return this.investmentModule.redeemRbtV2(params)
+    },
+    getPendingInterestV2: (params: GetPendingInterestParams): Promise<string> => {
+      this.ensureInitialized()
+      return this.investmentModule.getPendingInterestV2(params)
+    },
+    on: (event: string, listener: (...args: any[]) => void): void => {
+      this.investmentModule.on(event, listener)
+    },
+    off: (event: string, listener: (...args: any[]) => void): void => {
+      this.investmentModule.off(event, listener)
+    },
+  }
 }
 
 export default WeBlockSDK
@@ -249,3 +332,21 @@ export * from './types'
 export { TokenAmount, DECIMALS } from './utils/numbers'
 export type { TokenBalance } from './types'
 export type { TokenMetadata } from './core/services/asset'
+export type {
+  GetOfferingParams,
+  OfferingView,
+  InvestRbtParams,
+  InvestRbtResult,
+  ClaimRbtRevenueParams,
+  ClaimRbtRevenueResult,
+  GetSeriesParams,
+  SeriesView,
+  InvestRbtV2Params,
+  InvestRbtV2Result,
+  ClaimInterestV2Params,
+  ClaimInterestV2Result,
+  RedeemRbtV2Params,
+  RedeemRbtV2Result,
+  GetPendingInterestParams,
+} from './types/investment'
+export { SeriesState } from './types/investment'

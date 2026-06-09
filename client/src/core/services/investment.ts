@@ -22,12 +22,22 @@ import {
   InvestRbtResult,
   ClaimRbtRevenueParams,
   ClaimRbtRevenueResult,
+  GetSeriesParams,
+  SeriesView,
+  InvestRbtV2Params,
+  InvestRbtV2Result,
+  ClaimInterestV2Params,
+  ClaimInterestV2Result,
+  RedeemRbtV2Params,
+  RedeemRbtV2Result,
+  GetPendingInterestParams,
 } from '../../types/investment'
 
 import { ERC20_ABI } from '../../contract/contracts'
 import {
   RBT_PRIMARY_SALE_ROUTER_ABI,
   RBT_PROPERTY_TOKEN_ABI,
+  RBT_SERIES_MANAGER_ABI,
 } from '../../contract/weblock'
 
 const MAX_UINT256 = 2n ** 256n - 1n
@@ -83,6 +93,8 @@ export class InvestmentService extends EventEmitter {
   private readonly rbtInterface: Interface
   private readonly offeringInvestIface: Interface
   private readonly offeringLegacyIface: Interface
+  // v2
+  private readonly seriesManagerInterface: Interface
   private readonly chainIdCache = new Map<string, number>()
 
   constructor(
@@ -96,6 +108,7 @@ export class InvestmentService extends EventEmitter {
     this.rbtInterface = new Interface(RBT_PROPERTY_TOKEN_ABI as any)
     this.offeringInvestIface = new Interface(OFFERING_ABI_INVEST_ROUTER as any)
     this.offeringLegacyIface = new Interface(OFFERING_ABI_LEGACY_ROUTER as any)
+    this.seriesManagerInterface = new Interface(RBT_SERIES_MANAGER_ABI as any)
   }
 
   private assertHexAddress(addr: string, field: string) {
@@ -485,6 +498,238 @@ export class InvestmentService extends EventEmitter {
     }
 
     return false
+  }
+
+  // ─── weblock-token v2 (RBTSeriesManager) methods ──────────────────────────
+
+  /** Fetch the on-chain Series struct for a given tokenId. */
+  async getSeriesV2(params: GetSeriesParams): Promise<SeriesView> {
+    this.assertHexAddress(params.rbtSeriesManagerAddress, 'rbtSeriesManagerAddress')
+    const chainId = await this.resolveChainId(params.networkId)
+    const tokenId = this.toBigInt(params.tokenId, 'tokenId')
+
+    const data = this.seriesManagerInterface.encodeFunctionData('getSeries', [tokenId])
+    const result = await this.ethCall(chainId, params.rbtSeriesManagerAddress, data)
+    const decoded = this.seriesManagerInterface.decodeFunctionResult('getSeries', result)
+    const s = decoded[0] as any
+
+    return {
+      exists: Boolean(s.exists),
+      saleStart: BigInt(s.saleStart.toString()),
+      saleEnd: BigInt(s.saleEnd.toString()),
+      maturityDate: BigInt(s.maturityDate.toString()),
+      activatedAt: BigInt(s.activatedAt.toString()),
+      maxSupply: BigInt(s.maxSupply.toString()),
+      soldSupply: BigInt(s.soldSupply.toString()),
+      issuerTreasury: s.issuerTreasury as string,
+      secondaryTradingEnabled: Boolean(s.secondaryTradingEnabled),
+      state: Number(s.state) as any,
+      propertyCode: s.propertyCode as string,
+      propertyName: s.propertyName as string,
+      roundLabel: s.roundLabel as string,
+      metadataURI: s.metadataURI as string,
+      cancellationMemo: s.cancellationMemo as string,
+      delinquencyMemo: s.delinquencyMemo as string,
+      defaultMemo: s.defaultMemo as string,
+    }
+  }
+
+  /** Quote the cost for a primary-sale purchase via RBTSeriesManager. */
+  async quotePrimarySaleV2(params: {
+    networkId: string
+    rbtSeriesManagerAddress: string
+    tokenId: bigint | number | string
+    paymentToken: string
+    quantity: bigint | number | string
+  }): Promise<bigint> {
+    this.assertHexAddress(params.rbtSeriesManagerAddress, 'rbtSeriesManagerAddress')
+    this.assertHexAddress(params.paymentToken, 'paymentToken')
+    const chainId = await this.resolveChainId(params.networkId)
+    const tokenId = this.toBigInt(params.tokenId, 'tokenId')
+    const quantity = this.toBigInt(params.quantity, 'quantity')
+
+    const data = this.seriesManagerInterface.encodeFunctionData('quotePrimarySale', [
+      tokenId,
+      params.paymentToken,
+      quantity,
+    ])
+    const result = await this.ethCall(chainId, params.rbtSeriesManagerAddress, data)
+    const decoded = this.seriesManagerInterface.decodeFunctionResult('quotePrimarySale', result)
+    return BigInt(decoded[0].toString())
+  }
+
+  /** approve (if needed) + buy via RBTSeriesManager.buy() */
+  async investRbtV2(params: InvestRbtV2Params): Promise<InvestRbtV2Result> {
+    this.assertHexAddress(params.rbtSeriesManagerAddress, 'rbtSeriesManagerAddress')
+    this.assertHexAddress(params.paymentToken, 'paymentToken')
+
+    const chainId = await this.resolveChainId(params.networkId)
+    const tokenId = this.toBigInt(params.tokenId, 'tokenId')
+    const quantity = this.toBigInt(params.quantity, 'quantity')
+    if (quantity <= 0n) throw new SDKError('Invalid quantity', SDKErrorCode.INVALID_PARAMS)
+
+    const series = await this.getSeriesV2({
+      networkId: params.networkId,
+      rbtSeriesManagerAddress: params.rbtSeriesManagerAddress,
+      tokenId,
+    })
+
+    if (!series.exists) {
+      throw new SDKError('Series not found', SDKErrorCode.REQUEST_FAILED)
+    }
+
+    const cost = await this.quotePrimarySaleV2({
+      networkId: params.networkId,
+      rbtSeriesManagerAddress: params.rbtSeriesManagerAddress,
+      tokenId,
+      paymentToken: params.paymentToken,
+      quantity,
+    })
+
+    const maxCost =
+      params.maxCost != null ? this.toBigInt(params.maxCost, 'maxCost') : cost
+
+    if (maxCost < cost) {
+      throw new SDKError('maxCost is less than required cost', SDKErrorCode.INVALID_PARAMS)
+    }
+
+    const buyer = await this.walletService.getAddress()
+    const beneficiary = params.beneficiary ?? buyer
+
+    let approvalTxHash: string | undefined
+
+    const autoApprove = params.autoApprove ?? true
+    const approveMax = params.approveMax ?? true
+    const waitForApprovalReceipt = params.waitForApprovalReceipt ?? true
+
+    if (autoApprove) {
+      const allowanceData = this.erc20Interface.encodeFunctionData('allowance', [
+        buyer,
+        params.rbtSeriesManagerAddress,
+      ])
+      const allowanceHex = await this.ethCall(chainId, params.paymentToken, allowanceData)
+      const allowanceDecoded = this.erc20Interface.decodeFunctionResult('allowance', allowanceHex)
+      const allowance = BigInt(allowanceDecoded[0].toString())
+
+      if (allowance < cost) {
+        const approveAmount = approveMax ? MAX_UINT256 : cost
+        const approveData = this.erc20Interface.encodeFunctionData('approve', [
+          params.rbtSeriesManagerAddress,
+          approveAmount.toString(),
+        ])
+
+        approvalTxHash = await this.walletService.sendTransaction({
+          to: params.paymentToken,
+          value: '0',
+          data: approveData,
+          chainId,
+          gasLimit: params.gasLimitApprove,
+        })
+
+        this.trackTransaction(approvalTxHash, chainId)
+
+        if (waitForApprovalReceipt) {
+          const ok = await this.waitForSuccessReceipt(approvalTxHash, chainId)
+          if (!ok) {
+            throw new SDKError('Approve transaction failed', SDKErrorCode.TRANSACTION_FAILED)
+          }
+        }
+      }
+    }
+
+    const buyData = this.seriesManagerInterface.encodeFunctionData('buy', [
+      tokenId,
+      params.paymentToken,
+      quantity,
+      maxCost,
+      beneficiary,
+    ])
+
+    const purchaseTxHash = await this.walletService.sendTransaction({
+      to: params.rbtSeriesManagerAddress,
+      value: '0',
+      data: buyData,
+      chainId,
+      gasLimit: params.gasLimitBuy,
+    })
+
+    this.trackTransaction(purchaseTxHash, chainId)
+
+    return {
+      series,
+      costWei: cost.toString(),
+      approvalTxHash,
+      purchaseTxHash,
+    }
+  }
+
+  /** Claim accumulated interest via RBTSeriesManager.claimInterest(). */
+  async claimInterestV2(params: ClaimInterestV2Params): Promise<ClaimInterestV2Result> {
+    this.assertHexAddress(params.rbtSeriesManagerAddress, 'rbtSeriesManagerAddress')
+    this.assertHexAddress(params.paymentToken, 'paymentToken')
+    const chainId = await this.resolveChainId(params.networkId)
+    const tokenId = this.toBigInt(params.tokenId, 'tokenId')
+
+    const data = this.seriesManagerInterface.encodeFunctionData('claimInterest', [
+      tokenId,
+      params.paymentToken,
+    ])
+
+    const txHash = await this.walletService.sendTransaction({
+      to: params.rbtSeriesManagerAddress,
+      value: '0',
+      data,
+      chainId,
+      gasLimit: params.gasLimit,
+    })
+
+    this.trackTransaction(txHash, chainId)
+    return { txHash }
+  }
+
+  /** Redeem RBT for principal after maturity via RBTSeriesManager.redeem(). */
+  async redeemRbtV2(params: RedeemRbtV2Params): Promise<RedeemRbtV2Result> {
+    this.assertHexAddress(params.rbtSeriesManagerAddress, 'rbtSeriesManagerAddress')
+    this.assertHexAddress(params.paymentToken, 'paymentToken')
+    const chainId = await this.resolveChainId(params.networkId)
+    const tokenId = this.toBigInt(params.tokenId, 'tokenId')
+    const quantity = this.toBigInt(params.quantity, 'quantity')
+
+    const data = this.seriesManagerInterface.encodeFunctionData('redeem', [
+      tokenId,
+      params.paymentToken,
+      quantity,
+    ])
+
+    const txHash = await this.walletService.sendTransaction({
+      to: params.rbtSeriesManagerAddress,
+      value: '0',
+      data,
+      chainId,
+      gasLimit: params.gasLimit,
+    })
+
+    this.trackTransaction(txHash, chainId)
+    return { txHash }
+  }
+
+  /** Query pending (unclaimed) interest for an account via RBTSeriesManager.pendingInterest(). */
+  async getPendingInterestV2(params: GetPendingInterestParams): Promise<string> {
+    this.assertHexAddress(params.rbtSeriesManagerAddress, 'rbtSeriesManagerAddress')
+    this.assertHexAddress(params.paymentToken, 'paymentToken')
+    const chainId = await this.resolveChainId(params.networkId)
+    const tokenId = this.toBigInt(params.tokenId, 'tokenId')
+    const account = params.account ?? (await this.walletService.getAddress())
+    this.assertHexAddress(account, 'account')
+
+    const data = this.seriesManagerInterface.encodeFunctionData('pendingInterest', [
+      account,
+      tokenId,
+      params.paymentToken,
+    ])
+    const result = await this.ethCall(chainId, params.rbtSeriesManagerAddress, data)
+    const decoded = this.seriesManagerInterface.decodeFunctionResult('pendingInterest', result)
+    return BigInt(decoded[0].toString()).toString()
   }
 
   private trackTransaction(txHash: string, chainId: number): void {

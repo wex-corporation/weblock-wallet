@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 
 @Configuration
@@ -32,7 +32,8 @@ public class FirebaseConfig {
   }
 
   private InputStream getFirebaseInfo() throws IOException {
-    Resource resource = new ClassPathResource(sdkPath);
+    // Resolve "classpath:" (default), "file:" (mounted secret), or a bare classpath path.
+    Resource resource = new DefaultResourceLoader().getResource(sdkPath);
     if (resource.exists()) {
       return resource.getInputStream();
     }

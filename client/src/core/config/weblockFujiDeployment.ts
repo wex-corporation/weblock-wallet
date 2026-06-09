@@ -1,5 +1,9 @@
 // client/src/config/weblockFujiDeployment.ts
-// Fuji(43113) WeBlock deployment addresses (2026-01-18)
+// Fuji(43113) WeBlock v2 deployment addresses (2026-06-10)
+//
+// Source of truth: weblock-token (weblock-tokenomics) repo, deployments/fuji.json.
+// Deployment wallet / admin / treasury: 0xC4C47A2373418E210CE171bfb389FC8d2Dfe6229
+// USDT/USDC are mock stablecoins (testnet); all stablecoins use 6 decimals.
 
 export type Address = `0x${string}`
 
@@ -9,35 +13,47 @@ export const WEBLOCK_FUJI_DEPLOYMENT = {
   rpcUrl: 'https://api.avax-test.network/ext/bc/C/rpc',
   explorerBaseUrl: 'https://testnet.snowtrace.io',
 
-  treasury: '0x67394081091BDE902b38774076a332240Aa14b27' as Address,
+  treasury: '0xC4C47A2373418E210CE171bfb389FC8d2Dfe6229' as Address,
 
   tokens: {
     USDR: {
-      address: '0xbc3A31c1788624E5bFf69cdC3a1E7405A01C6De2' as Address,
-      decimals: 18,
+      address: '0x4BEdd876E463de9F4b5827E318acAA33E42Fb66D' as Address,
+      decimals: 6,
       symbol: 'USDR',
     },
     USDT: {
-      address: '0x4CcEF90D730AB83366a3936FA301536649E105Ed' as Address,
+      address: '0xF5a89493D85F767Ea783858f6Fa903E587Ef3830' as Address,
       decimals: 6,
       symbol: 'USDT',
     },
+    USDC: {
+      address: '0xbCe6D7fB3bDb41120EAeEaEd75f10d5d8F9c1a6A' as Address,
+      decimals: 6,
+      symbol: 'USDC',
+    },
     WFT: {
-      address: '0x64529efA2bF566794d051f7531B53EE9413E7794' as Address,
+      address: '0x33980895233EC26F1DeB7061F96966aC2eB224ff' as Address,
       decimals: 18,
       symbol: 'WFT',
     },
   },
 
   contracts: {
-    rbtFactory: '0x6bF159f474094915805c9768c533c6c24737F8a3' as Address,
-    investRouter: '0x41c1EeD232D29FCc19c09b0e26A70e4B8c9b34e6' as Address,
+    rbt: '0x91786bEFeB00163CFCBDffCA9959Eb788D5b4Fc0' as Address,
+    rbtSeriesManager: '0x65Cb981A6FE0F5B489171e7725949f9299ba2a05' as Address,
+    interestRouter: '0x967180893109585fc5975Ba66E1DDb0B99674aB5' as Address,
+    redemptionRouter: '0x358239E22382731e62d9344dd5544b2CC0e52bD1' as Address,
+    rbtOrderBook: '0x97195CA8aed94b24D4a28d7fC401F517aC180884' as Address,
+
+    // Template product config. NOTE: no series has been created on this fresh
+    // deployment yet — run weblock-token `scripts/create-series.js` (OPERATOR
+    // role on rbtSeriesManager), then set tokenId/unitPriceWei to match.
     product1: {
-      offeringId: 1n,
+      tokenId: 1n,
       seriesId: 1n,
-      rbtAsset: '0x6173a35cBB99B82c51c6A0e0265C06B7955Eb017' as Address,
-      unitPriceWei: 1000000000000000000n, // 1 USDR
-      paymentToken: '0xbc3A31c1788624E5bFf69cdC3a1E7405A01C6De2' as Address, // USDR
+      rbtAsset: '0x91786bEFeB00163CFCBDffCA9959Eb788D5b4Fc0' as Address,
+      unitPriceWei: 1000000n,
+      paymentToken: '0x4BEdd876E463de9F4b5827E318acAA33E42Fb66D' as Address, // USDR (6 decimals)
     },
   },
 } as const

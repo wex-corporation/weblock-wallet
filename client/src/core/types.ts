@@ -16,6 +16,23 @@ import {
   TransferResponse,
 } from '../types'
 import { TokenMetadata } from './services/asset'
+import {
+  GetOfferingParams,
+  OfferingView,
+  InvestRbtParams,
+  InvestRbtResult,
+  ClaimRbtRevenueParams,
+  ClaimRbtRevenueResult,
+  GetSeriesParams,
+  SeriesView,
+  InvestRbtV2Params,
+  InvestRbtV2Result,
+  ClaimInterestV2Params,
+  ClaimInterestV2Result,
+  RedeemRbtV2Params,
+  RedeemRbtV2Result,
+  GetPendingInterestParams,
+} from '../types/investment'
 
 export interface InternalCore {
   auth: {
@@ -141,5 +158,32 @@ export interface InternalCore {
         decimals: number
       }>
     >
+  }
+
+  investment: {
+    // v1 (legacy SaleRouter)
+    getOffering(params: GetOfferingParams): Promise<OfferingView>
+    investRbtWithUsdr(params: InvestRbtParams): Promise<InvestRbtResult>
+    claimRbtRevenue(params: ClaimRbtRevenueParams): Promise<ClaimRbtRevenueResult>
+    getClaimable(params: {
+      networkId: string
+      rbtAssetAddress: string
+      seriesId: bigint | number | string
+      account?: string
+    }): Promise<string>
+    getRbtBalance(params: {
+      networkId: string
+      rbtAssetAddress: string
+      seriesId: bigint | number | string
+      account?: string
+    }): Promise<string>
+    // v2 (RBTSeriesManager)
+    getSeriesV2(params: GetSeriesParams): Promise<SeriesView>
+    investRbtV2(params: InvestRbtV2Params): Promise<InvestRbtV2Result>
+    claimInterestV2(params: ClaimInterestV2Params): Promise<ClaimInterestV2Result>
+    redeemRbtV2(params: RedeemRbtV2Params): Promise<RedeemRbtV2Result>
+    getPendingInterestV2(params: GetPendingInterestParams): Promise<string>
+    on(event: string, listener: (...args: any[]) => void): void
+    off(event: string, listener: (...args: any[]) => void): void
   }
 }
