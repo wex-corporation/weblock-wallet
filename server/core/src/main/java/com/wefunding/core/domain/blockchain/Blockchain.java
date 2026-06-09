@@ -160,7 +160,7 @@ public class Blockchain extends DomainEntity {
         Blockchain.createDefault(
             "Avalanche C-Chain",
             "https://api.avax.network/ext/bc/C/rpc",
-            43113,
+            43114,
             "AVAX",
             "Avalanche",
             18L,

@@ -538,17 +538,19 @@ export class AssetService extends EventEmitter {
         params.spender,
         params.amount,
       ])
-      const response = await this.rpcClient.sendRpc({
+
+      // Must sign + broadcast like every other write path. The previous code
+      // passed an unsigned { to, data } object to eth_sendRawTransaction, which
+      // expects a signed raw-tx hex string and therefore always failed.
+      const txHash = await this.walletService.sendTransaction({
+        to: params.tokenAddress,
+        value: '0',
+        data,
         chainId,
-        method: RpcMethod.ETH_SEND_RAW_TRANSACTION,
-        params: [
-          {
-            to: params.tokenAddress,
-            data,
-          },
-        ],
       })
-      return response.result
+
+      this.trackTransaction(txHash, chainId)
+      return txHash
     } catch (error) {
       throw new SDKError(
         'Failed to approve token',
