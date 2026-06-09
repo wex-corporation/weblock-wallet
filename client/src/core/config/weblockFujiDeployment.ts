@@ -1,19 +1,8 @@
 // client/src/config/weblockFujiDeployment.ts
-// Fuji(43113) WeBlock deployment addresses (2026-01-18)
+// Fuji(43113) WeBlock v2 deployment addresses (2026-03-16)
 //
-// NOTE: These addresses point to legacy testnet contracts deployed before the
-// weblock-token v2 rewrite. They are retained here for reference.
-//
-// IMPORTANT – contract architecture differences vs weblock-token (source of truth):
-//   - Old: single "SaleRouter" with offeringId-based buy(offeringId, units, maxCost)
-//   - New: RBTSeriesManager with buy(tokenId, paymentToken, quantity, maxCost, beneficiary)
-//   - Old: interest claimed via claim(tokenId) on the RBT asset contract
-//   - New: interest claimed via claimInterest(tokenId, paymentToken) on RBTSeriesManager
-//   - Old: USDR deployed with 18 decimals (unitPriceWei = 1e18 = 1 USDR)
-//   - New: USDR uses 6 decimals  (unitPriceWei = 1e6  = 1 USDR) – matches USDT pattern
-//
-// When the v2 contracts are deployed, update this file to the new addresses and
-// adjust unitPriceWei / token decimals accordingly.
+// Source of truth: the weblock-token (weblock-tokenomics) repository deployment manifests.
+// Deployment wallet: 0x04d974094Ac7BE61e1cf9ED9eaD858090D742Ef8
 
 export type Address = `0x${string}`
 
@@ -23,45 +12,48 @@ export const WEBLOCK_FUJI_DEPLOYMENT = {
   rpcUrl: 'https://api.avax-test.network/ext/bc/C/rpc',
   explorerBaseUrl: 'https://testnet.snowtrace.io',
 
-  treasury: '0x67394081091BDE902b38774076a332240Aa14b27' as Address,
+  treasury: '0x04d974094Ac7BE61e1cf9ED9eaD858090D742Ef8' as Address,
 
   tokens: {
-    // Legacy Fuji USDR was deployed with 18 decimals.
-    // The weblock-token v2 USDRToken contract uses 6 decimals – update when redeployed.
     USDR: {
-      address: '0xbc3A31c1788624E5bFf69cdC3a1E7405A01C6De2' as Address,
-      decimals: 18, // TODO(v2): change to 6 once new contract is deployed
+      address: '0xe3BE8AD4b1fB74AC96FAb68064eccBB4b2C17361' as Address,
+      decimals: 6,
       symbol: 'USDR',
     },
     USDT: {
-      address: '0x4CcEF90D730AB83366a3936FA301536649E105Ed' as Address,
+      address: '0xe8347D24f35B0c819e0E5e254e879Af7820e1f41' as Address,
       decimals: 6,
       symbol: 'USDT',
     },
+    USDC: {
+      address: '0xdD263AbD857dfadbb6Cb67F5208620D6827AC61c' as Address,
+      decimals: 6,
+      symbol: 'USDC',
+    },
     WFT: {
-      address: '0x64529efA2bF566794d051f7531B53EE9413E7794' as Address,
+      address: '0xBC63d49b8577475db7e945B533Da131c9F09c111' as Address,
       decimals: 18,
       symbol: 'WFT',
     },
   },
 
   contracts: {
-    // Legacy contracts – not compatible with weblock-token v2 ABIs.
-    // TODO(v2): replace rbtFactory + investRouter with rbtSeriesManager, interestRouter,
-    //           redemptionRouter, and rbtOrderBook from the new deployment manifest.
-    rbtFactory: '0x6bF159f474094915805c9768c533c6c24737F8a3' as Address,
-    investRouter: '0x41c1EeD232D29FCc19c09b0e26A70e4B8c9b34e6' as Address,
+    rbt: '0x58Fd2567b447D349Ecc373aca061B886916FC929' as Address,
+    rbtSeriesManager: '0x27e53457af652db3AF7d91875f127F7281B090df' as Address,
+    interestRouter: '0x8930FFBe00C6A040994fD52b18876e8C64110ED5' as Address,
+    redemptionRouter: '0x0F75830129146a0f76b71Fc454c71C999d54bB64' as Address,
+    rbtOrderBook: '0xfC403ab9D123F150e5241a3688Ee334B91FdB46D' as Address,
+
+    // Compatibility block for code paths that still expect a product config.
+    // tokenId/unitPriceWei should be updated after create-series.js is run.
     product1: {
-      offeringId: 1n,
+      tokenId: 1n,
       seriesId: 1n,
-      rbtAsset: '0x6173a35cBB99B82c51c6A0e0265C06B7955Eb017' as Address,
-      // Legacy: 1 USDR at 18 decimals. After v2 redeployment: 1_000_000n (6 dec).
-      unitPriceWei: 1000000000000000000n,
-      paymentToken: '0xbc3A31c1788624E5bFf69cdC3a1E7405A01C6De2' as Address, // USDR
+      rbtAsset: '0x58Fd2567b447D349Ecc373aca061B886916FC929' as Address,
+      unitPriceWei: 1000000n,
+      paymentToken: '0xe3BE8AD4b1fB74AC96FAb68064eccBB4b2C17361' as Address, // USDR (6 decimals)
     },
   },
 } as const
-
-export type WeblockFujiDeployment = typeof WEBLOCK_FUJI_DEPLOYMENT
 
 export type WeblockFujiDeployment = typeof WEBLOCK_FUJI_DEPLOYMENT

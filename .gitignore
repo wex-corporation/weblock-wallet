@@ -27,3 +27,10 @@ replay_pid*
 .vscode/
 
 .npmrc.local
+
+# Secrets — never commit credentials. Provide these via mounted secret / env at deploy.
+.env
+.env.*
+!.env.example
+*firebase-adminsdk*.json
+*-serviceaccount*.json
