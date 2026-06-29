@@ -1,9 +1,13 @@
-// client/src/config/weblockFujiDeployment.ts
-// Fuji(43113) WeBlock v2 deployment addresses (2026-06-10)
+// client/src/core/config/weblockFujiDeployment.ts
+// Fuji(43113) WeBlock GREENFIELD deployment addresses (2026-06-30)
 //
 // Source of truth: weblock-token (weblock-tokenomics) repo, deployments/fuji.json.
-// Deployment wallet / admin / treasury: 0xC4C47A2373418E210CE171bfb389FC8d2Dfe6229
+// Deployment wallet / admin / treasury / operator: 0xC4C47A2373418E210CE171bfb389FC8d2Dfe6229
 // USDT/USDC are mock stablecoins (testnet); all stablecoins use 6 decimals.
+//
+// Greenfield architecture: SpotExchange (EIP-712 off-chain matched) replaces the on-chain
+// order book; IncomeDistributor (Merkle) is the single rent path (no interest/redemption routers);
+// KycRegistry gates RBT secondary transfers; WBP stays off-chain (no token here).
 
 export type Address = `0x${string}`
 
@@ -14,47 +18,57 @@ export const WEBLOCK_FUJI_DEPLOYMENT = {
   explorerBaseUrl: 'https://testnet.snowtrace.io',
 
   treasury: '0xC4C47A2373418E210CE171bfb389FC8d2Dfe6229' as Address,
+  operator: '0xC4C47A2373418E210CE171bfb389FC8d2Dfe6229' as Address,
 
   tokens: {
     USDR: {
-      address: '0x4BEdd876E463de9F4b5827E318acAA33E42Fb66D' as Address,
+      address: '0x339995DdB41166cC20fd4e82E2817b4ddBE16Be4' as Address,
       decimals: 6,
       symbol: 'USDR',
     },
     USDT: {
-      address: '0xF5a89493D85F767Ea783858f6Fa903E587Ef3830' as Address,
+      address: '0xFF90e9A716E31990ddF5bA80C861E18b4498E140' as Address,
       decimals: 6,
       symbol: 'USDT',
     },
     USDC: {
-      address: '0xbCe6D7fB3bDb41120EAeEaEd75f10d5d8F9c1a6A' as Address,
+      address: '0x6Ad718292eD110513bEFC459A74f37bBE6D59862' as Address,
       decimals: 6,
       symbol: 'USDC',
     },
     WFT: {
-      address: '0x33980895233EC26F1DeB7061F96966aC2eB224ff' as Address,
+      address: '0xadb62479E9d2914d1f1eB743Af9Ea69b9481933b' as Address,
       decimals: 18,
       symbol: 'WFT',
     },
   },
 
   contracts: {
-    rbt: '0x91786bEFeB00163CFCBDffCA9959Eb788D5b4Fc0' as Address,
-    rbtSeriesManager: '0x65Cb981A6FE0F5B489171e7725949f9299ba2a05' as Address,
-    interestRouter: '0x967180893109585fc5975Ba66E1DDb0B99674aB5' as Address,
-    redemptionRouter: '0x358239E22382731e62d9344dd5544b2CC0e52bD1' as Address,
-    rbtOrderBook: '0x97195CA8aed94b24D4a28d7fC401F517aC180884' as Address,
+    rbt: '0x9F9A517E7d56d8F986fAc361896891f79E4E7f77' as Address,
+    kycRegistry: '0x08F176f989CBe45FAf0240F9C449dF6f14E7EC7D' as Address,
+    seriesManager: '0xf3DBB781b5366255C58F25837Afb282D2257a55F' as Address,
+    incomeDistributor: '0x9212525570eD0800899262B5b19EDC5da74ADcFC' as Address,
+    spotExchange: '0x217C187ec99e1EcaBD80386403127A86D23340e0' as Address,
+    navOracle: '0x078A5A64504d329a92701B3E2b86B57a62351013' as Address,
+    insuranceFund: '0x94c26d6c06783e3A59b8844529715479eD58f685' as Address,
+    perpClearing: '0x67a55155E61Ca2932Ac1b4Ad1B62CdeA16CF1f3c' as Address,
+    wftClaim: '0x3ff6A045D2aaED025D558e7Cf3b8fFa0fa10681c' as Address,
 
-    // Template product config. NOTE: no series has been created on this fresh
-    // deployment yet — run weblock-token `scripts/create-series.js` (OPERATOR
-    // role on rbtSeriesManager), then set tokenId/unitPriceWei to match.
+    // Launch product (seeded on-chain): series #1 "Prime Retail Tower", sale open.
+    // Price 10 USDC per RBT (6dp). KYC required to buy/transfer.
     product1: {
       tokenId: 1n,
       seriesId: 1n,
-      rbtAsset: '0x91786bEFeB00163CFCBDffCA9959Eb788D5b4Fc0' as Address,
-      unitPriceWei: 1000000n,
-      paymentToken: '0x4BEdd876E463de9F4b5827E318acAA33E42Fb66D' as Address, // USDR (6 decimals)
+      rbtAsset: '0x9F9A517E7d56d8F986fAc361896891f79E4E7f77' as Address,
+      unitPriceWei: 10000000n, // 10 USDC (6 decimals)
+      paymentToken: '0x6Ad718292eD110513bEFC459A74f37bBE6D59862' as Address, // USDC (6 decimals)
     },
+  },
+
+  // EIP-712 domains for signing spot/perp orders (match the contracts exactly).
+  eip712: {
+    spot: { name: 'WeBlockSpot', version: '1' },
+    perp: { name: 'WeBlockPerp', version: '1' },
   },
 } as const
 
